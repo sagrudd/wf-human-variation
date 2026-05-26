@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   output contract by deleting `output_report` and
   `alignment_report_coverage_threshold` from config/schema documentation and
   removing HTML report entries from `output_definition.json`.
+- Deleted EPI2ME HTML report Python generators and split retained
+  machine-readable metric helpers into `workflow_glue.metrics`.
 
 ## [v2.8.0]
 This minor release of wf-human-variation updates [modkit](https://github.com/nanoporetech/modkit) to improve the performance of modkit pileup processes for the base modifications subworkflow.

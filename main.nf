@@ -2,7 +2,7 @@
 
 nextflow.enable.dsl = 2
 
-include { snp; report_snp } from './workflows/wf-human-snp'
+include { snp; snp_stats } from './workflows/wf-human-snp'
 include { lookup_clair3_model } from './modules/local/wf-human-snp'
 
 include { bam as sv } from './workflows/wf-human-sv'
@@ -25,9 +25,7 @@ include {
     getAllChromosomesBed;
     publish_artifact;
     get_region_coverage;
-    failedQCReport; 
     rejectedLowCoverage;
-    makeAlignmentReport; 
     getVersions;
     validateReferenceCompatibility;
     eval_downsampling;
@@ -444,7 +442,7 @@ workflow {
         // First, we compute the depth for the downsampled files, if it
         // exists 
         mosdepth_downsampled(downsampling.out, bed, ref_channel, params.depth_window_size, false, "bed")
-        // Then, choose which output will be used in the report. 
+        // Then, choose which output will be used for downstream coverage/QC.
         // If it needs to be subset, then the combined output exists, whereas 
         // the original mosdepth file is merged with the empty ready channel, leaving 
         // the correct file to output. Otherwise, the reverse happens and it emits 
@@ -598,7 +596,7 @@ workflow {
             dp_pass, dp, bam, bai, meta ->
             // check where it failed
             def fail_depth_reason = !meta.has_mapped_reads ? "no mapped reads" : dp < params.bam_min_coverage ? "depth: ${dp} < ${params.bam_min_coverage}" : "failed for unknown reason"
-            // Raise the alarm explicitly. Reports are optional; the workflow status must still reflect the rejected sample.
+            // Raise the alarm explicitly; the workflow status must still reflect the rejected sample.
             String fail_depth_msg = """\
             ################################################################################
             # INPUT DATA PROBLEM: rejected_low_coverage
@@ -632,46 +630,9 @@ workflow {
         sex = Channel.of(null)
     }
 
-    // Create reports for pass and fail channels
-    if (params.output_report){
-        // Create passing bam report
-        report_pass = pass_bam_channel
-            .combine(bam_stats)
-            .combine(bam_flag)
-            .combine(bam_hists)
-            .combine(mosdepth_stats.map{it[1]})
-            .combine(mosdepth_summary)
-            .combine(ref_channel)
-            .combine(software_versions.collect())
-            .combine(workflow_params)
-            .combine(Channel.value(using_user_bed))
-            .combine(bed_summary)
-            .combine(coverage_bed_summary)
-            .flatten()
-            .collect() | makeAlignmentReport
-        // Create failing bam report
-        report_fail = discarded_bams
-            .combine(bam_stats)
-            .combine(bam_flag)
-            .combine(bam_hists)
-            .combine(mosdepth_stats.map{it[1]})
-            .combine(mosdepth_summary)
-            .combine(ref_channel)
-            .combine(software_versions.collect())
-            .combine(workflow_params)
-            .combine(Channel.value(using_user_bed))
-            .combine(bed_summary)
-            .combine(coverage_bed_summary)
-            .flatten()
-            .collect() | failedQCReport
-        rejected_low_coverage_status = report_fail | rejectedLowCoverage
-    } else {
-        report_pass = Channel.empty()
-        report_fail = Channel.empty()
-        rejected_low_coverage_status = discarded_bams
-            .map{ bam, bai, meta -> bam }
-            | rejectedLowCoverage
-    }
+    rejected_low_coverage_status = discarded_bams
+        .map{ bam, bai, meta -> bam }
+        | rejectedLowCoverage
 
     // Set up BED for wf-human-snp, wf-human-str or run_haplotagging
     // CW-2383: we first call the SNPs to generate an haplotagged bam file for downstream analyses
@@ -746,7 +707,7 @@ workflow {
             chromosome_codes,
             workflow_params
         )
-        artifacts = results_sv.report.flatten()
+        artifacts = results_sv.output.flatten()
         sniffles_vcf = results_sv.sniffles_vcf
         json_sv = results_sv.sv_stats_json
         sv_vcf = results_sv.for_phasing
@@ -816,11 +777,10 @@ workflow {
         // Run annotation, when requested.
         if (!params.annotation) {
             snp_vcf = final_snp_vcf_filtered
-            // no ClinVar VCF, pass empty VCF to makeReport
             clinvar_vcf = Channel.fromPath("${projectDir}/data/empty_clinvar.vcf")
         }
         else {
-            // do annotation and get a list of ClinVar variants for the report
+            // do annotation and publish the ClinVar-filtered variant list
             // snpeff is slow so we'll just pass the whole VCF but annotate per contig
             annotations = annotate_snp_vcf(
                 final_snp_vcf_filtered.combine(clair_vcf.contigs), genome_build.first(), "snp"
@@ -834,17 +794,11 @@ workflow {
         // Run vcf statistics on the final VCF file
         vcf_stats = vcfStats(snp_vcf)
 
-        // Prepare the report
-        snp_reporting = report_snp(vcf_stats, clinvar_vcf, workflow_params)
-        json_snp = snp_reporting.snp_stats_json
-        if (params.output_report){
-            snp_report = snp_reporting.report
-        } else {
-            snp_report = Channel.empty()
-        }
+        snp_metrics = snp_stats(vcf_stats)
+        json_snp = snp_metrics.snp_stats_json
 
         // Output for SNP
-        snp_report
+        Channel.empty()
             .concat(clair3_results)
             .concat(snp_vcf.map{meta, vcf, tbi -> [vcf, tbi]})
             .flatten() | output_snp
@@ -1041,8 +995,6 @@ workflow {
             mosdepth_summary.flatten(),
             mosdepth_perbase.flatten(),
             mod_bedmethyl.flatten(),
-            report_pass.flatten(),
-            report_fail.flatten(),
             final_json.flatten(),
             bed_summary.flatten(),
             coverage_bed_summary.flatten(),

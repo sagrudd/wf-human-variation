@@ -15,8 +15,7 @@ include {
     aggregate_all_variants;
     phase_gvcf;
     hap;
-    getVersions;
-    makeReport;
+    makeStatsJson;
     post_clair_phase_contig;
 } from "../modules/local/wf-human-snp.nf"
 
@@ -267,23 +266,14 @@ workflow snp {
 }
 
 
-// Reporting workflow
-workflow report_snp {
+// Machine-readable SNP metrics workflow
+workflow snp_stats {
     take:
         vcf_stats
-        clinvar_vcf
-        workflow_params
 
     main:
-
-        // reporting
-        software_versions = getVersions()
-
-        // Create report
-        makeReport(
-            vcf_stats, software_versions.collect(), workflow_params, clinvar_vcf)
+        makeStatsJson(vcf_stats)
 
     emit:
-        report = makeReport.out.report
-        snp_stats_json = makeReport.out.json
+        snp_stats_json = makeStatsJson.out.json
 }

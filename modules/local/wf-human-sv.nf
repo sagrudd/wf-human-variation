@@ -127,37 +127,20 @@ process getVersions {
 }
 
 
-process report {
+process makeStatsJson {
     label "wf_common"
     cpus 1
-    memory 6.GB
+    memory 2.GB
     input:
         tuple val(xam_meta), path(vcf)
-        file eval_json
-        file versions
-        path "params.json"
     output:
-        path "*report.html", emit: html, optional: true
         path "${xam_meta.alias}.svs.json", emit: json
     script:
-        String workflow_name = workflow.manifest.name.replace("epi2me-labs/", "")
-        def report_name = "${xam_meta.alias}.wf-human-sv-report.html"
-        def evalResults = eval_json.name != 'OPTIONAL_FILE' ? "--eval_results ${eval_json}" : ""
-        def generate_html = params.output_report ? "" : "--skip_report"
-    """
-    workflow-glue report_sv \
-        $report_name \
-        --vcf $vcf \
-        --params params.json \
-        --params-hidden 'help,schema_ignore_params,${params.schema_ignore_params}' \
-        --versions $versions \
-        --revision ${workflow.revision} \
-        --commit ${workflow.commitId} \
-        --output_json "${xam_meta.alias}.svs.json" \
-        --workflow_version ${workflow.manifest.version} \
-        --workflow_name ${workflow_name} \
-        $evalResults $generate_html
-    """
+        """
+        workflow-glue sv_stats_json \
+            --vcf ${vcf} \
+            --output_json ${xam_meta.alias}.svs.json
+        """
 }
 
 // See https://github.com/nextflow-io/nextflow/issues/1636

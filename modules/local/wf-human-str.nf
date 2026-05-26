@@ -145,62 +145,6 @@ process merge_tsv {
 }
 
 
-process make_report {
-    label "wf_common"
-    cpus 1
-    memory 16.GB
-    input:
-        tuple val(xam_meta), path(vcf), path(vcf_idx)
-        path(straglr_tsv)
-        path(plot_tsv)
-        path(stranger_annotation)
-        path(str_content)
-        path "versions.txt"
-        path "params.json"
-        path(bam_stats)
-        val(sex)
-    output:
-        path "*wf-human-str-report.html", emit: html
-    script:
-        String workflow_name = workflow.manifest.name.replace("epi2me-labs/", "")
-        def report_name = "${xam_meta.alias}.wf-human-str-report.html"
-        // if params.sex is not provided, assume the workflow inferred it
-        String sex_source = params.sex ? "user-provided" : "workflow-inferred"
-        """
-        workflow-glue report_str \
-            -o $report_name \
-            --params params.json \
-            --sample_name ${xam_meta.alias} \
-            --version versions.txt \
-            --vcf ${vcf} \
-            --straglr ${straglr_tsv} \
-            --stranger ${plot_tsv} \
-            --stranger_annotation ${stranger_annotation} \
-            --str_content ${str_content} \
-            --read_stats ${bam_stats} \
-            --sex ${sex} \
-            --sex_source ${sex_source} \
-            --workflow_version ${workflow.manifest.version} \
-            --workflow_name ${workflow_name}
-        """
-}
-
-
-process getVersions {
-    label "wf_human_str"
-    cpus 1
-    output:
-        path "versions.txt"
-    script:
-        """
-        python -c "import pysam; print(f'pysam,{pysam.__version__}')" >> versions.txt
-        samtools --version | head -n 1 | sed 's/ /,/' >> versions.txt
-        straglr-genotype --version | sed 's/^/straglr-genotype,/' >> versions.txt
-        stranger --version | sed 's/^/stranger,/' >> versions.txt
-        """
-}
-
-
 // See https://github.com/nextflow-io/nextflow/issues/1636
 // This is the only way to publish files from a workflow whilst
 // decoupling the publish from the process steps.

@@ -3,13 +3,12 @@
 
 import json
 
-from ezcharts.components.fastcat import histogram_median
-from ezcharts.components.mosdepth import load_mosdepth_summary
 import numpy as np
 import pandas as pd
 
+from .metrics import CHROMOSOMES, compute_n50, histogram_median, load_hists
+from .metrics import load_mosdepth_summary
 from .util import wf_parser  # noqa: ABS101
-from .report_utils.common import CHROMOSOMES, compute_n50, load_hists  # noqa: ABS101
 
 
 # Define output metrics names

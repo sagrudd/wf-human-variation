@@ -1,9 +1,6 @@
 include {
     callCNV;
-    getVersions;
-    add_snp_tools_to_versions;
     bgzip_and_index_vcf;
-    makeReport
 } from "../modules/local/wf-human-cnv.nf"
 
 include {
@@ -51,15 +48,7 @@ workflow cnv {
             spectre_final_vcf = annotate_vcf(vcf_for_annotation, genome_build, "cnv").annot_vcf
         }
 
-        software_versions_tmp = getVersions()
-        software_versions = add_snp_tools_to_versions(software_versions_tmp)
-        if (params.output_report){
-            report = makeReport(software_versions.collect(), workflow_params, spectre_bed, spectre_karyotype, genome_build)
-        } else {
-            report = Channel.empty()
-        }
-
     emit:
-        output = spectre_final_vcf.map{ meta, vcf, tbi -> [vcf, tbi]}.concat(report)
+        output = spectre_final_vcf.map{ meta, vcf, tbi -> [vcf, tbi]}
         cnv_vcf = spectre_final_vcf
 }

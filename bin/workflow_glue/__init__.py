@@ -29,7 +29,7 @@ def get_components(allowed_components=None):
     components = dict()
     for fname in globs:
         name = os.path.splitext(os.path.basename(fname))[0]
-        if name in ("__init__", "util"):
+        if name in ("__init__", "metrics", "util"):
             continue
         if allowed_components is not None and name not in allowed_components:
             continue

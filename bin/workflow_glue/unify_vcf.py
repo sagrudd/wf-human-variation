@@ -8,7 +8,7 @@ from .util import get_named_logger, wf_parser  # noqa: ABS101
 
 
 # Get logger
-logger = get_named_logger("report_sv")
+logger = get_named_logger("unify_vcf")
 
 
 def get_lines(file_path):

@@ -3,9 +3,9 @@
 
 import sys
 
-from ezcharts.components.mosdepth import load_mosdepth_summary  # noqa: ABS101
 import pandas as pd
 
+from .metrics import load_mosdepth_summary
 from .util import wf_parser  # noqa: ABS101
 
 

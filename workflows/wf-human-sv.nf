@@ -2,8 +2,7 @@ include {
     sniffles2;
     filterCalls;
     sortVCF;
-    getVersions;
-    report;
+    makeStatsJson;
 } from "../modules/local/wf-human-sv.nf"
 include {
     filterBenchmarkVcf;
@@ -42,33 +41,26 @@ workflow bam {
         if (!params.annotation) {
             final_vcf = called.vcf.join(called.vcf_index)
 
-            report = runReport(
-                called.vcf.groupTuple(),
-                maybe_benchmark_result.ifEmpty(optional_file),
-                workflow_params
-            )
+            sv_metrics = makeStatsJson(called.vcf)
+            sv_stats_json = sv_metrics.json
         }
         else {
             // append '*' to indicate that annotation should be performed on all chr at once
             vcf_for_annotation = called.vcf.join(called.vcf_index).map{ it << '*' }
             // annotate with SnpEff
             final_vcf = annotate_sv_vcf(vcf_for_annotation, genome_build, "sv").annot_vcf
-            report = runReport(
-                final_vcf.map{meta, vcf, tbi -> [meta, vcf]}.groupTuple(),
-                maybe_benchmark_result.ifEmpty(optional_file),
-                workflow_params
-            )
+            sv_metrics = makeStatsJson(final_vcf.map{meta, vcf, tbi -> [meta, vcf]})
+            sv_stats_json = sv_metrics.json
         }
 
         // Prepare stuff to emit
-        sv_stats_json = report.json
-        report = report.html.concat(
+        output = Channel.empty().concat(
             final_vcf.map{meta, vcf, tbi -> [vcf, tbi]},
             maybe_benchmark_result
         )
     
     emit:
-        report = report
+        output = output
         sv_stats_json = sv_stats_json
         sniffles_vcf = called.vcf
         for_phasing = final_vcf
@@ -149,23 +141,4 @@ workflow variantCall {
     emit:
         vcf = sortVCF.out.vcf_gz
         vcf_index = sortVCF.out.vcf_tbi
-}
-
-
-workflow runReport {
-    take:
-        vcf
-        eval_json
-        workflow_params
-    main:
-        software_versions = getVersions()
-        report(
-            vcf,
-            eval_json,
-            software_versions,
-            workflow_params
-        )
-    emit:
-        html = report.out.html
-        json = report.out.json
 }

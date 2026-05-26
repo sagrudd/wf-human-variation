@@ -8,8 +8,6 @@ include {
     bam_region_filter;
     bam_read_filter;
     generate_str_content;
-    make_report;
-    getVersions;
 } from "../modules/local/wf-human-str.nf"
 
 // workflow module
@@ -31,8 +29,6 @@ workflow str {
     // call straglr and get annotations per contig
     str_vcf_and_tsv = call_str(bam_channel.combine(sex), ref_as_value, str_list)
     annotations = annotate_repeat_expansions(str_vcf_and_tsv, variant_catalogue_hg38)
-
-    software_versions = getVersions()
 
     // subset contig BAM to include only STR regions
     // ignore those contigs which aren't in repeats BED so this output is optional
@@ -85,23 +81,7 @@ workflow str {
             str_content: str_content_table
         }
 
-    if (params.output_report){
-      report = make_report(
-          merged_vcf,
-          branched_merged.straglr.collect(),
-          branched_merged.plot.collect(),
-          branched_merged.stranger.collect(),
-          branched_merged.str_content.collect(),
-          software_versions,
-          workflow_params,
-          read_stats,
-          sex
-      )
-    } else {
-      report = Channel.empty()
-    }
-
   emit:
-    output = merged_vcf.map{meta, vcf, tbi -> [vcf, tbi]}.concat(report).concat(branched_merged.straglr).flatten()
+    output = merged_vcf.map{meta, vcf, tbi -> [vcf, tbi]}.concat(branched_merged.straglr).flatten()
     str_vcf = merged_vcf.collect()
 }

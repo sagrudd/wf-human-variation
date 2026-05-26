@@ -717,40 +717,20 @@ process vcfStats {
 }
 
 
-process makeReport {
+process makeStatsJson {
     label "wf_common"
     cpus 1
-    memory 16.GB
+    memory 2.GB
     input:
         tuple val(xam_meta), path(vcfstats)
-        path versions
-        path "params.json"
-        path clinvar_vcf
     output:
-        path "${xam_meta.alias}.wf-human-snp-report.html", emit: 'report', optional: true
         path "${xam_meta.alias}.snvs.json", emit: 'json'
     script:
-        String workflow_name = workflow.manifest.name.replace("epi2me-labs/", "")
-        def clinvar = clinvar_vcf ?: ""
-        def annotation = params.annotation ? "" : "--skip_annotation"
-        def generate_html = params.output_report ? "" : "--skip_report"
-
-        report_name = "${xam_meta.alias}.wf-human-snp-report.html"
-        wfversion = workflow.manifest.version
-        if( workflow.commitId ){
-            wfversion = workflow.commitId
-        }
         """
-        workflow-glue report_snp \
-        $report_name \
-        --workflow_name ${workflow_name} \
-        --versions $versions \
-        --params params.json \
-        --vcf_stats $vcfstats \
-        --sample_name $xam_meta.alias \
-        --clinvar_vcf $clinvar \
-        --workflow_version ${workflow.manifest.version} \
-        $annotation $generate_html
+        workflow-glue snp_stats_json \
+            --vcf_stats ${vcfstats} \
+            --sample_name ${xam_meta.alias} \
+            --output ${xam_meta.alias}.snvs.json
         """
 }
 
