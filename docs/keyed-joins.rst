@@ -13,6 +13,10 @@ The helper functions in ``lib/keyed_joins.nf`` provide the Nextflow-side keying
 convention for new bounded entries. The Python controller owns equivalent
 controller-side keys in ``gnostikon_workflow_control.join_keys``.
 
+Per-sample state must remain partial and concurrent. A join for one sample in
+``variant_calling`` must not wait for another sample that is still
+``basecalling`` or ``mapping``.
+
 Allowed Uses
 ------------
 

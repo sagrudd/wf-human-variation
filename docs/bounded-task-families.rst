@@ -66,6 +66,11 @@ Basecalling is optional when ready BAM/CRAM/uBAM artefacts are imported.
 Mapping still owns ingress and compatibility conversion before downstream
 families consume aggregate sample state.
 
+The dependency shape applies independently per sample. The project can contain
+sample A in ``basecalling``, sample B in ``mapping``, and sample C in
+``variant_calling`` at the same time. New bounded entries must preserve that
+independence.
+
 Reporting is intentionally not blocked on every requested family. It declares a
 ``completed_subset`` prerequisite and can run when at least one selected
 upstream family has completed, while recording missing or still-running

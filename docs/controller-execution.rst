@@ -16,6 +16,19 @@ Nextflow is therefore an execution backend for bounded work. It should not be
 responsible for discovering unrelated new samples, waiting for all samples, or
 deciding global analysis state.
 
+Per-Sample Progress
+-------------------
+
+The controller must allow different samples to occupy different task-family
+states at the same time. For example, sample A may have an active
+``basecalling`` task, sample B may have an active ``mapping`` task, and sample C
+may already be running ``variant_calling``. This is normal runtime state, not a
+partial failure.
+
+Bounded entries should consume only the sample, reference, artefact, and task
+key they were launched with. They must not derive readiness from a project-wide
+phase such as "all samples basecalled" or "all samples mapped".
+
 Launch Contract
 ---------------
 
