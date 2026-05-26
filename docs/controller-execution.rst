@@ -53,7 +53,8 @@ Workflow Maintenance Rules
   launch-time global state from arbitrary project directories.
 * Bounded entries must write only their declared task-cache outputs and
   completion marker. User-facing publication belongs to ``reporting``.
-* Broad ``collect()``, all-sample joins, and global mutable ``params.wf`` state
-  must not be introduced into bounded entries.
+* Broad ``collect()``, unkeyed ``combine()``, all-sample joins, and global
+  mutable ``params.wf`` state must not be introduced into bounded entries.
+  Follow ``docs/keyed-joins.rst``.
 * ``main.nf`` remains a compatibility path until the bounded entries replace
   the imported launch-time workflow behavior.

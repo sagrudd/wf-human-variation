@@ -37,6 +37,7 @@ Contents
    bounded-task-families
    controller-execution
    idempotency
+   keyed-joins
    subworkflows
    parameters
    outputs

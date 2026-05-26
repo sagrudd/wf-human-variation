@@ -44,8 +44,11 @@ The workflow uses channel operations such as ``collect()``, ``combine()``,
 ``first()``, and ``groupTuple()`` for several aggregation steps. These can make
 otherwise local work wait for broader channel completion.
 
-When changing any channel topology, explicitly check whether the change adds or
-removes a whole-run barrier. Record intentional barriers in this document.
+When changing the imported compatibility graph, explicitly check whether the
+change adds or removes a whole-run barrier. New bounded entries must instead
+use the keyed rules in ``docs/keyed-joins.rst``: per-sample joins use
+``sample_id``, per-reference joins use ``sample_id`` plus ``reference_id``, and
+task readiness uses ``task_key``.
 
 Placeholder Optionality
 -----------------------
