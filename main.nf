@@ -64,6 +64,15 @@ include {
 } from './lib/reference_compatibility.nf'
 
 include {
+    boundedEntryContractJson;
+    boundedEntryParams;
+} from './lib/bounded_entry.nf'
+
+include {
+    writeBoundedEntryContract as writeMappingEntryContract;
+} from './modules/local/bounded_entry'
+
+include {
     detect_basecall_model
 } from './lib/model.nf'
 
@@ -90,9 +99,17 @@ include {
 
 
 
-// entrypoint workflow
-WorkflowMain.initialise(workflow, params, log)
+workflow mapping {
+    entry_contract = boundedEntryParams(params, "mapping", "mapping")
+    writeMappingEntryContract(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract))
+    )
+}
+
+// Compatibility entrypoint workflow
 workflow {
+    WorkflowMain.initialise(workflow, params, log)
 
     Map colors = NfcoreTemplate.logColours(params.monochrome_logs)
 

@@ -25,6 +25,12 @@ and expected output artefacts. New ``humvar3`` work should progressively move
 those contracts into controller-launched bounded entries, as described in
 ``docs/controller-execution.rst``.
 
+The default unnamed workflow in ``main.nf`` is the compatibility entry. Named
+bounded entries, starting with ``-entry mapping``, are separate controller
+launch targets and must not depend on the compatibility graph's launch-time
+schema validation, ingress discovery, global branch decisions, or all-sample
+joins.
+
 ``main.nf`` Retirement Rule
 ---------------------------
 
@@ -137,6 +143,13 @@ workflow still contains the imported compatibility graph, but new bounded work
 must use Nextflow only for task execution. Relevant controller contracts live in
 ``../gnostikon-workflow-control`` and are documented for this workflow in
 ``docs/workflow-control.rst`` and ``docs/controller-execution.rst``.
+
+The first bounded entry is the Task 14 ``mapping`` bounded launch-contract
+scaffold. It proves that the controller can launch a named entry without
+running the whole graph and that the entry accepts ``task_family``,
+``task_key``, task-cache paths, a completion marker path, and declared output
+paths. It does not yet perform mapping; Task 15 owns the real mapping
+implementation.
 
 Mutable ``params.wf[...]`` updates must not carry runtime state. Run IDs are
 kept as per-sample ``*.runids.txt`` artefacts in the compatibility graph and

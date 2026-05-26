@@ -22,7 +22,11 @@ Current Operating Model
 
 Primary entry points:
 
-* ``main.nf``: top-level workflow graph and global branch decisions.
+* ``main.nf``: compatibility workflow graph and global branch decisions.
+* ``-entry mapping``: first bounded launch-contract scaffold for
+  controller-provided task params and task keys. This entry does not yet run
+  mapping analysis; Task 15 replaces the scaffold with the bounded mapping
+  implementation.
 * ``nextflow.config``: default parameters and workflow metadata.
 * ``nextflow_schema.json``: parameter schema used by command-line and UI
   surfaces.
@@ -46,6 +50,9 @@ Important Constraints
 * Some optional inputs are represented by placeholder files.
 * Some downstream work is triggered implicitly by other features.
 * Large channel joins and collections create whole-run barriers.
+* Bounded entries must be launched by the controller with ``task_family``,
+  ``task_key``, ``task_dir``, ``task_cache_dir``,
+  ``completion_marker_path``, and declared ``output_paths``.
 
 These constraints are part of the current maintenance surface. If they are
 changed, update this documentation and the relevant tests in the same change

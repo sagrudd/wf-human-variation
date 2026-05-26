@@ -93,3 +93,13 @@ Maintenance Rules
   state rolls up to the family.
 * Every family must use the idempotent task contract in
   ``docs/idempotency.rst``.
+
+Current Entry Status
+--------------------
+
+The first named bounded entry is ``-entry mapping``. At Task 14 it is a bounded
+launch-contract scaffold only: it validates the controller-provided task
+params, writes a ``bounded_launch_contract`` artefact, and writes the standard
+completion marker without executing ``main.nf``. The scaffold exists so the
+controller/workflow boundary can be exercised before the mapping toolchain is
+moved out of the compatibility graph in Task 15.

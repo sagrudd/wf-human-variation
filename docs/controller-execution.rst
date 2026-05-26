@@ -63,6 +63,31 @@ This writes a bounded params file containing:
 The command skips execution when the completion marker is valid for the same
 task key unless the controller requests ``--force-refresh``.
 
+Current Bounded Entries
+-----------------------
+
+Task 14 introduces the first bounded launch-contract scaffold:
+
+.. code-block:: text
+
+   gnostikon-workflow-control nextflow-task \
+     --workflow ../wf-human-variation \
+     --entry mapping \
+     --outdir /analysis/project-001 \
+     --task-family mapping \
+     --key-field sample_id=smp_001 \
+     --key-field reference_id=ref_001 \
+     --key-field input_digest=sha256:abc \
+     --output bounded_launch_contract=contract/mapping.launch.json
+
+This launches ``nextflow run ../wf-human-variation -entry mapping`` without
+executing the default compatibility graph. The entry validates the
+controller-provided bounded params, writes the declared
+``bounded_launch_contract`` file, and writes the standard
+``.gnostikon_task_complete.json`` marker. It is intentionally not a mapping
+analysis implementation; Task 15 replaces this scaffold with real bounded
+mapping while preserving the same controller launch boundary.
+
 Workflow Maintenance Rules
 --------------------------
 

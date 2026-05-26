@@ -60,6 +60,9 @@ Known Compatibility Debt
 * Static ``main.nf`` SNP activation for STR, phasing, and Spectre CNV.
 * ``main.nf`` remains a compatibility reference for tool invocations, process
   wiring, and expected outputs until bounded entries retire each responsibility.
+* The mapping bounded entry scaffold exists only to prove the named-entry
+  controller launch and completion-marker contract. Task 15 must replace it
+  with real mapping execution before it is treated as a scientific output path.
 * QDNAseq format compatibility.
 * Placeholder optional files outside the finite transitional list in
   ``docs/architecture.rst``.
