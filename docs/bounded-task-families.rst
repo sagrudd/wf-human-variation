@@ -113,3 +113,14 @@ standard completion marker. Low-coverage data is represented as explicit
 ``rejected_low_coverage`` sample state in ``coverage_state`` rather than as an
 HTML report or an all-run failure. The broader compatibility graph remains in
 place until later families move.
+
+Task 17 adds ``-entry variant_calling`` as the bounded small-variant entry for
+one controller-declared aggregate XAM, reference, Clair3 model, and
+``variant_mode``. The initial bounded mode is SNP calling, with optional GVCF
+execution declared as the separate ``variant_mode=snp_gvcf`` contract. It emits
+``snp_vcf``, ``snp_vcf_index``, ``variant_calling_manifest``,
+``variant_calling_provenance``, and ``qc_stats``; ``snp_gvcf`` and
+``snp_gvcf_index`` are required declared outputs only for ``snp_gvcf`` mode.
+Phasing, haplotagging, SV refinement, and annotation are recorded as explicit
+optional products in the manifest and remain separate bounded modes rather than
+hidden ``run_snp`` side effects.

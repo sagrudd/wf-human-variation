@@ -67,6 +67,7 @@ include {
     boundedEntryContractJson;
     boundedMappingEntryParams;
     boundedSampleAggregationEntryParams;
+    boundedVariantCallingEntryParams;
 } from './lib/bounded_entry.nf'
 
 include {
@@ -76,6 +77,10 @@ include {
 include {
     runBoundedSampleAggregationTask;
 } from './modules/local/bounded_sample_aggregation'
+
+include {
+    runBoundedSmallVariantTask;
+} from './modules/local/bounded_variant_calling'
 
 include {
     detect_basecall_model
@@ -129,6 +134,24 @@ workflow sample_aggregation {
         mapped_xam_index,
         reference,
         reference_index
+    )
+}
+
+workflow variant_calling {
+    entry_contract = boundedVariantCallingEntryParams(params)
+    aggregate_xam = Channel.fromPath(entry_contract.aggregate_xam, checkIfExists: true)
+    aggregate_xam_index = Channel.fromPath(entry_contract.aggregate_xam_index, checkIfExists: true)
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
+    clair3_model = Channel.fromPath(entry_contract.clair3_model, type: "dir", checkIfExists: true)
+    runBoundedSmallVariantTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        aggregate_xam,
+        aggregate_xam_index,
+        reference,
+        reference_index,
+        clair3_model
     )
 }
 

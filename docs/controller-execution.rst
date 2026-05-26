@@ -150,6 +150,41 @@ basecaller extraction, ``mosdepth`` coverage metrics, explicit
 ``coverage_state``, and the aggregation manifest. It does not launch alignment
 HTML generation, downstream analysis families, or report publication.
 
+Task 17 adds the bounded small-variant entry:
+
+.. code-block:: text
+
+   gnostikon-workflow-control nextflow-task \
+     --workflow ../wf-human-variation \
+     --entry variant_calling \
+     --outdir /analysis/project-001 \
+     --task-family variant_calling \
+     --key-field sample_id=smp_001 \
+     --key-field reference_id=ref_001 \
+     --key-field variant_mode=snp \
+     --key-field aggregate_xam_digest=sha256:aggregate \
+     --key-field clair3_model_digest=sha256:model \
+     --key-field variant_config_digest=sha256:variant \
+     --key-field container_digest=sha256:container \
+     --params-json variant-calling.params.json \
+     --output snp_vcf=variants/snp.vcf.gz \
+     --output snp_vcf_index=variants/snp.vcf.gz.tbi \
+     --output variant_calling_manifest=metadata/variant-calling-manifest.json \
+     --output variant_calling_provenance=metadata/variant-calling-provenance.json \
+     --output qc_stats=qc/variant-calling-qc.json
+
+The params JSON must provide ``sample_id``, ``aggregate_xam``,
+``aggregate_xam_index``, ``aggregate_xam_digest``, ``reference_fasta``,
+``reference_index``, ``reference_id``, ``clair3_model``,
+``clair3_model_digest``, ``variant_mode``, ``variant_config_digest``,
+``container_digest``, and structured ``variant_options``. The entry runs only
+small-variant-owned work for the launched sample/reference/mode. Optional GVCF
+is selected by ``variant_mode=snp_gvcf`` plus
+``variant_options.emit_gvcf=true`` and requires declared ``snp_gvcf`` and
+``snp_gvcf_index`` output paths. Phasing, haplotagging, SV refinement, and
+annotation are explicit optional products in the manifest and are not activated
+by STR, Spectre, or reporting side effects.
+
 Workflow Maintenance Rules
 --------------------------
 

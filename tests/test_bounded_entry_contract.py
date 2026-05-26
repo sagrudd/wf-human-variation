@@ -28,6 +28,11 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertIn("runBoundedSampleAggregationTask(", main)
         self.assertIn("Channel.fromPath(entry_contract.mapped_xam, checkIfExists: true)", main)
         self.assertIn("Channel.fromPath(entry_contract.reference_index, checkIfExists: true)", main)
+        self.assertIn("workflow variant_calling {", main)
+        self.assertIn("boundedVariantCallingEntryParams(params)", main)
+        self.assertIn("runBoundedSmallVariantTask(", main)
+        self.assertIn("Channel.fromPath(entry_contract.aggregate_xam, checkIfExists: true)", main)
+        self.assertIn("Channel.fromPath(entry_contract.clair3_model, type: \"dir\", checkIfExists: true)", main)
         self.assertIn("// Compatibility entrypoint workflow\nworkflow {\n    WorkflowMain.initialise", main)
         self.assertNotIn("// entrypoint workflow\nWorkflowMain.initialise", main)
 
@@ -69,6 +74,30 @@ class BoundedEntryContractTest(unittest.TestCase):
         for token in forbidden:
             with self.subTest(token=token):
                 self.assertNotIn(token, sample_aggregation_entry)
+
+    def test_variant_calling_entry_does_not_launch_compatibility_graph_or_reports(self):
+        main = read("main.nf")
+        variant_entry = main.split("workflow variant_calling {", 1)[1].split(
+            "// Compatibility entrypoint workflow", 1
+        )[0]
+
+        forbidden = [
+            "ingress(",
+            "prepare_reference(",
+            "snp(",
+            "snp_stats(",
+            "output_snp(",
+            "refine_with_sv(",
+            "annotate_snp_vcf(",
+            "sv(",
+            "cnv_spectre(",
+            "str(",
+            "publish_artifact(",
+            "combine_metrics_json(",
+        ]
+        for token in forbidden:
+            with self.subTest(token=token):
+                self.assertNotIn(token, variant_entry)
 
     def test_bounded_entry_requires_controller_owned_task_params(self):
         helper = read("lib/bounded_entry.nf")
@@ -160,6 +189,60 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertIn('"coverage_state": coverage_state', module)
         self.assertIn('"rejected_low_coverage"', module)
 
+    def test_variant_calling_entry_requires_controller_owned_task_params(self):
+        helper = read("lib/bounded_entry.nf")
+        module = read("modules/local/bounded_variant_calling.nf")
+
+        for param in [
+            "task_family",
+            "task_key",
+            "task_dir",
+            "task_cache_dir",
+            "completion_marker_path",
+            "output_paths",
+            "sample_id",
+            "aggregate_xam",
+            "aggregate_xam_index",
+            "aggregate_xam_digest",
+            "reference_fasta",
+            "reference_index",
+            "reference_id",
+            "clair3_model",
+            "clair3_model_digest",
+            "variant_mode",
+            "variant_config_digest",
+            "container_digest",
+        ]:
+            with self.subTest(param=param):
+                self.assertIn(param, helper)
+
+        for output in [
+            '"snp_vcf"',
+            '"snp_vcf_index"',
+            '"snp_gvcf"',
+            '"snp_gvcf_index"',
+            '"variant_calling_manifest"',
+            '"variant_calling_provenance"',
+            '"qc_stats"',
+        ]:
+            with self.subTest(output=output):
+                self.assertIn(output, helper)
+
+        self.assertIn("wf-human-variation.bounded_variant_calling.v1", helper)
+        self.assertIn('"snp"', helper)
+        self.assertIn('"snp_gvcf"', helper)
+        self.assertIn("variant_mode 'snp_gvcf' requires variant_options.emit_gvcf=true", helper)
+        self.assertIn("target_bed and genotyping_vcf are mutually exclusive", helper)
+        self.assertIn("unsupported variant calling option(s)", helper)
+        self.assertIn('"marker_schema": "gnostikon.task_completion.v1"', module)
+        self.assertIn("run_clair3.sh", module)
+        self.assertIn('path "snp.gvcf.gz", optional: true', module)
+        self.assertIn('"tool": "clair3"', module)
+        self.assertIn('"phased_snp_vcf": {"requested": False', module)
+        self.assertIn('"haplotagged_contig_bams": {"requested": False', module)
+        self.assertNotIn("output_snp", module)
+        self.assertNotIn("makeReport", module)
+
     def test_mapping_entry_declares_supported_input_kinds_and_allowlisted_mapper_options(self):
         helper = read("lib/bounded_entry.nf")
 
@@ -197,14 +280,19 @@ class BoundedEntryContractTest(unittest.TestCase):
 
         self.assertIn("``-entry mapping``", docs)
         self.assertIn("``-entry sample_aggregation``", docs)
+        self.assertIn("``-entry variant_calling``", docs)
         self.assertIn("bounded mapping entry", docs)
         self.assertIn("bounded sample aggregation entry", docs)
+        self.assertIn("bounded small-variant entry", docs)
         self.assertIn("Task 15", docs)
         self.assertIn("Task 16", docs)
+        self.assertIn("Task 17", docs)
         self.assertIn("mapped_xam", docs)
         self.assertIn("coverage_state", docs)
+        self.assertIn("snp_vcf", docs)
         self.assertIn("mapping bounded entry", ledger)
         self.assertIn("sample aggregation bounded entry", ledger)
+        self.assertIn("small-variant bounded entry", ledger)
 
 
 if __name__ == "__main__":

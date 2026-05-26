@@ -21,6 +21,12 @@ The SNP route uses Clair3 components to create SNP/indel VCFs and optional
 GVCFs. It also contains phasing and haplotagging logic used by other
 subworkflows.
 
+Task 17 starts replacing this route with ``-entry variant_calling`` for bounded
+SNP execution. The bounded entry consumes one aggregate XAM, reference, Clair3
+model, and ``variant_mode``; writes only declared task-cache outputs; and
+records GVCF, phasing, haplotagging, SV refinement, and annotation as explicit
+product state rather than enabling them through global flags.
+
 Compatibility couplings:
 
 * The static graph can run SNP work for STR and phased output because

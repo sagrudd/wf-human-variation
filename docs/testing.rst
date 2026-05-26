@@ -99,6 +99,36 @@ Where Nextflow is available, run the generated params with
 executes only the bounded sample aggregation entry and emits machine-readable
 QC including ``coverage_state``.
 
+The Task 17 bounded small-variant entry can be dry-run without genomic data:
+
+.. code-block:: bash
+
+   gnostikon-workflow-control nextflow-task \
+     --workflow . \
+     --entry variant_calling \
+     --outdir /tmp/humvar-bounded \
+     --task-family variant_calling \
+     --key-field sample_id=smp_001 \
+     --key-field reference_id=ref_001 \
+     --key-field variant_mode=snp \
+     --key-field aggregate_xam_digest=sha256:aggregate \
+     --key-field clair3_model_digest=sha256:model \
+     --key-field variant_config_digest=sha256:variant \
+     --key-field container_digest=sha256:container \
+     --params-json variant-calling.params.json \
+     --output snp_vcf=variants/snp.vcf.gz \
+     --output snp_vcf_index=variants/snp.vcf.gz.tbi \
+     --output variant_calling_manifest=metadata/variant-calling-manifest.json \
+     --output variant_calling_provenance=metadata/variant-calling-provenance.json \
+     --output qc_stats=qc/variant-calling-qc.json \
+     --dry-run
+
+Where Nextflow and Clair3 are available, run the generated params with
+``nextflow run . -entry variant_calling -params-file <params-file>``. This
+executes only bounded SNP calling for one sample/reference/mode and records
+deferred phasing, haplotagging, SV refinement, and annotation as explicit
+manifest state.
+
 Broader smoke tests should cover combinations such as:
 
 * two ingressed sample folders with ``--sample_id alias_a=smp_a,alias_b=smp_b``;

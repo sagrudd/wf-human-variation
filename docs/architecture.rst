@@ -162,6 +162,15 @@ run IDs, basecallers, mosdepth outputs, ``coverage_state``, ``qc_stats``, and
 sample state when coverage is insufficient. It deliberately does not generate
 alignment HTML reports or expand the compatibility graph.
 
+The Task 17 ``variant_calling`` execution unit starts the variant family with a
+bounded small-variant entry. It is keyed by ``sample_id``, ``reference_id``,
+and ``variant_mode``, consumes the aggregate XAM and explicit Clair3 model
+chosen by the controller, emits SNP VCF/index plus manifest/provenance/QC JSON,
+and records optional GVCF, phasing, haplotagging, SV refinement, and annotation
+products as explicit manifest state. STR and Spectre prerequisites can request
+``haplotagged_contig_bams`` or ``snp_vcf`` without making SNP a user-requested
+family.
+
 Mutable ``params.wf[...]`` updates must not carry runtime state. Run IDs are
 kept as per-sample ``*.runids.txt`` artefacts in the compatibility graph and
 new bounded work must emit manifest/event writes through

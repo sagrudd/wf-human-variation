@@ -131,6 +131,70 @@ def _sampleAggregationOptions(def raw) {
     ]
 }
 
+def _variantCallingOptions(def raw) {
+    def options = raw instanceof Map ? raw : [:]
+    def allowed = [
+        "threads",
+        "chunk_num",
+        "chunk_size",
+        "min_qual",
+        "var_pct_full",
+        "ref_pct_full",
+        "snp_min_af",
+        "indel_min_af",
+        "min_contig_size",
+        "ctg_name",
+        "include_all_ctgs",
+        "emit_gvcf",
+        "target_bed",
+        "genotyping_vcf",
+    ] as Set
+    def unexpected = options.keySet().collect { it.toString() }.findAll { !allowed.contains(it) }.sort()
+    if (unexpected) {
+        throw new IllegalArgumentException("unsupported variant calling option(s): ${unexpected.join(', ')}")
+    }
+    def positiveInt = { name, defaultValue ->
+        def value = options.containsKey(name) ? options[name] : defaultValue
+        def number = value as Integer
+        if (number < 1) {
+            throw new IllegalArgumentException("variant calling option '${name}' must be >= 1")
+        }
+        return number
+    }
+    def nonNegativeInt = { name, defaultValue ->
+        def value = options.containsKey(name) ? options[name] : defaultValue
+        def number = value as Integer
+        if (number < 0) {
+            throw new IllegalArgumentException("variant calling option '${name}' must be >= 0")
+        }
+        return number
+    }
+    def nonNegativeNumber = { name, defaultValue ->
+        def value = options.containsKey(name) ? options[name] : defaultValue
+        def number = value as BigDecimal
+        if (number < 0) {
+            throw new IllegalArgumentException("variant calling option '${name}' must be >= 0")
+        }
+        return number
+    }
+    return [
+        threads: positiveInt("threads", 4),
+        chunk_num: nonNegativeInt("chunk_num", 0),
+        chunk_size: positiveInt("chunk_size", 5000000),
+        min_qual: nonNegativeNumber("min_qual", 2),
+        var_pct_full: nonNegativeNumber("var_pct_full", 0.7),
+        ref_pct_full: nonNegativeNumber("ref_pct_full", 0.1),
+        snp_min_af: nonNegativeNumber("snp_min_af", 0.08),
+        indel_min_af: nonNegativeNumber("indel_min_af", 0.15),
+        min_contig_size: nonNegativeInt("min_contig_size", 0),
+        ctg_name: (options.ctg_name ?: "").toString(),
+        include_all_ctgs: options.containsKey("include_all_ctgs") ? options.include_all_ctgs as Boolean : false,
+        emit_gvcf: options.containsKey("emit_gvcf") ? options.emit_gvcf as Boolean : false,
+        target_bed: (options.target_bed ?: "").toString(),
+        genotyping_vcf: (options.genotyping_vcf ?: "").toString(),
+    ]
+}
+
 def boundedEntryParams(params, String expectedFamily, String entryName) {
     def task_family = _requiredBoundedParam(params, "task_family")
     if (task_family != expectedFamily) {
@@ -246,6 +310,62 @@ def boundedSampleAggregationEntryParams(params) {
         output_format: output_format,
         output_index_format: output_format == "cram" ? "crai" : "bai",
         aggregation_options: _sampleAggregationOptions(params.aggregation_options),
+        output_paths: output_paths,
+    ]
+}
+
+def boundedVariantCallingEntryParams(params) {
+    def mode = _choice(
+        "variant_mode",
+        _requiredBoundedParam(params, "variant_mode"),
+        ["snp", "snp_gvcf"] as Set
+    )
+    def expected_outputs = [
+        "snp_vcf",
+        "snp_vcf_index",
+        "variant_calling_manifest",
+        "variant_calling_provenance",
+        "qc_stats",
+    ] as Set
+    if (mode == "snp_gvcf") {
+        expected_outputs += ["snp_gvcf", "snp_gvcf_index"] as Set
+    }
+    def output_paths = _requireOutputPaths(
+        _boundedOutputPaths(params.output_paths),
+        expected_outputs
+    )
+    def options = _variantCallingOptions(params.variant_options)
+    if (mode == "snp_gvcf" && !options.emit_gvcf) {
+        throw new IllegalArgumentException("variant_mode 'snp_gvcf' requires variant_options.emit_gvcf=true")
+    }
+    if (options.target_bed && options.genotyping_vcf) {
+        throw new IllegalArgumentException("variant calling options target_bed and genotyping_vcf are mutually exclusive")
+    }
+    return [
+        entry_schema: "wf-human-variation.bounded_variant_calling.v1",
+        entry_name: "variant_calling",
+        task_family: _choice(
+            "task_family",
+            _requiredBoundedParam(params, "task_family"),
+            ["variant_calling"] as Set
+        ),
+        task_key: _requiredBoundedParam(params, "task_key"),
+        task_dir: _requiredBoundedParam(params, "task_dir"),
+        task_cache_dir: _requiredBoundedParam(params, "task_cache_dir"),
+        completion_marker_path: _requiredBoundedParam(params, "completion_marker_path"),
+        sample_id: _requiredBoundedParam(params, "sample_id"),
+        aggregate_xam: _requiredBoundedParam(params, "aggregate_xam"),
+        aggregate_xam_index: _requiredBoundedParam(params, "aggregate_xam_index"),
+        aggregate_xam_digest: _requiredBoundedParam(params, "aggregate_xam_digest"),
+        reference_fasta: _requiredBoundedParam(params, "reference_fasta"),
+        reference_index: _requiredBoundedParam(params, "reference_index"),
+        reference_id: _requiredBoundedParam(params, "reference_id"),
+        clair3_model: _requiredBoundedParam(params, "clair3_model"),
+        clair3_model_digest: _requiredBoundedParam(params, "clair3_model_digest"),
+        variant_mode: mode,
+        variant_config_digest: _requiredBoundedParam(params, "variant_config_digest"),
+        container_digest: _requiredBoundedParam(params, "container_digest"),
+        variant_options: options,
         output_paths: output_paths,
     ]
 }

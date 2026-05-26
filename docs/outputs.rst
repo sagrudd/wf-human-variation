@@ -24,6 +24,8 @@ Variant outputs:
 
 * SNP VCF and index;
 * optional SNP GVCF and index;
+* bounded ``variant_calling`` manifest, provenance, and QC JSON for SNP/GVCF
+  task-cache outputs;
 * optional ClinVar-filtered SNP VCF;
 * SV VCF, index, and optional SNF;
 * CNV VCF and auxiliary files;
