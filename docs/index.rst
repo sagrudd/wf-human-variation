@@ -33,6 +33,7 @@ Contents
    quickstart
    architecture
    ingress
+   workflow-control
    subworkflows
    parameters
    outputs

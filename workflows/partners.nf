@@ -1,3 +1,7 @@
+include {
+    optionalBoundaryFile
+} from "../lib/optional_inputs.nf"
+
 // Combine VCFs for Geneyx
 process publish_geneyx {
     publishDir "${params.out_dir}/integrations/geneyx/", mode: 'copy', pattern: "*"
@@ -63,11 +67,13 @@ workflow partners {
         run_haplotagging
     main:
         combined_vcf_ch = Channel.empty()
-        // Placeholder channel enables to run the process regardless of the analysis been run.
+        // Transitional Nextflow boundary enables this process to keep its
+        // file-shaped inputs while the controller models absent analyses as
+        // typed optional state.
         placeholder_ch = bam
         | map{
             xam, xai, meta -> 
-            [meta, file("${projectDir}/data/OPTIONAL_FILE"), file("${projectDir}/data/OPTIONAL_FILE")]
+            [meta, optionalBoundaryFile(), optionalBoundaryFile()]
         }
 
         if (params.partner == "geneyx"){

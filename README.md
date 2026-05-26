@@ -36,3 +36,8 @@ workflow behavior, parameters, outputs, tests, or operational assumptions must
 update the Sphinx documentation in the same change set.
 
 This repository's documentation is scoped to `wf-human-variation` only.
+
+This `humvar3` branch is maintained alongside
+`../gnostikon-workflow-control` and `../poikilognostikon`. Runtime-controller
+changes, dynamic-ingress assumptions, optional-input semantics, and migration
+records should be updated in parallel across the affected repositories.

@@ -49,6 +49,11 @@ include {
 } from './lib/common.nf'
 
 include {
+    optionalBoundaryChannel;
+    optionalBoundaryFile;
+} from './lib/optional_inputs.nf'
+
+include {
     detect_basecall_model
 } from './lib/model.nf'
 
@@ -216,9 +221,9 @@ workflow {
     }
     // ************************************************************************
 
-    // Dummy optional file
-    // TODO should be a channel?
-    OPTIONAL = file("$projectDir/data/OPTIONAL_FILE")
+    // Transitional Nextflow boundary for absent optional inputs. Controller
+    // code must model optionality as typed state before reaching this layer.
+    OPTIONAL = optionalBoundaryFile()
 
     Pinguscript.ping_start(nextflow, workflow, params)
 
@@ -283,11 +288,11 @@ workflow {
         hap_check = haplocheck(bam_channel, ref_channel.collect(), mt_code)
         | ifEmpty{
             log.warn "Haplocheck failed to run. The workflow will continue, but will not output a contamination determination."
-            file("$projectDir/data/OPTIONAL_FILE")
+            optionalBoundaryFile()
         }
     } else {
-        // If haplocheck is not needed, use the predefined NV file.
-        hap_check = Channel.fromPath("$projectDir/data/OPTIONAL_FILE")
+        // If haplocheck is not needed, use the predefined boundary empty file.
+        hap_check = optionalBoundaryChannel()
     }
 
     // Set BED (and create the default all chrom BED if necessary)
@@ -318,7 +323,7 @@ workflow {
 
     }
     else {
-        coverage_bed = Channel.fromPath("$projectDir/data/OPTIONAL_FILE")
+        coverage_bed = optionalBoundaryChannel()
     }
 
     // mosdepth for depth traces -- passed into wf-snp :/
@@ -337,7 +342,7 @@ workflow {
         bed_summary = mosdepth_input.out.bed_summary
     }
     else {
-        bed_summary = Channel.fromPath("$projectDir/data/OPTIONAL_FILE")
+        bed_summary = optionalBoundaryChannel()
     }
 
     // if requested, run mosdepth again to generate coverage summary for `--coverage_bed`
@@ -346,7 +351,7 @@ workflow {
         coverage_bed_summary = mosdepth_coverage.out.bed_summary
     }
     else {
-        coverage_bed_summary = Channel.fromPath("$projectDir/data/OPTIONAL_FILE")
+        coverage_bed_summary = optionalBoundaryChannel()
     }
 
     // Determine if the coverage threshold is met to perform analysis.
@@ -663,8 +668,8 @@ workflow {
             snp_bed = bed
         }
         else {
-            // wf-human-snp uses OPTIONAL_FILE for empty bed for legacy reasons
-            snp_bed = Channel.fromPath("${projectDir}/data/OPTIONAL_FILE", checkIfExists: true)
+            // wf-human-snp still consumes an explicit boundary empty BED.
+            snp_bed = optionalBoundaryChannel()
         }
 
         if(params.clair3_model_path) {
@@ -737,7 +742,7 @@ workflow {
     } else {
         json_sv = Channel.empty()
         sv_vcf = Channel.empty()
-        sniffles_vcf = Channel.fromPath("${projectDir}/data/OPTIONAL_FILE", checkIfExists: true)
+        sniffles_vcf = optionalBoundaryChannel()
     }
 
     // Then, we finish working on the SNPs by refining with SVs and annotating them. This is needed to

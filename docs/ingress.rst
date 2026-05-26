@@ -20,6 +20,19 @@ specific behavior:
   reference;
 * CRAM/BAM compatibility handling for downstream tools.
 
+Shared Control Direction
+------------------------
+
+New shared runtime control code uses watched runtime events rather than static
+sample sheets as its primary interface. Inherited sample sheets are bootstrap
+input only: they are converted into ``sample_registered``, ``pod5_seen``,
+``bam_seen``, and optional ``channel_closed`` events by
+``gnostikon-workflow-control``.
+
+This workflow has not yet been refactored to consume those events directly.
+Until that happens, maintainers must keep the current launch-time ``--bam``
+contract working while avoiding new sample-sheet primary ingress paths.
+
 Identity Handling
 -----------------
 
@@ -34,6 +47,10 @@ for outputs. The alias can come from:
 
 Maintainers must not confuse this alias with durable biological identity. It is
 a label used by the current workflow and by output filenames.
+
+The shared controller model treats sample identity as authoritative for read
+artefacts. Dynamic POD5 and BAM arrivals must remain associated with a sample
+when they are projected into this workflow.
 
 Single-Sample Enforcement
 -------------------------

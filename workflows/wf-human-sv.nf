@@ -14,6 +14,9 @@ include {
     annotate_vcf as annotate_sv_vcf;
     haploblocks as haploblocks_sv
 } from '../modules/local/common.nf'
+include {
+    optionalBoundaryPath
+} from '../lib/optional_inputs.nf'
 
 workflow bam {
     take:
@@ -78,13 +81,9 @@ workflow runBenchmark {
         reference
         target
     main:
-        // for benchmarking we bundle a dataset in the SV container in $WFSV_EVAL_DATA_PATH
-        // rather than coupling that dataset to the workflow by referring to it here
-        //   in a value channel (or similar), we'll instead interpret use of dummy files
-        //   as a flag to load from the bundled dataset inside the process scope
-        // note we're not using the usual `optional_file` as this will cause an input collision error
-        //   instead we just reference some OPTIONAL_FILE.ext that we know don't exist
-        //   we can get away with this as the files will never be opened (so don't need to exist)
+        // Transitional Nextflow boundary: controller state should model absent
+        // truthsets explicitly; this workflow still maps absence to process-local
+        // boundary paths so the bundled SV benchmark resources are selected.
 
         // reconcile workflow target BED and benchmark truthset BED
         //   recall if user does not input a BED, one covering all genomic
@@ -93,7 +92,7 @@ workflow runBenchmark {
             truthset_bed = Channel.fromPath(params.sv_benchmark_bed, checkIfExists: true)
         }
         else {
-            truthset_bed = file("OPTIONAL_FILE.bed") // this will trigger process to use bundled benchmark bed
+            truthset_bed = optionalBoundaryPath("bed")
         }
         intersected = intersectBedWithTruthset(target, truthset_bed)
 
@@ -104,9 +103,7 @@ workflow runBenchmark {
             truthset_tbi = Channel.fromPath(params.sv_benchmark_vcf + '.tbi', checkIfExists: true)
         }
         else {
-            // we'll create some non-existent optional files to stage
-            // again this will trigger the process to use the bundled benchmark data
-            // we use channels here so we can concat them later
+            // Process-local boundary paths trigger bundled benchmark data.
             truthset_vcf = Channel.fromPath("OPTIONAL_FILE.vcf.gz", checkIfExists: false)
             truthset_tbi = Channel.fromPath("OPTIONAL_FILE.vcf.gz.tbi", checkIfExists: false)
         }

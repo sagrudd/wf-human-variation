@@ -24,6 +24,10 @@ include {
     haploblocks as haploblocks_snp;
     extract_not_haplotagged_contigs;
 } from '../modules/local/common.nf'
+include {
+    optionalBoundaryChannel;
+    optionalBoundaryFile;
+} from '../lib/optional_inputs.nf'
 
 // workflow module
 workflow snp {
@@ -43,7 +47,7 @@ workflow snp {
         if (params.vcf_fn){
             genotyping_ch = Channel.fromPath(params.vcf_fn, checkIfExists: true)
         } else {
-            genotyping_ch = Channel.fromPath("$projectDir/data/OPTIONAL_FILE", checkIfExists: true)
+            genotyping_ch = optionalBoundaryChannel()
         }
 
         // Run preliminaries to find contigs and generate regions to process in
@@ -61,7 +65,7 @@ workflow snp {
             split_beds = make_chunks.out.split_beds
         }
         else {
-            split_beds = Channel.from("$projectDir/data/OPTIONAL_FILE").collect()
+            split_beds = optionalBoundaryChannel().collect()
         }
         // Run the "pileup" caller on all chunks and collate results
         // > Step 1 
@@ -128,11 +132,11 @@ workflow snp {
             mangled.bams, mangled.candidates, mangled.ref, mangled.model, mangled.cmd_file)
 
         // merge and sort all files for all chunks for all contigs
-        // gvcf is optional, stuff an empty file in, so we have at least one
-        // item to flatten/collect and tthis stage can run.
+        // Transitional Nextflow boundary: GVCF absence is controller state
+        // upstream, but this static workflow still needs a file-shaped value.
         gvcfs = pileup_variants.out.pileup_gvcf_chunks
             .flatten()
-            .ifEmpty(file("$projectDir/data/OPTIONAL_FILE"))
+            .ifEmpty(optionalBoundaryFile())
             .collect()
         pileup_variants.out.pileup_gvcf_chunks.flatten().collect()
         aggregate_full_align_variants(
@@ -153,7 +157,7 @@ workflow snp {
         // note: the candidate beds aren't actually used by the program for ONT
         // > Step 7
         non_var_gvcf = aggregate_full_align_variants.out.non_var_gvcf
-            .ifEmpty(file("$projectDir/data/OPTIONAL_FILE"))
+            .ifEmpty(optionalBoundaryFile())
         merge_pileup_and_full_vars(
             contigs, ref,
             aggregate_pileup_variants.out.pileup_vcf,
@@ -224,7 +228,7 @@ workflow snp {
 
         // ...then collate final per-contig VCFs for whole genome results
         gvcfs = merge_pileup_and_full_vars.out.merged_gvcf.map{meta, gvcf -> gvcf}
-            .ifEmpty(file("$projectDir/data/OPTIONAL_FILE"))
+            .ifEmpty(optionalBoundaryFile())
         clair_final = aggregate_all_variants(
             ref,
             final_vcfs.groupTuple(by: 0),

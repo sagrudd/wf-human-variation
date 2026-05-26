@@ -10,6 +10,9 @@ include {
     mosdepth;
     annotate_vcf
 } from "../modules/local/common.nf"
+include {
+    optionalBoundaryChannel
+} from "../lib/optional_inputs.nf"
 
 workflow cnv {
     take:
@@ -27,7 +30,7 @@ workflow cnv {
         if (params.depth_intervals) {
             mosdepth_perbase = mosdepth.out.perbase
         } else {
-            mosdepth_perbase = Channel.from("$projectDir/data/OPTIONAL_FILE")
+            mosdepth_perbase = optionalBoundaryChannel()
         }
 
         mosdepth_all = mosdepth_stats.concat(mosdepth_summary).concat(mosdepth_perbase).collect()

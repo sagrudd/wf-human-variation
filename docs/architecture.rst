@@ -52,3 +52,19 @@ several places to satisfy Nextflow input shapes. Treat these as compatibility
 mechanisms, not as a design pattern to extend. New optional behavior should be
 represented with explicit channel branching, optional outputs, or documented
 schema state wherever possible.
+
+The shared controller package represents optional inputs as typed present or
+absent state. This workflow may still materialise a placeholder file at a
+Nextflow process boundary, but those placeholders must be routed through
+``lib/optional_inputs.nf`` where practical and documented as transitional
+boundary behavior. Do not pass ``OPTIONAL_FILE`` semantics back into controller
+events, manifests, or task-planning state.
+
+Dynamic Runtime Direction
+-------------------------
+
+The intended Poikilognostikon direction is a multi-sample runtime where sample,
+POD5, BAM, task, and channel-closure state can arrive dynamically. The current
+workflow does not yet implement that runtime model. Relevant controller
+contracts live in ``../gnostikon-workflow-control`` and are documented for this
+workflow in ``docs/workflow-control.rst``.

@@ -12,6 +12,8 @@ Required documentation updates:
 
 * architecture changes: update ``docs/architecture.rst``;
 * ingress changes: update ``docs/ingress.rst``;
+* shared controller or dynamic-runtime changes: update
+  ``docs/workflow-control.rst``;
 * analysis branch changes: update ``docs/subworkflows.rst``;
 * parameter changes: update ``docs/parameters.rst``;
 * output changes: update ``docs/outputs.rst``;
@@ -26,6 +28,8 @@ Reviewers should check:
 * whether global branch decisions changed;
 * whether any channel operation introduces a new whole-run barrier;
 * whether optional values are represented clearly;
+* whether matching changes are needed in ``../gnostikon-workflow-control`` and
+  ``../poikilognostikon``;
 * whether sample alias use remains consistent;
 * whether output filenames and schema entries match;
 * whether report content still matches generated artefacts;
@@ -37,6 +41,8 @@ Known Risk Areas
 * Hidden SNP activation for STR, phasing, and Spectre CNV.
 * QDNAseq format compatibility.
 * Placeholder optional files.
+* Drift between this workflow, ``gnostikon-workflow-control``, and
+  Poikilognostikon migration records.
 * Low-coverage behavior.
 * Basecaller model detection.
 * Annotation genome-build restrictions.
