@@ -63,6 +63,10 @@ deterministic key and path convention for future Nextflow task-family work.
 When a process is refactored into a bounded reusable task, update its process
 body, output declarations, documentation, and tests together.
 
+The Python controller is responsible for deciding whether to launch or refresh
+the task. A Nextflow entry should trust the bounded params file it receives and
+should not scan the project for additional work.
+
 Dynamic Scheduling
 ------------------
 

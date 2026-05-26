@@ -9,6 +9,11 @@ than becoming additional global branches.
 Family Table
 ------------
 
+Each family should become a controller-launched bounded Nextflow entry or a
+small wrapper invoked by the controller. The controller decides when to launch,
+skip, or force-refresh the family; the Nextflow entry only executes the bounded
+unit it was given.
+
 .. list-table::
    :header-rows: 1
 

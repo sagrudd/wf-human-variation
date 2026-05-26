@@ -35,6 +35,7 @@ Contents
    ingress
    workflow-control
    bounded-task-families
+   controller-execution
    idempotency
    subworkflows
    parameters

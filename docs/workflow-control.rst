@@ -45,11 +45,13 @@ this workflow:
 Current Workflow Boundary
 -------------------------
 
-This Nextflow workflow is still a launch-time static graph. It does not yet
-consume ``gnostikon.runtime_event.v1`` directly.
+The imported compatibility workflow is still a launch-time static graph. New
+``humvar3`` work must not extend that graph as the scheduler. The Python
+controller decides when to launch or refresh each bounded unit, and Nextflow
+executes the selected bounded entry.
 
-Until the workflow is refactored into dynamic task families, keep controller
-state and Nextflow boundary behavior separate:
+Until the imported workflow behavior is fully replaced by bounded entries, keep
+controller state and Nextflow boundary behavior separate:
 
 * do not introduce new controller semantics by naming a file
   ``OPTIONAL_FILE``;
@@ -58,6 +60,8 @@ state and Nextflow boundary behavior separate:
 * use ``lib/optional_inputs.nf`` when a process boundary still requires a
   concrete placeholder file;
 * document every remaining placeholder as transitional compatibility behavior.
+* implement new dynamic behavior as a bounded entry launched through
+  ``gnostikon-workflow-control nextflow-task``.
 
 Stable Identity
 ---------------

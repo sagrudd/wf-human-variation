@@ -41,4 +41,7 @@ focused on understanding, maintaining, testing, and improving this workflow.
   `reporting`. Do not add another top-level family without updating
   `docs/bounded-task-families.rst`, `lib/task_families.nf`, and the shared
   controller registry in `../gnostikon-workflow-control`.
+- Do not grow `main.nf` as the scheduler for new dynamic behavior. New dynamic
+  work should be a bounded Nextflow entry launched by the Python controller via
+  `gnostikon-workflow-control nextflow-task`.
 - Prefer small, reviewable changes with focused tests.

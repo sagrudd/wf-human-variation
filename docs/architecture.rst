@@ -4,7 +4,8 @@ Architecture
 Top-Level Flow
 --------------
 
-``main.nf`` performs the following broad steps:
+The imported compatibility entry point, ``main.nf``, performs the following
+broad steps:
 
 1. Validate selected parameter combinations.
 2. Prepare the reference.
@@ -16,7 +17,9 @@ Top-Level Flow
 8. Combine metrics, generate reports, package browser outputs, and publish
    selected artefacts.
 
-This is one launch-time graph. It is not a dynamic runtime scheduler.
+This is one launch-time graph. It is not the target dynamic runtime scheduler.
+New ``humvar3`` work should be implemented as controller-launched bounded
+entries, as described in ``docs/controller-execution.rst``.
 
 Global Branch Decisions
 -----------------------
@@ -79,6 +82,7 @@ Dynamic Runtime Direction
 
 The intended Poikilognostikon direction is a multi-sample runtime where sample,
 POD5, BAM, task, and channel-closure state can arrive dynamically. The current
-workflow does not yet implement that runtime model. Relevant controller
-contracts live in ``../gnostikon-workflow-control`` and are documented for this
-workflow in ``docs/workflow-control.rst``.
+workflow still contains the imported compatibility graph, but new bounded work
+must use Nextflow only for task execution. Relevant controller contracts live in
+``../gnostikon-workflow-control`` and are documented for this workflow in
+``docs/workflow-control.rst`` and ``docs/controller-execution.rst``.
