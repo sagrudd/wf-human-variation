@@ -175,18 +175,19 @@ process eval_downsampling {
     cpus 1
     memory 4.GB
     input:
-        path mosdepth_summary
-        path bed
+        tuple val(xam_meta), path(mosdepth_summary), path(bed)
     output:
-        path "ratio.txt", emit: downsampling_ratio
+        tuple val(xam_meta.sample_id), val(xam_meta), env(to_downsample), env(downsampling_rate), emit: downsampling_ratio
     script:
         def with_bed = bed.name != 'OPTIONAL_FILE' ? "--bed ${bed}" : ""
         """
-        workflow-glue downsampling_ratio \
+        result=\$(workflow-glue downsampling_ratio \
             --downsample_depth ${params.downsample_coverage_target} \
             --margin ${params.downsample_coverage_margin} \
             --summary ${mosdepth_summary} \
-            ${with_bed} > ratio.txt
+            ${with_bed})
+        export to_downsample=\$(echo "\${result}" | cut -d, -f1)
+        export downsampling_rate=\$(echo "\${result}" | cut -d, -f2)
         """
 }
 
@@ -195,10 +196,8 @@ process downsampling {
     cpus 4
     memory 4.GB
     input:
-        tuple path(xam), path(xam_idx), val(xam_meta)
+        tuple path(xam), path(xam_idx), val(xam_meta), val(to_downsample), val(downsampling_rate), val(xam_fmt), val(xai_fmt)
         tuple path(ref), path(ref_idx), path(ref_cache), env(REF_PATH)
-        tuple val(to_downsample), val(downsampling_rate)
-        tuple val(xam_fmt), val(xai_fmt)
     output:
         tuple path("downsampled.${xam_fmt}"), path("downsampled.${xam_fmt}.${xai_fmt}"), val(xam_meta), emit: xam, optional: true
     script:
@@ -248,6 +247,31 @@ process get_region_coverage {
     '''
 }
 
+process evaluateCoveragePass {
+    label "wf_common"
+    cpus 1
+    memory 1.GB
+
+    input:
+        tuple val(xam_meta), path(mosdepth_summary), path(region_bed)
+        val require_regions
+        val min_coverage
+
+    output:
+        tuple val(xam_meta.sample_id), env(pass), env(mean), env(region_count), emit: coverage_state
+
+    script:
+        """
+        export mean=\$(awk -F '\\t' '\$1 == "total_region" {print \$4; found=1} END {if (!found) print 0}' ${mosdepth_summary})
+        if [ "${require_regions}" = "true" ]; then
+            export region_count=\$(zcat -f ${region_bed} | wc -l | awk '{print \$1}')
+        else
+            export region_count=1
+        fi
+        export pass=\$(awk -v mean="\${mean}" -v min="${min_coverage}" -v regions="\${region_count}" 'BEGIN {print (mean > min && regions > 0) ? "true" : "false"}')
+        """
+}
+
 
 process rejectedLowCoverage {
     label "wf_common"
@@ -269,7 +293,7 @@ process rejectedLowCoverage {
           '  "state": "rejected_low_coverage",' \\
           '  "evidence": "${low_coverage_evidence}",' \\
           '  "bam_min_coverage": ${params.bam_min_coverage},' \\
-          '  "workflow_status": "failed"' \\
+          '  "workflow_status": "sample_rejected"' \\
           '}' > "${xam_meta.alias}.rejected_low_coverage.state.json"
         mkdir -p "${params.out_dir}"
         cp "${xam_meta.alias}.rejected_low_coverage.state.json" "${params.out_dir}/"
@@ -278,8 +302,7 @@ process rejectedLowCoverage {
         echo "Display alias: ${xam_meta.alias}" >&2
         echo "Low coverage evidence: ${low_coverage_evidence}" >&2
         echo "Coverage is below --bam_min_coverage=${params.bam_min_coverage}." >&2
-        echo "Workflow status is failed by design for rejected_low_coverage." >&2
-        exit 1
+        echo "Sample is rejected but the workflow process completed so unrelated samples can continue." >&2
         """
 }
 

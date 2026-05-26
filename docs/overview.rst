@@ -37,7 +37,10 @@ Important Constraints
 ---------------------
 
 * The workflow is currently structured around global feature flags.
-* Effective operation is single-sample, despite generic ingress machinery.
+* Effective operation is being moved to per-sample state; ingress,
+  downsampling readiness, coverage pass/fail, and low-coverage rejection now
+  carry sample-scoped state, while later family-level graph barriers remain
+  compatibility debt.
 * Sample aliases are used heavily in paths, but stable controller
   identity is ``sample_id``.
 * Some optional inputs are represented by placeholder files.

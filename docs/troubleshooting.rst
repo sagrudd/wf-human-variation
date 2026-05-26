@@ -10,17 +10,18 @@ Check:
 * whether the extension is BAM, CRAM, or uBAM-compatible;
 * whether a MinKNOW-style experiment directory also needs ``--sample_name``;
 * whether files appear at mixed directory depths;
-* whether only one sample is being ingressed.
+* whether every ingressed record has a stable ``sample_id`` or an explicit
+  ``--sample_id alias=sample_id`` mapping.
 
 Coverage Is Too Low
 -------------------
 
 The workflow uses ``--bam_min_coverage`` to decide whether downstream analysis
 should proceed. Low coverage is an explicit terminal sample condition:
-``rejected_low_coverage``. Downstream analysis is skipped, and the workflow
-exits with a non-zero status so orchestration layers do not mistake the result
-for a successful analysis. Poikilognostikon should present low-coverage state
-from the shared manifest, not from a workflow-generated HTML report.
+``rejected_low_coverage``. Downstream analysis is skipped for that sample, and
+unrelated samples can continue through the maintained rejection boundary.
+Poikilognostikon should present low-coverage state from the shared manifest,
+not from a workflow-generated HTML report.
 
 Reference Does Not Match Input
 ------------------------------

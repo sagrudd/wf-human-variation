@@ -145,7 +145,7 @@
                 "sample_name": {
                     "type": "string",
                     "description": "Sample name to be displayed in workflow outputs.",
-                    "help_text": "When providing a MinKNOW experiment folder, the sample name must match one of the sample sub-folders in the input folder to specify which sample to analyse.",
+                    "help_text": "When providing a MinKNOW experiment folder, this is a selector for a matching sample sub-folder. Omit it when all compatible folders should be ingressed.",
                     "overrides": {
                         "minknow": {
                             "hint": "sampleId",
@@ -168,14 +168,14 @@
                 "sample_id": {
                     "type": "string",
                     "description": "Stable sample identity supplied by the workflow controller.",
-                    "help_text": "Required. This is the durable controller identity for the sample. It must not be derived from filenames or display aliases."
+                    "help_text": "Required. This is durable controller identity and must not be derived from filenames or display aliases. For transitional multi-record launches, provide alias=sample_id pairs separated by commas."
                 },
                 "bam": {
                     "title": "Input: BAM file",
                     "type": "string",
                     "format": "path",
-                    "description": "BAM or unaligned BAM (uBAM) files for the sample to use in the analysis.",
-                    "help_text": "This accepts one of three cases: (i) the path to a single BAM file; (ii) the path to a folder containing BAM files; (iii) the path to a MinKNOW experiment folder containing sub-folders for each sample in the experiment. For cases (i) and (ii) an optional sample name can be supplied with `--sample_name`. For case (iii), a sample name must be provided to select the sample for analysis from the experiment folder.",
+                    "description": "BAM, CRAM, or unaligned BAM (uBAM) files to use in the analysis.",
+                    "help_text": "This accepts one of three cases: (i) the path to a single BAM file; (ii) the path to a folder containing BAM/CRAM/uBAM files; (iii) the path to a MinKNOW experiment folder containing sub-folders for samples in the experiment. `--sample_name` is an optional selector. Multi-record launches must provide stable identity for each record.",
                     "overrides": {
                         "minknow": {
                             "hint": "bamOutputDirectory",
@@ -278,7 +278,7 @@
                     "hidden": true,
                     "default": false,
                     "description": "Run contamination check",
-                    "help_text": "If set to true, the workflow will try to estimate the contamination level of the sample using [haplocheck](https://mitoverse.readthedocs.io/haplocheck/haplocheck/) on the mitogenome."
+                    "help_text": "If set to true, the workflow will try to estimate sample contamination level using [haplocheck](https://mitoverse.readthedocs.io/haplocheck/haplocheck/) on the mitogenome."
                 },
                 "mitogenome": {
                     "type": "string",
@@ -548,7 +548,7 @@
                     "title": "Sample sex",
                     "type": "string",
                     "description": "Sex (XX or XY) to be passed to Straglr-genotype.",
-                    "help_text": "The sex determines how many calls will be obtained for all repeats on chrX. If not specified, the workflow will naively attempt to infer whether the sample carries XX or XY based on relative coverage of the allosomes.",
+                    "help_text": "Sex determines how many calls will be obtained for all repeats on chrX. If not specified, the workflow will naively attempt to infer XX or XY state from relative coverage of the allosomes.",
                     "enum": [
                         "XY",
                         "XX"
@@ -585,7 +585,7 @@
                     "type": "boolean",
                     "default": false,
                     "description": "Enable to output a gVCF file in addition to the VCF outputs (experimental).",
-                    "help_text": "By default the the workflow outputs a VCF file containing only records where a variant has been detected. Enabling this option will output additionally a gVCF with records spanning all reference positions regardless of whether a variant was detected in the sample."
+                    "help_text": "By default the workflow outputs a VCF file containing only records where a variant has been detected. Enabling this option will additionally output a gVCF with records spanning all reference positions regardless of whether a variant was detected."
                 },
                 "base_err": {
                     "type": "number",

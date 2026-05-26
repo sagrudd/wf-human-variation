@@ -93,6 +93,60 @@ class SampleIdentityContractTest(unittest.TestCase):
         self.assertIn('${xam_meta.alias}.wf_snp.vcf.gz', snp)
         self.assertIn('${xam_meta.alias}.wf_sv.vcf.gz', sv)
 
+    def test_ingress_no_longer_hard_stops_on_multiple_records(self):
+        ingress_wrapper = read("lib/_ingress.nf")
+
+        self.assertNotIn("Too many samples found", ingress_wrapper)
+        self.assertNotIn("ingressed_bam.count().subscribe", ingress_wrapper)
+
+    def test_sample_id_mapping_supports_multi_record_launches(self):
+        stable_identity = read("lib/stable_identity.nf")
+        docs = read("docs/ingress.rst")
+
+        self.assertIn("def parseSampleIdMap", stable_identity)
+        self.assertIn("sampleIdMap[meta.alias] ?: sampleIdMap[meta.barcode]", stable_identity)
+        self.assertIn("No --sample_id mapping found for alias", stable_identity)
+        self.assertIn("--sample_id alias_a=smp_a,alias_b=smp_b", docs)
+
+    def test_downsampling_and_coverage_use_keyed_sample_state(self):
+        main = read("main.nf")
+        common = read("modules/local/common.nf")
+
+        self.assertIn("tuple val(xam_meta.sample_id), val(xam_meta), env(to_downsample)", common)
+        self.assertIn(".join(ratio.subset, by: 0)", main)
+        self.assertIn(".join(ratio.ready, by: 0)", main)
+        self.assertIn(".join(ready_bam_keyed, by: 0, remainder: true)", main)
+        self.assertIn(".combine(pass_bam_keyed, by: 0)", main)
+        self.assertNotIn(".combine(pass_bam_channel)", main)
+        self.assertNotIn(".combine(ratio.subset)", main)
+        self.assertNotIn(".combine(ratio.ready)", main)
+
+    def test_low_coverage_rejection_is_sample_state_not_workflow_failure(self):
+        common = read("modules/local/common.nf")
+        process_body = common.split("process rejectedLowCoverage", 1)[1].split(
+            "process getVersions", 1
+        )[0]
+
+        self.assertIn('"state": "rejected_low_coverage"', process_body)
+        self.assertIn('"workflow_status": "sample_rejected"', process_body)
+        self.assertIn("unrelated samples can continue", process_body)
+        self.assertNotIn("exit 1", process_body)
+
+    def test_runtime_docs_do_not_preserve_single_sample_enforcement(self):
+        docs = "\n".join(
+            read(path)
+            for path in [
+                "docs/ingress.rst",
+                "docs/overview.rst",
+                "docs/troubleshooting.rst",
+                "docs/testing.rst",
+            ]
+        ).lower()
+
+        self.assertNotIn("single-sample enforcement", docs)
+        self.assertNotIn("only one sample is being ingressed", docs)
+        self.assertNotIn("effective operation is single-sample", docs)
+
 
 if __name__ == "__main__":
     unittest.main()

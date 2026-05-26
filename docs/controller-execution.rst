@@ -31,9 +31,9 @@ states at the same time. For example, sample A may have an active
 may already be running ``variant_calling``. This is normal runtime state, not a
 partial failure.
 
-Bounded entries should consume only the sample, reference, artefact, and task
-key they were launched with. They must not derive readiness from a project-wide
-phase such as "all samples basecalled" or "all samples mapped".
+Bounded entries should consume only their launched sample, reference, artefact,
+and task key. They must not derive readiness from a project-wide phase such as
+"all samples basecalled" or "all samples mapped".
 
 Launch Contract
 ---------------

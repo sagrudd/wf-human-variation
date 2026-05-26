@@ -34,7 +34,10 @@ Compatibility Debt
 
 The imported ``main.nf`` compatibility graph still contains whole-run joins for
 legacy publication, annotation, and packaging. Do not copy those patterns into
-bounded entries. Retire them as the relevant family is moved behind
+bounded entries. The launch ingress, downsampling-readiness, coverage
+pass/fail, and low-coverage rejection paths have been converted to
+sample-scoped state. Retire the remaining barriers as the relevant family is
+moved behind
 controller-led execution:
 
 * ``sample_aggregation`` owns per-sample/per-reference aggregate refresh;

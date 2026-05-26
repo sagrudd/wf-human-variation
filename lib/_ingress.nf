@@ -112,17 +112,6 @@ workflow ingress {
             "keep_unaligned": true,
             "stats": false,
         ])
-        // Check that we have a single BAM/folder with BAMs in it.
-        // by counting how many entries are in the channel.
-        // If there are more than 1, then throw an error.
-        ingressed_bam
-            .count()
-            .subscribe { int n_samples -> 
-                if (n_samples > 1){
-                    error "Too many samples found: (${n_samples}) in ${bam_file_fp}.\nPlease, ensure you provide a single folder with all the BAM files for a single individual."
-                }
-            }
-
         // Prepare reference channel
         check_ref = ref_file.combine(ref_idx_file) // don't wait for cram_cache to perform check_for_alignment
         

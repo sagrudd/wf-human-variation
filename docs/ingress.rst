@@ -7,14 +7,16 @@ Current Input Model
 The workflow accepts input through ``--bam``. The value can be:
 
 * a single BAM, CRAM, or uBAM;
-* a directory of BAM/CRAM/uBAM files for one sample;
-* a MinKNOW-style experiment directory when paired with a sample selector.
+* a directory of BAM/CRAM/uBAM files for one or more compatible sample
+  folders;
+* a MinKNOW-style experiment directory, optionally paired with a sample
+  selector when only one folder should be selected.
 
 ``lib/_ingress.nf`` wraps ``lib/ingress.nf`` and applies human-variation
 specific behavior:
 
 * generic XAM ingress;
-* single-sample enforcement;
+* stable identity projection;
 * reference-header checks;
 * realignment when the input is unaligned or does not match the requested
   reference;
@@ -36,7 +38,7 @@ contract working while avoiding new sample-sheet primary ingress paths.
 Identity Handling
 -----------------
 
-The current workflow frequently uses ``meta.alias`` as the sample-facing label
+The current workflow frequently uses ``meta.alias`` as a sample-facing label
 for outputs. It is not durable identity. The alias can come from:
 
 * ``--sample_name``;
@@ -61,22 +63,40 @@ metrics metadata use ``sample_id``. File names and current publication paths
 continue to use ``meta.alias`` until the output contract is deliberately
 revised.
 
-Single-Sample Enforcement
--------------------------
+Multi-Sample Boundary
+---------------------
 
-The human-variation wrapper counts ingressed channel entries and errors when
-more than one sample is found. This is deliberate current behavior. Do not
-remove it without also redesigning downstream output naming, publication
-artefacts, channel grouping, and tests.
+The human-variation wrapper no longer rejects a launch only because multiple
+ingressed records are present. Each ingressed record must still be projected
+onto stable identity before it reaches analysis branches. A scalar
+``--sample_id`` is suitable only for a single ingressed record. Multi-record
+launches must provide identity from the controller/bootstrap layer, or use the
+transitional mapping form:
+
+.. code-block:: bash
+
+   --sample_id alias_a=smp_a,alias_b=smp_b
+
+The mapping key is matched against the current ingress alias or barcode. The
+mapped value becomes ``meta.sample_id``. ``meta.alias`` remains the output label
+for current compatibility.
+
+Low-coverage rejection is now per sample. A rejected sample writes
+``rejected_low_coverage`` state and is removed from downstream BAM analysis
+without causing unrelated samples to fail at the rejection boundary.
 
 Maintenance Risks
 -----------------
 
-* Experiment directory handling can require sample names or sample sheets.
+* ``--sample_name`` remains a selector; omit it when all compatible folders in
+  an experiment directory should be ingressed.
+* Experiment directory handling can still involve inherited sample-sheet
+  bootstrap logic.
 * Directory-depth validation can reject layouts before downstream validation.
 * Missing sample-sheet rows and conflicting barcode/alias folders are handled
   during channel construction.
 * Read statistics also feed later model detection and metrics generation.
 
-Any ingress change should include tests for single file, single directory,
-barcode directory, CRAM, uBAM, and reference mismatch behavior.
+Any ingress change should include tests for single file, multiple sample
+folders, barcode directory, CRAM, uBAM, reference mismatch behavior, duplicate
+artefacts, and per-sample rejection.

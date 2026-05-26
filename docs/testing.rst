@@ -13,8 +13,9 @@ Tests should protect:
 * branch activation and hidden couplings;
 * output filenames and optionality;
 * machine-readable publication/export outputs;
-* failure behavior for invalid inputs and low coverage, including the
-  ``rejected_low_coverage`` non-zero workflow status.
+* failure behavior for invalid inputs and low coverage, including per-sample
+  ``rejected_low_coverage`` state that does not block unrelated samples at the
+  maintained rejection boundary.
 
 Local Smoke Test
 ----------------
@@ -33,6 +34,7 @@ When suitable data is available, run a minimal smoke test:
 
 Broader smoke tests should cover combinations such as:
 
+* two ingressed sample folders with ``--sample_id alias_a=smp_a,alias_b=smp_b``;
 * ``--snp --sv``;
 * ``--cnv`` with Spectre;
 * ``--cnv --use_qdnaseq``;

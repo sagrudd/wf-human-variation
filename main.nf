@@ -25,6 +25,7 @@ include {
     getAllChromosomesBed;
     publish_artifact;
     get_region_coverage;
+    evaluateCoveragePass;
     rejectedLowCoverage;
     getVersions;
     validateReferenceCompatibility;
@@ -372,31 +373,48 @@ workflow {
 
     // Check and perform downsampling if needed.
     if (params.downsample_coverage){
-        // Define reduction rate
-        eval_downsampling(
-            mosdepth_input.out.summary,
-            params.bed ? mosdepth_stats.map{it[1]} : OPTIONAL
-        )
+        // Define per-sample reduction rates from the sample's mosdepth output.
+        downsampling_summary = mosdepth_input.out.summary
+            | map { summary -> [summary.name.replace(".mosdepth.summary.txt", ""), summary] }
+        downsampling_bams = pass_bam_channel
+            | map { xam, xai, meta -> [meta.alias, xam, xai, meta] }
+        if (params.bed) {
+            downsampling_regions = mosdepth_stats
+                | map { meta, regions, dists, thresholds -> [meta.alias, regions] }
+            downsampling_eval_input = downsampling_summary
+                .join(downsampling_bams, by: 0)
+                .join(downsampling_regions, by: 0)
+                .map { alias, summary, xam, xai, meta, regions -> [meta, summary, regions] }
+        } else {
+            downsampling_eval_input = downsampling_summary
+                .join(downsampling_bams, by: 0)
+                .map { alias, summary, xam, xai, meta -> [meta, summary, OPTIONAL] }
+        }
+        eval_downsampling(downsampling_eval_input)
         eval_downsampling.out.downsampling_ratio
-            .splitCsv()
             .branch{
-                subset: it[0] == 'true'
-                ready: it[0] == 'false'
+                sample_id, meta, to_downsample, downsampling_rate ->
+                subset: to_downsample == 'true'
+                ready: to_downsample == 'false'
             }
             .set{ratio}
 
         // Define extension based on whether we are asking for CNV. If so,
         // use BAM, otherwise use what the user wants.
-        downsampling_ext = pass_bam_channel.map{
-            xam, xai, meta -> 
-            convert_cram_to_bam ? ['bam', 'bai'] : desired_xam_ext
-        }
-        downsampling(pass_bam_channel, ref_channel, ratio.subset, downsampling_ext)
+        downsampling_input = pass_bam_channel
+            .map { xam, xai, meta -> [meta.sample_id, xam, xai, meta] }
+            .join(ratio.subset, by: 0)
+            .map { sample_id, xam, xai, meta, ratio_meta, to_downsample, downsampling_rate ->
+                def downsampling_ext = convert_cram_to_bam ? ['bam', 'bai'] : desired_xam_ext
+                [xam, xai, meta, to_downsample, downsampling_rate, downsampling_ext[0], downsampling_ext[1]]
+            }
+        downsampling(downsampling_input, ref_channel)
 
         // prepare ready files
-        ratio.ready
-            .combine(pass_bam_channel)
-            .map{ready, ratio, xam, xai, meta -> [xam, xai, meta]}
+        pass_bam_channel
+            .map { xam, xai, meta -> [meta.sample_id, xam, xai, meta] }
+            .join(ratio.ready, by: 0)
+            .map{ sample_id, xam, xai, meta, ratio_meta, to_downsample, downsampling_rate -> [xam, xai, meta]}
             .branch{
                 xam, xai, meta ->
                 cram: xam.name.endsWith('.cram')
@@ -414,23 +432,23 @@ workflow {
         | mix(branched_bam_channel.bam)
 
 
-        // Join allowing a remainder, so that only one for each is retained.
-        // we drop all null, and due to the structure the joined channel can only be:
-        // - [meta, null, xam, xai], or
-        // - [meta, xam, xai, null]
-        // Using it - null removes the inputs from the wrong channel, retaining 
-        // Before merging properly, we first check that the merged channel size is not malformed
-        downsampling.out.xam
-            .join(ready_bam_channel, by:2, remainder: true)
-            .filter{it.size() > 4}
+        // Merge downsampled and ready BAMs by stable sample identity.
+        downsampled_bam_keyed = downsampling.out.xam
+            .map { xam, xai, meta -> [meta.sample_id, xam, xai, meta] }
+        ready_bam_keyed = ready_bam_channel
+            .map { xam, xai, meta -> [meta.sample_id, xam, xai, meta] }
+        downsampled_bam_keyed
+            .join(ready_bam_keyed, by: 0, remainder: true)
+            .filter{ row -> row[1] != null && row[4] != null }
             .subscribe{
                 throw new Exception(colors.red + "Unexpected channel size when merging." + colors.reset) 
             }
         // If this passes, then we can create the proper channel.
-        downsampling.out.xam
-            .join(ready_bam_channel, by:2, remainder: true)
-            .map{it - null}
-            .map{meta, xam, xai -> [xam, xai, meta]}
+        downsampled_bam_keyed
+            .join(ready_bam_keyed, by: 0, remainder: true)
+            .map { row ->
+                row[1] != null ? [row[1], row[2], row[3]] : [row[4], row[5], row[6]]
+            }
             .set{pass_bam_channel}
 
         // Prepare the output files for mosdepth.
@@ -442,39 +460,45 @@ workflow {
         // the original mosdepth file is merged with the empty ready channel, leaving 
         // the correct file to output. Otherwise, the reverse happens and it emits 
         // the original mosdepth files. 
-        mosdepth_summary = 
+        ratio_subset_alias = ratio.subset
+            .map { sample_id, meta, to_downsample, downsampling_rate -> [meta.alias, true] }
+        ratio_ready_alias = ratio.ready
+            .map { sample_id, meta, to_downsample, downsampling_rate -> [meta.alias, true] }
+
+        mosdepth_summary =
             mosdepth_downsampled.out.summary
-                .combine(ratio.subset)
-                .map{it[0]}
-                .join(
+                .map { summary -> [summary.name.replace(".mosdepth.summary.txt", ""), summary] }
+                .join(ratio_subset_alias, by: 0)
+                .map { alias, summary, marker -> summary }
+                .mix(
                     mosdepth_input.out.summary
-                        .combine(ratio.ready)
-                        .map{it[0]}
-                    , remainder: true
-                    )
-        mosdepth_stats = 
+                        .map { summary -> [summary.name.replace(".mosdepth.summary.txt", ""), summary] }
+                        .join(ratio_ready_alias, by: 0)
+                        .map { alias, summary, marker -> summary }
+                )
+        mosdepth_stats =
             mosdepth_downsampled.out.mosdepth_tuple
-                .combine(ratio.subset)
-                .map{[it[0], it[1], it[2], it[3]]}
-                .join(
+                .map { meta, regions, dists, thresholds -> [meta.alias, meta, regions, dists, thresholds] }
+                .join(ratio_subset_alias, by: 0)
+                .map { alias, meta, regions, dists, thresholds, marker -> [meta, regions, dists, thresholds] }
+                .mix(
                     mosdepth_input.out.mosdepth_tuple
-                        .combine(ratio.ready)
-                        .map{[it[0], it[1], it[2], it[3]]}
-                    , remainder: true
-                    )
-                .map{it - null}
+                        .map { meta, regions, dists, thresholds -> [meta.alias, meta, regions, dists, thresholds] }
+                        .join(ratio_ready_alias, by: 0)
+                        .map { alias, meta, regions, dists, thresholds, marker -> [meta, regions, dists, thresholds] }
+                )
         if (params.depth_intervals){
-            mosdepth_perbase = 
+            mosdepth_perbase =
                 mosdepth_downsampled.out.perbase
-                    .combine(ratio.subset)
-                    .map{it[0]}
-                    .join(
+                    .map { perbase -> [perbase.name.replace(".per-base.bedgraph.gz", ""), perbase] }
+                    .join(ratio_subset_alias, by: 0)
+                    .map { alias, perbase, marker -> perbase }
+                    .mix(
                         mosdepth_input.out.perbase
-                            .combine(ratio.ready)
-                            .map{it[0]}
-                        , remainder: true
-                        )
-                    .map{it - null}
+                            .map { perbase -> [perbase.name.replace(".per-base.bedgraph.gz", ""), perbase] }
+                            .join(ratio_ready_alias, by: 0)
+                            .map { alias, perbase, marker -> perbase }
+                    )
         } else {
             mosdepth_perbase = Channel.empty()
         }
@@ -514,55 +538,37 @@ workflow {
         }
     )
 
-    // Define depth_pass channel
+    // Define per-sample depth_pass channel.
     if (params.bam_min_coverage > 0){
         // If bam_min_coverage is > 0, then check the coverage
         if (params.bed){
-            // Count the number of lines in the file to ensure that
-            // there are intervals with enough coverage for downstream
-            // analyses.
-            n_lines = mosdepth_stats
-            | map{ it[1] }
-            | countLines()
-
-            // Ensure that the data have enough region coverage
-            // and intervals in the output coverage BED file.
-            // First, load and split the summary file, keeping only
-            // the `total_region` value (`total_region` and `total`
-            // are identical in absence of a BED file).
-            depth_pass = mosdepth_summary
-                | splitCsv(sep: "\t", header: true)
-                | filter{it -> it.chrom == "total_region"}
-                // Extract the mean coverage as floating value
-                | map{
-                    it -> 
-                    float mean = it.mean as float
-                    [mean]}
-                // Add line number in the coverage BED file
-                | combine(n_lines)
-                // Check if the coverage is appropriate
-                | map {
-                    mean, n_lines_v -> 
-                    int n_lines = n_lines_v as int
-                    boolean pass = mean > params.bam_min_coverage && n_lines > 0
-                    [pass, mean]
-                }
+            summary_for_coverage = mosdepth_summary
+                | map { summary -> [summary.name.replace(".mosdepth.summary.txt", ""), summary] }
+            bam_for_coverage = pass_bam_channel
+                | map { bam, bai, meta -> [meta.alias, bam, bai, meta] }
+            regions_for_coverage = mosdepth_stats
+                | map { meta, regions, dists, thresholds -> [meta.alias, regions] }
+            coverage_eval_input = summary_for_coverage
+                .join(bam_for_coverage, by: 0)
+                .join(regions_for_coverage, by: 0)
+                .map { alias, summary, bam, bai, meta, regions -> [meta, summary, regions] }
+            depth_pass = evaluateCoveragePass(coverage_eval_input, true, params.bam_min_coverage).coverage_state
 
         // Without a BED, use summary values for the region
         } else {
-            depth_pass = mosdepth_summary
-                | splitCsv(sep: "\t", header: true)
-                | filter{it -> it.chrom == "total_region"}
-                | map{
-                    it -> 
-                    float mean = it.mean as float
-                    boolean pass = mean > params.bam_min_coverage
-                    [pass, mean]}
+            summary_for_coverage = mosdepth_summary
+                | map { summary -> [summary.name.replace(".mosdepth.summary.txt", ""), summary] }
+            bam_for_coverage = pass_bam_channel
+                | map { bam, bai, meta -> [meta.alias, bam, bai, meta] }
+            coverage_eval_input = summary_for_coverage
+                .join(bam_for_coverage, by: 0)
+                .map { alias, summary, bam, bai, meta -> [meta, summary, OPTIONAL] }
+            depth_pass = evaluateCoveragePass(coverage_eval_input, false, params.bam_min_coverage).coverage_state
         }
     } else {
         // Otherwise, set all BAM to pass.
         depth_pass = bam_channel
-            | map{ it -> [true, null] }
+            | map{ bam, bai, meta -> [meta.sample_id, 'true', null, 1] }
     }
 
 
@@ -570,11 +576,13 @@ workflow {
     // This will use the reads after the downsampling when requested.
     // Currently, it works using only the BAM coverage, but in the
     // future will allow to easily implement additional thresholds.
+    pass_bam_keyed = pass_bam_channel
+        | map { bam, bai, meta -> [meta.sample_id, bam, bai, meta] }
     filter = depth_pass
-        .combine(pass_bam_channel)
+        .combine(pass_bam_keyed, by: 0)
         .branch{
-            dp_pass, dp_val_env, bam, bai, meta ->
-            pass: dp_pass && meta.has_mapped_reads
+            sample_id, dp_pass, dp_val_env, region_count, bam, bai, meta ->
+            pass: dp_pass == 'true' && meta.has_mapped_reads
             not_pass: true
             }
     // Create the pass_bam_channel  channel when they pass
@@ -588,10 +596,10 @@ workflow {
     // emit a bam channel of discarded bam files.
     filter.not_pass
         .subscribe {
-            dp_pass, dp, bam, bai, meta ->
+            sample_id, dp_pass, dp, region_count, bam, bai, meta ->
             // check where it failed
-            def fail_depth_reason = !meta.has_mapped_reads ? "no mapped reads" : dp < params.bam_min_coverage ? "depth: ${dp} < ${params.bam_min_coverage}" : "failed for unknown reason"
-            // Raise the alarm explicitly; the workflow status must still reflect the rejected sample.
+            def fail_depth_reason = !meta.has_mapped_reads ? "no mapped reads" : (dp as float) < params.bam_min_coverage ? "depth: ${dp} < ${params.bam_min_coverage}" : "no covered target regions"
+            // Raise the alarm explicitly; per-sample state must still reflect the rejected sample.
             String fail_depth_msg = """\
             ################################################################################
             # INPUT DATA PROBLEM: rejected_low_coverage
