@@ -49,6 +49,18 @@ Primary input parameters:
 * ``--bed``: target regions for variant calling and optional coverage summary.
 * ``--coverage_bed``: regions for coverage reporting only.
 
+Reference Compatibility
+-----------------------
+
+CNV, STR, and annotation paths require a validated human genome build. The
+compatibility graph centralises this through ``lib/reference_compatibility.nf``
+and ``validateReferenceCompatibility`` rather than scattering separate checks
+across SNP, CNV, STR, annotation, and reporting code.
+
+STR currently requires hg38-compatible reference state. Annotation and CNV
+paths accept hg19 or hg38. Bounded controller-launched work should mirror this
+policy with ``gnostikon-workflow-control validate-reference-compatibility``.
+
 Coverage And QC
 ---------------
 

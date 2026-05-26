@@ -29,7 +29,7 @@ include {
     rejectedLowCoverage;
     makeAlignmentReport; 
     getVersions;
-    getGenome; 
+    validateReferenceCompatibility;
     eval_downsampling;
     downsampling;
     annotate_vcf as annotate_snp_vcf;
@@ -57,6 +57,10 @@ include {
 include {
     withStableIdentity;
 } from './lib/stable_identity.nf'
+
+include {
+    referenceCompatibilityRequirements;
+} from './lib/reference_compatibility.nf'
 
 include {
     detect_basecall_model
@@ -246,23 +250,17 @@ workflow {
     )
     | map { xam, xai, meta -> [xam, xai, withStableIdentity(meta, params)] }
 
-    // enforce_genome_build determines if getGenome should be run
-    //   and can be used later to determine if a genome build was enforced
-    // NOTE Logic for whether humvar should make a decision as to continue
-    //   based on the genome build should be activated only by this boolean
-    def enforce_genome_build = \
-        // always check genome build for CNV and STR subworkflows
-        // getGenome will take care of checking which build is required for STR
-        (params.cnv || params.str) \
-        // or if annotating, check genome build when using SNP, SV or phasing
-        // as SnpEff annotations are only provided for hg19 and hg38
-        || (params.annotation && (params.snp || params.sv || params.phased))
+    reference_compatibility = referenceCompatibilityRequirements(params)
 
-    // Check if the genome build in the BAM is suitable for any workflows that have restrictions
-    // NOTE getGenome will cause the workflow to terminate if the build is neither hg19 or hg38
-    //   so it shouldn't be called if annotation is skipped to allow other genomes (including non-human)
-    if (enforce_genome_build) {
-        genome_build = getGenome(bam_channel)
+    // Check the genome build once for all branches that need restricted
+    // reference compatibility. Bounded entries should record the equivalent
+    // state through gnostikon-workflow-control.
+    if (reference_compatibility.requires_validation) {
+        genome_build = validateReferenceCompatibility(
+            bam_channel,
+            Channel.value(reference_compatibility.required_by.join(",")),
+            Channel.value(reference_compatibility.requires_hg38)
+        )
     }
     else {
         genome_build = null

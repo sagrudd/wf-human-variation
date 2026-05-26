@@ -39,6 +39,8 @@ Reviewers should check:
 * whether optional values are represented clearly;
 * whether tool command options are structured allowlisted objects rather than
   free-form shell fragments;
+* whether genome-build/reference compatibility remains centralised through
+  ``lib/reference_compatibility.nf`` and shared controller manifest state;
 * whether matching changes are needed in ``../gnostikon-workflow-control`` and
   ``../poikilognostikon``;
 * whether sample alias use remains consistent;
@@ -65,7 +67,7 @@ Known Compatibility Debt
 * Low-coverage behavior: rejected samples must use ``rejected_low_coverage``
   and must not appear as successful workflow completions.
 * Basecaller model detection.
-* Annotation genome-build restrictions.
+* Annotation, CNV, STR, and reporting genome-build restrictions.
 * Partner export placeholder handling.
 * Report joins over multiple channels.
 

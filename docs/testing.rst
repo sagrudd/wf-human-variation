@@ -9,6 +9,7 @@ Tests should protect:
 * parameter validation;
 * ingress behavior;
 * reference preparation;
+* reference/genome-build compatibility validation for annotation, CNV, and STR;
 * branch activation and hidden couplings;
 * output filenames and optionality;
 * report generation;
@@ -38,6 +39,7 @@ Broader smoke tests should cover combinations such as:
 * ``--mod``;
 * ``--phased``;
 * low-coverage rejection/report paths;
+* incompatible reference builds, especially STR with non-hg38 reference state;
 * CRAM and uBAM ingress.
 
 Documentation Build Test

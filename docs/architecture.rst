@@ -10,13 +10,15 @@ broad steps:
 1. Validate selected parameter combinations.
 2. Prepare the reference.
 3. Ingress and, when needed, align or realign the input XAM.
-4. Compute alignment statistics and coverage.
-5. Apply coverage gating and optional downsampling. Low-coverage inputs become
+4. Compute reusable reference/genome-build compatibility when requested
+   branches require restricted builds.
+5. Compute alignment statistics and coverage.
+6. Apply coverage gating and optional downsampling. Low-coverage inputs become
    ``rejected_low_coverage`` and intentionally fail the run after optional
    report generation.
-6. Infer or accept sample sex when required.
-7. Run enabled analysis branches.
-8. Combine metrics, generate reports, package browser outputs, and publish
+7. Infer or accept sample sex when required.
+8. Run enabled analysis branches.
+9. Combine metrics, generate reports, package browser outputs, and publish
    selected artefacts.
 
 This is one launch-time graph. It is not the target dynamic runtime scheduler.
@@ -40,6 +42,19 @@ additional work. Do not reproduce them in bounded entries. New work must use
 the explicit prerequisite contract in ``docs/explicit-prerequisites.rst`` and
 ``lib/feature_prerequisites.nf``. Document any compatibility-graph change in
 ``docs/subworkflows.rst`` and ``docs/parameters.rst``.
+
+Reference Compatibility
+-----------------------
+
+Genome-build and reference compatibility must be treated as one reusable
+validation stage. In the imported graph, ``lib/reference_compatibility.nf``
+decides which capabilities require validation and
+``validateReferenceCompatibility`` emits the detected ``genome_build`` for SNP,
+CNV, STR, annotation, sex inference, and reporting consumers.
+
+New bounded entries should record the same state through
+``gnostikon-workflow-control validate-reference-compatibility`` instead of
+duplicating hg19/hg38 checks in individual task families.
 
 Whole-Run Barriers
 ------------------

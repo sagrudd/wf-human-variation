@@ -144,21 +144,28 @@ process getAllChromosomesBed {
 }
 
 
-process getGenome {
+process validateReferenceCompatibility {
+    label "wf_common"
     cpus 1
     memory 4.GB
+
     input:
         tuple path(xam), path(xam_idx), val(xam_meta)
+        val(required_by)
+        val(requires_hg38)
+
     output:
         env genome_build, emit: genome_build, optional: true
-     script:
-        // set flags for subworkflows that have genome build restrictions
-        def str_arg = params.str ? "--str" : ""
+
+    script:
+        def str_arg = requires_hg38 ? "--str" : ""
         """
+        echo "Validating reference compatibility for ${required_by}" >&2
         # use view -H rather than idxstats, as idxstats will still cause a scan of the whole CRAM (https://github.com/samtools/samtools/issues/303)
         samtools view -H ${xam} --no-PG | grep '^@SQ' | sed -nE 's,.*SN:([^[:space:]]*).*LN:([^[:space:]]*).*,\\1\\t\\2,p' > ${xam}_genome.txt
         get_genome.py --chr_counts ${xam}_genome.txt -o output.txt ${str_arg}
         genome_build=`cat output.txt`
+        echo "Reference compatibility genome_build=${genome_build} required_by=${required_by}" >&2
         """
 }
 

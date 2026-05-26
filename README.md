@@ -26,6 +26,10 @@ state. Optional failure reports may be produced, but the workflow exits
 non-zero so Poikilognostikon does not treat a rejected sample as a completed
 analysis.
 
+Genome-build and reference compatibility are validated as a reusable workflow
+stage. SNP, CNV, STR, annotation, and reporting code should consume that state
+rather than implementing their own hg19/hg38 checks.
+
 Tool customisation on `humvar3` uses structured allowlisted option objects such
 as `sniffles_options`, `modkit_options`, and `spectre_options`; legacy
 free-form `*_args` shell pass-throughs are rejected.

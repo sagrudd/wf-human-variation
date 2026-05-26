@@ -57,6 +57,10 @@ benchmarking, and reporting.
 Benchmarking requires SV calling. Missing benchmark truth resources currently
 use compatibility behavior that must be documented if changed.
 
+Genome-build restricted annotation should consume the central reference
+compatibility result. Do not add SNP-, SV-, CNV-, STR-, or report-local
+hg19/hg38 checks.
+
 CNV Calling
 -----------
 
