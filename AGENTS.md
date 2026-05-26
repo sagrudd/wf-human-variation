@@ -36,4 +36,9 @@ focused on understanding, maintaining, testing, and improving this workflow.
   deterministic task-cache output paths, and a `.gnostikon_task_complete.json`
   marker written only after required outputs exist. Update `docs/idempotency.rst`
   and tests when changing this contract.
+- The top-level bounded task families are `basecalling`, `mapping`,
+  `sample_aggregation`, `variant_calling`, `methylation`, `cnv`, `str`, and
+  `reporting`. Do not add another top-level family without updating
+  `docs/bounded-task-families.rst`, `lib/task_families.nf`, and the shared
+  controller registry in `../gnostikon-workflow-control`.
 - Prefer small, reviewable changes with focused tests.

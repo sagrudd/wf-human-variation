@@ -69,6 +69,11 @@ must use deterministic task keys, task-cache output paths, and completion
 markers as described in ``docs/idempotency.rst``. Existing Nextflow work
 directories and published output filenames are not sufficient reuse contracts.
 
+The top-level family split is fixed in ``docs/bounded-task-families.rst``:
+basecalling, mapping, per-sample aggregation, variant calling, methylation,
+CNV, STR, and reporting. Keep supporting operations inside those families unless
+the shared controller registry is deliberately changed.
+
 Dynamic Runtime Direction
 -------------------------
 

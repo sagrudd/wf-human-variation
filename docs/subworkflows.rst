@@ -1,6 +1,13 @@
 Subworkflows
 ============
 
+The existing files below are the upstream-derived implementation units. The
+dynamic ``humvar3`` maintenance boundary is the bounded family split documented
+in ``docs/bounded-task-families.rst``. In particular, SNP, SV, phasing, and
+annotation roll up to ``variant_calling``; modified-base work rolls up to
+``methylation``; report, export, and publication work rolls up to
+``reporting``.
+
 SNP Calling
 -----------
 

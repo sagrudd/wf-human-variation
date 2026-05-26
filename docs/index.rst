@@ -34,6 +34,7 @@ Contents
    architecture
    ingress
    workflow-control
+   bounded-task-families
    idempotency
    subworkflows
    parameters

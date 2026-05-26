@@ -4,6 +4,8 @@ Idempotent Tasks
 ``humvar3`` is being adapted so work can be reused while new sample, run, POD5,
 BAM, and analysis artefacts arrive. Any task-family refactor must therefore
 make task identity, internal output paths, and completion state deterministic.
+The allowed top-level families are defined in
+``docs/bounded-task-families.rst`` and ``lib/task_families.nf``.
 
 Contract
 --------
