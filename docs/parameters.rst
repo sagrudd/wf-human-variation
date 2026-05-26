@@ -83,6 +83,18 @@ task key and provenance. Adding a new tool option requires updating
 ``nextflow_schema.json``, ``lib/tool_options.nf``, and the shared
 ``gnostikon-workflow-control`` allowlist together.
 
+Container Digests
+-----------------
+
+Container references in ``base.config`` must use immutable ``image@sha256:``
+syntax. The SHA-like values retained under ``params.wf.*_tag`` are source tags
+for release provenance only; they must not be used as runtime container pins.
+
+When a tag is resolved to a digest, record the mapping in the shared manifest
+with ``gnostikon-workflow-control record-container-digest``. Mirrored registries
+such as AWS Batch must provide their own digest values. Missing mirror digests
+should block execution rather than falling back to tags.
+
 Maintenance Checklist
 ---------------------
 

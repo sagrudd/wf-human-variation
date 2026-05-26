@@ -18,6 +18,8 @@ integration design are maintained in the Poikilognostikon repository.
 Bounded `humvar3` work must write task provenance into the shared manifest via
 `gnostikon-workflow-control`, including tool versions, container digests,
 command arguments, input checksums, task status, and output artefacts.
+Runtime containers are pinned with immutable OCI digests rather than SHA-like
+tags; the source tag to digest resolution is part of manifest provenance.
 
 Tool customisation on `humvar3` uses structured allowlisted option objects such
 as `sniffles_options`, `modkit_options`, and `spectre_options`; legacy

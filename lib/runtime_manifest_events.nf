@@ -48,3 +48,41 @@ def recordTaskProvenanceCommand(String manifest, String provenanceJson, String e
     }
     return command.join(" ")
 }
+
+def recordContainerDigestCommand(
+    String manifest,
+    String label,
+    String image,
+    String tag,
+    String digest,
+    String eventDir = "",
+    String eventStore = ""
+) {
+    if (!manifest) {
+        throw new IllegalArgumentException("recordContainerDigestCommand requires manifest")
+    }
+    if (!label || !image || !tag || !digest) {
+        throw new IllegalArgumentException("recordContainerDigestCommand requires label, image, tag, and digest")
+    }
+    def command = [
+        "gnostikon-workflow-control",
+        "record-container-digest",
+        "--manifest",
+        manifest,
+        "--label",
+        label,
+        "--image",
+        image,
+        "--tag",
+        tag,
+        "--digest",
+        digest
+    ]
+    if (eventDir) {
+        command += ["--event-dir", eventDir]
+    }
+    if (eventStore) {
+        command += ["--event-store", eventStore]
+    }
+    return command.join(" ")
+}

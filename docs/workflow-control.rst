@@ -40,6 +40,8 @@ this workflow:
 * task provenance manifest writes for tool versions, container digests, command
   arguments, input checksums, task status, completion markers, and output
   artefacts;
+* container digest-resolution manifest writes for source tag to immutable OCI
+  digest mapping;
 * sample-sheet bootstrap import, where inherited ``sample,pod5_dir`` rows are
   converted into normal runtime events;
 * explicit stable sample identity for read artefacts, matching the inherited
@@ -74,6 +76,9 @@ controller state and Nextflow boundary behavior separate:
 * write bounded task provenance through ``record-task-provenance`` or
   ``lib/runtime_manifest_events.nf`` rather than leaving provenance only in
   Nextflow logs, process reports, or ad hoc JSON files.
+* launch containers with ``image@sha256:...`` references. If a source tag is
+  used for release readability, record its digest resolution through
+  ``record-container-digest`` or ``recordContainerDigestCommand``.
 * render tool-specific command options through structured allowlists in
   ``lib/tool_options.nf`` and ``gnostikon-workflow-control`` rather than
   interpolating operator-supplied shell fragments.

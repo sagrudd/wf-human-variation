@@ -34,6 +34,8 @@ Reviewers should check:
 * whether task provenance is present in the shared manifest, including tool
   versions, container digests, command arguments, input checksums, task status,
   and output artefacts;
+* whether containers are referenced by immutable ``@sha256:`` digests and any
+  source tag resolution has been recorded in the manifest;
 * whether optional values are represented clearly;
 * whether tool command options are structured allowlisted objects rather than
   free-form shell fragments;
@@ -54,6 +56,8 @@ Known Compatibility Debt
   ``ingress.run_ids`` in the imported compatibility graph.
 * Provenance still scattered across legacy logs or reports rather than shared
   manifest task records.
+* AWS Batch mirrored images need registry-specific digest values; do not fall
+  back to tags when a mirror digest is missing.
 * Any remaining free-form tool option pass-through outside the transitional
   rejection path for legacy ``*_args`` parameters.
 * Drift between this workflow, ``gnostikon-workflow-control``, and
