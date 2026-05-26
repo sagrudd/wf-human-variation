@@ -4,6 +4,17 @@
 whole-genome variant analysis. It supports small variant, structural variant,
 copy-number, STR, modified-base, coverage, reporting, and export workflows.
 
+## Branch Stewardship
+
+The `humvar3` branch is maintained by Mnemosyne Biosciences as the
+Poikilognostikon-oriented fork of `epime-labs/wf-human-variation`.
+
+This workflow has been adapted to run inside Poikilognostikon, where execution
+is coordinated by Poikilognostikon's runtime manifest, artefact-ingress,
+scheduling, and provenance model. Workflow-level behavior and documentation
+remain scoped to `wf-human-variation`; Poikilognostikon orchestration and
+integration design are maintained in the Poikilognostikon repository.
+
 ## Documentation
 
 The canonical technical documentation is now the Sphinx documentation in
