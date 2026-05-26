@@ -35,6 +35,8 @@ this workflow:
 * ``gnostikon.runtime_event.v1`` runtime events for dynamic arrivals and task
   state;
 * watched event-directory and SQLite event-store ingress;
+* controller-owned manifest updates, including ``manifest_updated`` events for
+  runtime state previously stored in ``params.wf[...]``;
 * sample-sheet bootstrap import, where inherited ``sample,pod5_dir`` rows are
   converted into normal runtime events;
 * explicit stable sample identity for read artefacts, matching the inherited
@@ -62,6 +64,8 @@ controller state and Nextflow boundary behavior separate:
 * document every remaining placeholder as transitional compatibility behavior.
 * implement new dynamic behavior as a bounded entry launched through
   ``gnostikon-workflow-control nextflow-task``.
+* write runtime state through control-package manifest/event commands such as
+  ``record-ingress-runids`` instead of mutating ``params.wf[...]``.
 
 Stable Identity
 ---------------

@@ -91,3 +91,8 @@ workflow still contains the imported compatibility graph, but new bounded work
 must use Nextflow only for task execution. Relevant controller contracts live in
 ``../gnostikon-workflow-control`` and are documented for this workflow in
 ``docs/workflow-control.rst`` and ``docs/controller-execution.rst``.
+
+Mutable ``params.wf[...]`` updates in the imported graph are compatibility
+debt. New bounded work must emit manifest/event writes through
+``gnostikon-workflow-control`` instead; ``lib/runtime_manifest_events.nf``
+contains the transitional command helpers for this boundary.

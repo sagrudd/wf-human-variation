@@ -69,5 +69,9 @@ Workflow Maintenance Rules
 * Broad ``collect()``, unkeyed ``combine()``, all-sample joins, and global
   mutable ``params.wf`` state must not be introduced into bounded entries.
   Follow ``docs/keyed-joins.rst``.
+* Runtime state that used to be pushed into ``params.wf[...]`` must be written
+  through ``gnostikon-workflow-control`` manifest/event commands. For example,
+  ingressed run ids use ``record-ingress-runids`` rather than
+  ``params.wf["ingress.run_ids"]``.
 * ``main.nf`` remains a compatibility path until the bounded entries replace
   the imported launch-time workflow behavior.

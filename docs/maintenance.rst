@@ -29,6 +29,8 @@ Reviewers should check:
 * whether any feature flag silently activates another analysis family instead
   of declaring an explicit prerequisite;
 * whether any channel operation introduces a new whole-run barrier;
+* whether runtime state is written through manifest/event APIs rather than
+  mutable ``params.wf[...]`` side effects;
 * whether optional values are represented clearly;
 * whether matching changes are needed in ``../gnostikon-workflow-control`` and
   ``../poikilognostikon``;
@@ -43,6 +45,8 @@ Known Compatibility Debt
 * Static ``main.nf`` SNP activation for STR, phasing, and Spectre CNV.
 * QDNAseq format compatibility.
 * Placeholder optional files.
+* Mutable ``params.wf[...]`` runtime side effects, especially
+  ``ingress.run_ids`` in the imported compatibility graph.
 * Drift between this workflow, ``gnostikon-workflow-control``, and
   Poikilognostikon migration records.
 * Low-coverage behavior.
