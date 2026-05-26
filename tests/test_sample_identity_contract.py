@@ -133,6 +133,18 @@ class SampleIdentityContractTest(unittest.TestCase):
         self.assertIn("unrelated samples can continue", process_body)
         self.assertNotIn("exit 1", process_body)
 
+    def test_bounded_sample_aggregation_is_keyed_by_sample_and_reference(self):
+        helper = read("lib/bounded_entry.nf")
+        module = read("modules/local/bounded_sample_aggregation.nf")
+
+        self.assertIn("sample_id: _requiredBoundedParam(params, \"sample_id\")", helper)
+        self.assertIn("reference_id: _requiredBoundedParam(params, \"reference_id\")", helper)
+        self.assertIn('tag "${entry.sample_id}:${entry.reference_id}:${entry.task_key}"', module)
+        self.assertIn('"sample_id": contract["sample_id"]', module)
+        self.assertIn('"reference_id": contract["reference_id"]', module)
+        self.assertNotIn("alias", module)
+        self.assertNotIn("display_alias", module)
+
     def test_runtime_docs_do_not_preserve_single_sample_enforcement(self):
         docs = "\n".join(
             read(path)

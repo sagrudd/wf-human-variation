@@ -66,11 +66,16 @@ include {
 include {
     boundedEntryContractJson;
     boundedMappingEntryParams;
+    boundedSampleAggregationEntryParams;
 } from './lib/bounded_entry.nf'
 
 include {
     runBoundedMappingTask;
 } from './modules/local/bounded_mapping'
+
+include {
+    runBoundedSampleAggregationTask;
+} from './modules/local/bounded_sample_aggregation'
 
 include {
     detect_basecall_model
@@ -108,6 +113,22 @@ workflow mapping {
         Channel.value(boundedEntryContractJson(entry_contract)),
         reads,
         reference
+    )
+}
+
+workflow sample_aggregation {
+    entry_contract = boundedSampleAggregationEntryParams(params)
+    mapped_xam = Channel.fromPath(entry_contract.mapped_xam, checkIfExists: true)
+    mapped_xam_index = Channel.fromPath(entry_contract.mapped_xam_index, checkIfExists: true)
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
+    runBoundedSampleAggregationTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        mapped_xam,
+        mapped_xam_index,
+        reference,
+        reference_index
     )
 }
 

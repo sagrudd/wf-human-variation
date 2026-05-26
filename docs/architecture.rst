@@ -153,6 +153,15 @@ needed, XAM conversion to the declared output format, run-id extraction,
 mapping provenance, and QC-ready stats. It does not discover other samples,
 run downstream analysis families, or decide project-wide readiness.
 
+The Task 16 ``sample_aggregation`` execution unit extends the same bounded
+pattern to read statistics and coverage QC. It is keyed by ``sample_id`` and
+``reference_id``, consumes a controller-declared mapped XAM plus ready
+reference index assets, emits aggregate XAM, ``bamstats``/``flagstat`` outputs,
+run IDs, basecallers, mosdepth outputs, ``coverage_state``, ``qc_stats``, and
+``aggregation_manifest``, and records ``rejected_low_coverage`` as explicit
+sample state when coverage is insufficient. It deliberately does not generate
+alignment HTML reports or expand the compatibility graph.
+
 Mutable ``params.wf[...]`` updates must not carry runtime state. Run IDs are
 kept as per-sample ``*.runids.txt`` artefacts in the compatibility graph and
 new bounded work must emit manifest/event writes through

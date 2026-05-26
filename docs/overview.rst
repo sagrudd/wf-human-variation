@@ -26,6 +26,10 @@ Primary entry points:
 * ``-entry mapping``: bounded mapping entry for one controller-declared sample
   artefact and reference. It emits mapped XAM, index, alignment metadata, run
   IDs, mapper provenance, and QC-ready stats.
+* ``-entry sample_aggregation``: bounded sample aggregation entry for one
+  controller-declared sample/reference aggregate. It emits aggregate XAM,
+  readstats, flagstat, run IDs, basecallers, mosdepth outputs,
+  ``coverage_state``, QC stats, and an aggregation manifest.
 * ``nextflow.config``: default parameters and workflow metadata.
 * ``nextflow_schema.json``: parameter schema used by command-line and UI
   surfaces.

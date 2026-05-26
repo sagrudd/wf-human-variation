@@ -91,6 +91,46 @@ def _mappingOptions(def raw) {
     ]
 }
 
+def _sampleAggregationOptions(def raw) {
+    def options = raw instanceof Map ? raw : [:]
+    def allowed = [
+        "view_threads",
+        "bamstats_threads",
+        "mosdepth_threads",
+        "coverage_min_depth",
+        "depth_window_size",
+        "mosdepth_thresholds",
+    ] as Set
+    def unexpected = options.keySet().collect { it.toString() }.findAll { !allowed.contains(it) }.sort()
+    if (unexpected) {
+        throw new IllegalArgumentException("unsupported sample aggregation option(s): ${unexpected.join(', ')}")
+    }
+    def positiveInt = { name, defaultValue ->
+        def value = options.containsKey(name) ? options[name] : defaultValue
+        def number = value as Integer
+        if (number < 1) {
+            throw new IllegalArgumentException("sample aggregation option '${name}' must be >= 1")
+        }
+        return number
+    }
+    def nonNegativeNumber = { name, defaultValue ->
+        def value = options.containsKey(name) ? options[name] : defaultValue
+        def number = value as BigDecimal
+        if (number < 0) {
+            throw new IllegalArgumentException("sample aggregation option '${name}' must be >= 0")
+        }
+        return number
+    }
+    return [
+        view_threads: positiveInt("view_threads", 2),
+        bamstats_threads: positiveInt("bamstats_threads", 2),
+        mosdepth_threads: positiveInt("mosdepth_threads", 2),
+        coverage_min_depth: nonNegativeNumber("coverage_min_depth", 0),
+        depth_window_size: positiveInt("depth_window_size", 500),
+        mosdepth_thresholds: (options.mosdepth_thresholds ?: "1,10,15,20,30").toString(),
+    ]
+}
+
 def boundedEntryParams(params, String expectedFamily, String entryName) {
     def task_family = _requiredBoundedParam(params, "task_family")
     if (task_family != expectedFamily) {
@@ -153,6 +193,59 @@ def boundedMappingEntryParams(params) {
         container_digest: _requiredBoundedParam(params, "container_digest"),
         output_format: output_format,
         output_index_format: output_format == "cram" ? "crai" : "bai",
+        output_paths: output_paths,
+    ]
+}
+
+def boundedSampleAggregationEntryParams(params) {
+    def output_paths = _requireOutputPaths(
+        _boundedOutputPaths(params.output_paths),
+        [
+            "aggregate_xam",
+            "aggregate_xam_index",
+            "readstats",
+            "flagstat",
+            "run_ids",
+            "basecallers",
+            "mosdepth_summary",
+            "mosdepth_regions",
+            "mosdepth_distribution",
+            "mosdepth_thresholds",
+            "coverage_state",
+            "qc_stats",
+            "aggregation_manifest",
+        ] as Set
+    )
+    def output_format = _choice(
+        "output_format",
+        _optionalBoundedParam(params, "output_format", "bam"),
+        ["bam", "cram"] as Set
+    )
+    return [
+        entry_schema: "wf-human-variation.bounded_sample_aggregation.v1",
+        entry_name: "sample_aggregation",
+        task_family: _choice(
+            "task_family",
+            _requiredBoundedParam(params, "task_family"),
+            ["sample_aggregation"] as Set
+        ),
+        task_key: _requiredBoundedParam(params, "task_key"),
+        task_dir: _requiredBoundedParam(params, "task_dir"),
+        task_cache_dir: _requiredBoundedParam(params, "task_cache_dir"),
+        completion_marker_path: _requiredBoundedParam(params, "completion_marker_path"),
+        sample_id: _requiredBoundedParam(params, "sample_id"),
+        mapped_xam: _requiredBoundedParam(params, "mapped_xam"),
+        mapped_xam_index: _requiredBoundedParam(params, "mapped_xam_index"),
+        mapped_xam_digest: _requiredBoundedParam(params, "mapped_xam_digest"),
+        reference_fasta: _requiredBoundedParam(params, "reference_fasta"),
+        reference_index: _requiredBoundedParam(params, "reference_index"),
+        reference_id: _requiredBoundedParam(params, "reference_id"),
+        aggregation_config_digest: _requiredBoundedParam(params, "aggregation_config_digest"),
+        coverage_config_digest: _requiredBoundedParam(params, "coverage_config_digest"),
+        container_digest: _requiredBoundedParam(params, "container_digest"),
+        output_format: output_format,
+        output_index_format: output_format == "cram" ? "crai" : "bai",
+        aggregation_options: _sampleAggregationOptions(params.aggregation_options),
         output_paths: output_paths,
     ]
 }

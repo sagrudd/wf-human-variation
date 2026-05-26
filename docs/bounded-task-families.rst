@@ -29,7 +29,8 @@ unit it was given.
        metrics.
    * - ``sample_aggregation``
      - sample, reference
-     - Per-sample aggregate BAM refresh from ready mapped chunks.
+     - Per-sample aggregate XAM refresh, read statistics, coverage QC, and
+       low-coverage state from ready mapped chunks.
    * - ``variant_calling``
      - sample, reference, variant mode
      - SNP, SV, phasing, haplotagging, and variant annotation products.
@@ -97,10 +98,18 @@ Maintenance Rules
 Current Entry Status
 --------------------
 
-The first named bounded entry is ``-entry mapping``. As of Task 15 it validates
-the controller-provided mapping params, consumes exactly one declared input XAM
-and reference, emits ``mapped_xam``, ``mapped_xam_index``,
-``alignment_metadata``, ``run_ids``, ``mapper_provenance``, and ``qc_stats``,
-and writes the standard completion marker only after those declared outputs
-exist. This retires the Task 14 launch-only scaffold while keeping the broader
-compatibility graph in place until later families move.
+Task 15 introduced ``-entry mapping``. It validates the controller-provided
+mapping params, consumes exactly one declared input XAM and reference, emits
+``mapped_xam``, ``mapped_xam_index``, ``alignment_metadata``, ``run_ids``,
+``mapper_provenance``, and ``qc_stats``, and writes the standard completion
+marker only after those declared outputs exist.
+
+Task 16 adds ``-entry sample_aggregation`` as the bounded sample aggregation
+entry. It consumes one controller-declared mapped XAM plus its reference assets,
+normalises the current aggregate XAM, runs retained ``bamstats``/``flagstat``
+and ``mosdepth`` coverage metrics, emits run IDs, basecallers,
+``coverage_state``, ``qc_stats``, and ``aggregation_manifest``, then writes the
+standard completion marker. Low-coverage data is represented as explicit
+``rejected_low_coverage`` sample state in ``coverage_state`` rather than as an
+HTML report or an all-run failure. The broader compatibility graph remains in
+place until later families move.

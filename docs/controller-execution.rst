@@ -110,6 +110,46 @@ reference, remaps when required with the retained
 shape, writes the declared mapping outputs, and only then writes the standard
 ``.gnostikon_task_complete.json`` marker.
 
+Task 16 adds the bounded sample aggregation entry:
+
+.. code-block:: text
+
+   gnostikon-workflow-control nextflow-task \
+     --workflow ../wf-human-variation \
+     --entry sample_aggregation \
+     --outdir /analysis/project-001 \
+     --task-family sample_aggregation \
+     --key-field sample_id=smp_001 \
+     --key-field reference_id=ref_001 \
+     --key-field mapped_xam_digest=sha256:mapped \
+     --key-field aggregation_config_digest=sha256:aggregation \
+     --key-field coverage_config_digest=sha256:coverage \
+     --key-field container_digest=sha256:container \
+     --params-json sample-aggregation.params.json \
+     --output aggregate_xam=outputs/aggregate.bam \
+     --output aggregate_xam_index=outputs/aggregate.bam.bai \
+     --output readstats=qc/readstats.tsv.gz \
+     --output flagstat=qc/flagstat.tsv \
+     --output run_ids=qc/runids.txt \
+     --output basecallers=qc/basecallers.txt \
+     --output mosdepth_summary=qc/mosdepth.summary.txt \
+     --output mosdepth_regions=qc/mosdepth.regions.bed.gz \
+     --output mosdepth_distribution=qc/mosdepth.global.dist.txt \
+     --output mosdepth_thresholds=qc/mosdepth.thresholds.bed.gz \
+     --output coverage_state=qc/coverage-state.json \
+     --output qc_stats=qc/sample-aggregation-qc.json \
+     --output aggregation_manifest=metadata/aggregation-manifest.json
+
+The params JSON must provide ``sample_id``, ``mapped_xam``,
+``mapped_xam_index``, ``mapped_xam_digest``, ``reference_fasta``,
+``reference_index``, ``reference_id``, ``aggregation_config_digest``,
+``coverage_config_digest``, ``container_digest``, ``output_format``, and
+``aggregation_options``. The entry runs only aggregation/QC-owned work:
+aggregate XAM normalisation, ``bamstats``/``flagstat`` metrics, run-id and
+basecaller extraction, ``mosdepth`` coverage metrics, explicit
+``coverage_state``, and the aggregation manifest. It does not launch alignment
+HTML generation, downstream analysis families, or report publication.
+
 Workflow Maintenance Rules
 --------------------------
 

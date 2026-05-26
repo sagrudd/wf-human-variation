@@ -63,6 +63,42 @@ validates the mapping contract, executes only the bounded mapping unit, writes
 the declared outputs, and creates the completion marker used by controller
 skip/reuse checks.
 
+The Task 16 bounded sample aggregation entry can be dry-run the same way:
+
+.. code-block:: bash
+
+   gnostikon-workflow-control nextflow-task \
+     --workflow . \
+     --entry sample_aggregation \
+     --outdir /tmp/humvar-bounded \
+     --task-family sample_aggregation \
+     --key-field sample_id=smp_001 \
+     --key-field reference_id=ref_001 \
+     --key-field mapped_xam_digest=sha256:mapped \
+     --key-field aggregation_config_digest=sha256:aggregation \
+     --key-field coverage_config_digest=sha256:coverage \
+     --key-field container_digest=sha256:container \
+     --params-json sample-aggregation.params.json \
+     --output aggregate_xam=outputs/aggregate.bam \
+     --output aggregate_xam_index=outputs/aggregate.bam.bai \
+     --output readstats=qc/readstats.tsv.gz \
+     --output flagstat=qc/flagstat.tsv \
+     --output run_ids=qc/runids.txt \
+     --output basecallers=qc/basecallers.txt \
+     --output mosdepth_summary=qc/mosdepth.summary.txt \
+     --output mosdepth_regions=qc/mosdepth.regions.bed.gz \
+     --output mosdepth_distribution=qc/mosdepth.global.dist.txt \
+     --output mosdepth_thresholds=qc/mosdepth.thresholds.bed.gz \
+     --output coverage_state=qc/coverage-state.json \
+     --output qc_stats=qc/sample-aggregation-qc.json \
+     --output aggregation_manifest=metadata/aggregation-manifest.json \
+     --dry-run
+
+Where Nextflow is available, run the generated params with
+``nextflow run . -entry sample_aggregation -params-file <params-file>``. This
+executes only the bounded sample aggregation entry and emits machine-readable
+QC including ``coverage_state``.
+
 Broader smoke tests should cover combinations such as:
 
 * two ingressed sample folders with ``--sample_id alias_a=smp_a,alias_b=smp_b``;

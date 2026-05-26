@@ -60,10 +60,13 @@ Known Compatibility Debt
 * Static ``main.nf`` SNP activation for STR, phasing, and Spectre CNV.
 * ``main.nf`` remains a compatibility reference for tool invocations, process
   wiring, and expected outputs until bounded entries retire each responsibility.
-* The mapping bounded entry is the first real named execution unit. Later
-  family work must preserve its controller-owned params contract, declared
-  output paths, and completion-marker semantics rather than moving mapping
-  readiness back into the compatibility graph.
+* The mapping bounded entry and sample aggregation bounded entry are the first
+  real named execution units. Later family work must preserve their
+  controller-owned params contracts, declared output paths, and
+  completion-marker semantics rather than moving readiness back into the
+  compatibility graph. The sample aggregation bounded entry owns
+  machine-readable coverage QC and ``rejected_low_coverage`` state; this must
+  not drift back into HTML reporting.
 * QDNAseq format compatibility.
 * Placeholder optional files outside the finite transitional list in
   ``docs/architecture.rst``.
