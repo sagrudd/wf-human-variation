@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Define if needs downsampling and reports ratio to stdout."""
+"""Determine whether downsampling is needed and emit the ratio to stdout."""
 
 import sys
 

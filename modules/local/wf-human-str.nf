@@ -48,7 +48,7 @@ process annotate_repeat_expansions {
         tuple val(join_key), path(vcf), path(tsv)
         path(variant_catalogue_hg38)
     output:
-        tuple val(join_key), path("${join_key}_repeat-expansion_annotated.vcf.gz"), path("${join_key}_repeat-expansion_annotated.vcf.gz.tbi"), path("*_plot.tsv"), path("*_annotated.tsv")
+        tuple val(join_key), path("${join_key}_repeat-expansion_annotated.vcf.gz"), path("${join_key}_repeat-expansion_annotated.vcf.gz.tbi"), path("*_str-loci.tsv"), path("*_annotated.tsv")
     script:
         def chr = join_key
         """
@@ -59,7 +59,7 @@ process annotate_repeat_expansions {
         SnpSift extractFields ${chr}_repeat-expansion_annotated.vcf.gz \
             CHROM POS ALT FILTER REF RL RU REPID VARID STR_STATUS > ${chr}_repeat-expansion_annotated.tsv
         SnpSift extractFields ${chr}_repeat-expansion_annotated.vcf.gz \
-            CHROM POS DisplayRU STR_NORMAL_MAX STR_PATHOLOGIC_MIN VARID Disease > ${chr}_repeat-expansion_plot.tsv
+            CHROM POS DisplayRU STR_NORMAL_MAX STR_PATHOLOGIC_MIN VARID Disease > ${chr}_repeat-expansion_str-loci.tsv
         """
 }
 
@@ -128,15 +128,15 @@ process merge_tsv {
     cpus 1
     memory 4.GB
     input:
-        path (plot_tsv)
+        path (str_loci_tsv)
         path (straglr_tsv)
         path (stranger_tsv)
         tuple val(xam_meta), path(str_content_csv)
     output:
-        tuple path ("*plot.tsv"), path ("*straglr.tsv"), path ("*stranger.tsv"), path ("*str-content-all.csv")
+        tuple path ("*str-loci.tsv"), path ("*straglr.tsv"), path ("*stranger.tsv"), path ("*str-content-all.csv")
     script:
         """
-        awk 'NR == 1 || FNR > 1' ${plot_tsv} >${xam_meta.alias}_plot.tsv
+        awk 'NR == 1 || FNR > 1' ${str_loci_tsv} >${xam_meta.alias}_str-loci.tsv
         awk 'NR == 1 || FNR > 1' ${stranger_tsv} >${xam_meta.alias}_stranger.tsv
         # Ignore the first line from straglr_tsv as it has a two-line header. Avoid sed altogether
         awk 'NR == 2 || FNR > 2' ${straglr_tsv} > ${xam_meta.alias}.wf_str.straglr.tsv

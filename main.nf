@@ -626,7 +626,7 @@ workflow {
     }
 
     rejected_low_coverage_status = discarded_bams
-        .map{ bam, bai, meta -> bam }
+        .map{ bam, bai, meta -> tuple(bam, meta) }
         | rejectedLowCoverage
 
     // Set up BED for wf-human-snp, wf-human-str or run_haplotagging

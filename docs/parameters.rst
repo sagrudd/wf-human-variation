@@ -45,7 +45,7 @@ Primary input parameters:
   the workflow controller. These fields are metadata for migration and do not
   replace the current filename label behavior of ``--sample_name``.
 * ``--bed``: target regions for variant calling and optional coverage summary.
-* ``--coverage_bed``: regions for coverage reporting only.
+* ``--coverage_bed``: regions for coverage metrics only.
 
 Reference Compatibility
 -----------------------

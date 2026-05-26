@@ -255,15 +255,25 @@ process rejectedLowCoverage {
     memory 1.GB
 
     input:
-        path low_coverage_evidence
+        tuple path(low_coverage_evidence), val(xam_meta)
 
     output:
-        path "rejected_low_coverage.status.txt", optional: true
+        path "*.rejected_low_coverage.state.json", optional: true
 
     script:
         """
-        echo "rejected_low_coverage" > rejected_low_coverage.status.txt
+        printf '%s\\n' \\
+          '{' \\
+          '  "sample": "${xam_meta.alias}",' \\
+          '  "state": "rejected_low_coverage",' \\
+          '  "evidence": "${low_coverage_evidence}",' \\
+          '  "bam_min_coverage": ${params.bam_min_coverage},' \\
+          '  "workflow_status": "failed"' \\
+          '}' > "${xam_meta.alias}.rejected_low_coverage.state.json"
+        mkdir -p "${params.out_dir}"
+        cp "${xam_meta.alias}.rejected_low_coverage.state.json" "${params.out_dir}/"
         echo "Sample state: rejected_low_coverage" >&2
+        echo "Sample: ${xam_meta.alias}" >&2
         echo "Low coverage evidence: ${low_coverage_evidence}" >&2
         echo "Coverage is below --bam_min_coverage=${params.bam_min_coverage}." >&2
         echo "Workflow status is failed by design for rejected_low_coverage." >&2

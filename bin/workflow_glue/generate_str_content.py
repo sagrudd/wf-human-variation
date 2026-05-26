@@ -105,7 +105,7 @@ def extract_sequences(bam, merged_tsv):
                 # RU from Repeats BED
                 repeat_unit = merged_varid['bed_ru'].values[0]
 
-                # Create STR identifier for plot title
+                # Create STR identifier for sequence-content rows.
                 disease = merged_varid['Disease'].values[0]
                 str_identifier = f"{disease} ({varid})"
 
@@ -196,7 +196,7 @@ def extract_sequences(bam, merged_tsv):
     return str_seq_json
 
 
-def create_plot_input_files(str_seq_json):
+def create_sequence_content_csv(str_seq_json):
     """Extract STR sequence intervals from JSON and save as CSV."""
     data = json.loads(str_seq_json)
 
@@ -239,7 +239,7 @@ def create_plot_input_files(str_seq_json):
             "str_seq_length",
             "type",
             "sequence",  # RU/interruption seq
-            "truncated_seq",  # seq shortened for hover tool display
+            "truncated_seq",  # compact sequence label
             "start",  # start pos in STR seq
             "end",  # end pos in STR seq
             "length"  # len of each RU/interruption
@@ -253,7 +253,7 @@ def create_plot_input_files(str_seq_json):
 
 def main(args):
     """Run the entry point."""
-    # Merging Straglr and Stranger Plot TSV's
+    # Merge Straglr calls with Stranger annotations.
     pd_straglr = pd.read_csv(args.straglr, sep="\t", header=1)
     pd_stranger = pd.read_csv(args.stranger, sep="\t", header=0)
     # subtract one from start position to account for how STRs
@@ -265,5 +265,5 @@ def main(args):
     merged = bed_ru_merge(merged, args.repeat_bed)
     # Create JSON with STR sequence info
     str_seq_json = extract_sequences(args.str_reads_bam, merged)
-    # Create CSV's to be used as inputs for repeat content plots
-    create_plot_input_files(str_seq_json)
+    # Create machine-readable CSVs for repeat sequence content.
+    create_sequence_content_csv(str_seq_json)

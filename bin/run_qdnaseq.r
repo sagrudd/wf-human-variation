@@ -115,20 +115,6 @@ if (argv$method=='cutoff') {
 if (argv$method=='CGHcall') {
     copyNumbersCalled <- callBins(copyNumbersSegmented, method = 'CGHcall', cellularity=argv$cellularity )
 }
-plot(copyNumbersCalled)
-
-#Create PNG output
-png_file <- paste(argv$out_prefix, 'cov.png', sep="_")
-png(png_file)
-plot(copyNumbersCalled)
-
-noise_png_file <- paste(argv$out_prefix, 'noise_plot.png', sep="_")
-png(noise_png_file)
-noisePlot(autosomalReadCountsFiltered)
-
-isobar_png_file <- paste(argv$out_prefix, 'isobar_plot.png', sep="_")
-png(isobar_png_file)
-isobarPlot(autosomalReadCountsFiltered)
 
 #write outputs
 bedout <- paste(argv$out_prefix, "calls.bed", sep="_")

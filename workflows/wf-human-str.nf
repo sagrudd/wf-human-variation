@@ -49,9 +49,9 @@ workflow str {
     ).transpose().groupTuple()
 
 
-    branched_annotations = annotations.multiMap { chr, vcf, tbi, plot, annot ->
+    branched_annotations = annotations.multiMap { chr, vcf, tbi, str_loci, annot ->
         stranger_vcfs_and_tbis: vcf
-        plot_tsv_all: plot
+        str_loci_tsv_all: str_loci
         stranger_annotations: annot
     }
 
@@ -70,12 +70,12 @@ workflow str {
     // merge the contig TSVs/CSVs
     straglr_tsv_all = str_vcf_and_tsv.map{ chr, vcf, tsv -> tsv }.collect()
     branched_merged = merge_tsv(
-        branched_annotations.plot_tsv_all.collect(),
+        branched_annotations.str_loci_tsv_all.collect(),
         straglr_tsv_all.collect(),
         branched_annotations.stranger_annotations.collect(),
         str_content)
-        | multiMap { plot, straglr_table, stranger_table, str_content_table ->
-            plot: plot
+        | multiMap { str_loci_table, straglr_table, stranger_table, str_content_table ->
+            str_loci: str_loci_table
             straglr: straglr_table
             stranger: stranger_table
             str_content: str_content_table

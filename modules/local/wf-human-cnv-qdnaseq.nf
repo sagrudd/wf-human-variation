@@ -5,16 +5,10 @@ process callCNV {
     memory { 16.GB * task.attempt }
     maxRetries 1
     errorStrategy {task.exitStatus in [137,140] ? 'retry' : 'finish'}
-    // publish everything except the cnv_vcf to qdna_seq directory
-    publishDir \
-        path: { "${params.out_dir}/qdna_seq" },
-        mode: 'copy',
-        saveAs: { filename -> filename.toString() ==~ /.*vcf\.gz.*/ ? null : filename }
     input:
         tuple path(bam), path(bai), val(xam_meta)
         val(genome_build)
     output:
-        tuple val(xam_meta), path("${xam_meta.alias}_combined.bed"), path("${xam_meta.alias}*"), path("${xam_meta.alias}_noise_plot.png"), path("${xam_meta.alias}_isobar_plot.png"), emit: cnv_output
         tuple val(xam_meta), path("${xam_meta.alias}.wf_cnv.vcf.gz"), path("${xam_meta.alias}.wf_cnv.vcf.gz.tbi"), emit: cnv_vcf
     script:
         """
@@ -32,5 +26,4 @@ process callCNV {
         tabix -f -p vcf ${xam_meta.alias}.wf_cnv.vcf.gz
         """
 }
-
 

@@ -81,8 +81,8 @@ def argparser():
         "--contamination_threshold",
         default=0.05,
         help=(
-            "Report as contaminated samples with" +
-            "haplocheck contamination values above this threshold"
+            "Classify samples as contaminated when haplocheck contamination "
+            "values are above this threshold"
         )
     )
 

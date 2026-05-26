@@ -2,10 +2,18 @@
   "files": {
     "metrics-json": {
       "filepath": "{{ alias }}.stats.json",
-      "title": "JSON file of some base statistics",
-      "description": "This JSON file contains base statistics on the reads, mappings, SNPs and SVs for the sample.",
+      "title": "Combined sample metrics JSON",
+      "description": "Machine-readable JSON containing read, alignment, coverage, SNP, SV, contamination, and sex-state metrics available for the sample.",
       "mime-type": "application/json",
       "optional": false,
+      "type": "per-sample"
+    },
+    "low-coverage-state-json": {
+      "filepath": "{{ alias }}.rejected_low_coverage.state.json",
+      "title": "Low coverage rejection state JSON",
+      "description": "Machine-readable terminal state record for a sample rejected before analysis because coverage did not meet the configured minimum.",
+      "mime-type": "application/json",
+      "optional": true,
       "type": "per-sample"
     },
     "snp-vcf": {
@@ -75,7 +83,7 @@
     "mod-bedmethyl-5mc-bigwig": {
       "filepath": "{{ alias }}.wf_mods.5mC.bw",
       "title": "5mC bigWig",
-      "description": "bigWig for visualisation of aggregated 5mC modification counts.",
+      "description": "Indexed bigWig signal track containing aggregated 5mC modification counts.",
       "mime-type": "application/gzip",
       "optional": true,
       "type": "per-sample"
@@ -83,7 +91,7 @@
     "mod-bedmethyl-hap1-5mc-bigwig": {
       "filepath": "{{ alias }}.wf_mods.1-5mC.bw",
       "title": "5mC bigWig (haplotype 1)",
-      "description": "bigWig for visualisation of aggregated 5mC modification counts for haplotype 1 of the sample.",
+      "description": "Indexed bigWig signal track containing aggregated 5mC modification counts for haplotype 1 of the sample.",
       "mime-type": "application/gzip",
       "optional": true,
       "type": "per-sample"
@@ -91,7 +99,7 @@
     "mod-bedmethyl-hap2-5mc-bigwig": {
       "filepath": "{{ alias }}.wf_mods.2-5mC.bw",
       "title": "5mC bigWig (haplotype 2)",
-      "description": "bigWig for visualisation of aggregated 5mC modification counts for haplotype 2 of the sample.",
+      "description": "Indexed bigWig signal track containing aggregated 5mC modification counts for haplotype 2 of the sample.",
       "mime-type": "application/gzip",
       "optional": true,
       "type": "per-sample"
@@ -101,6 +109,14 @@
       "title": "Short tandem repeat VCF",
       "description": "VCF file with the STR sites for the sample.",
       "mime-type": "application/gzip",
+      "optional": true,
+      "type": "per-sample"
+    },
+    "str-summary-tsv": {
+      "filepath": "{{ alias }}.wf_str.straglr.tsv",
+      "title": "Short tandem repeat genotype table",
+      "description": "Machine-readable TSV of merged STR calls produced by Straglr.",
+      "mime-type": "text/tsv",
       "optional": true,
       "type": "per-sample"
     },
@@ -147,7 +163,7 @@
     "coverage-by-threshold": {
       "filepath": "{{ alias }}.thresholds.bed.gz",
       "title": "Coverage per region above the given thresholds",
-      "description": "The BED reporting the number of bases in each region that are covered at or above each threshold values (1x, 10x, 20x and 30x).",
+      "description": "BED file containing the number of bases in each region covered at or above each threshold value (1x, 10x, 20x, and 30x).",
       "mime-type": "application/gzip",
       "optional": false,
       "type": "per-sample"
@@ -163,7 +179,7 @@
     "coverage-summary": {
       "filepath": "{{ alias }}.mosdepth.summary.txt",
       "title": "Mean coverage per sequence and target region",
-      "description": "The summary of mean depths per chromosome and within specified regions per chromosome.",
+      "description": "Machine-readable table of mean depths per chromosome and, when applicable, per target region.",
       "mime-type": "text/plain",
       "optional": false,
       "type": "per-sample"

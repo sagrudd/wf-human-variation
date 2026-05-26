@@ -40,6 +40,48 @@ Publication And Export:
 * combined metrics JSON;
 * partner-specific export products.
 
+Machine-Readable Metrics Contract
+---------------------------------
+
+``humvar3`` keeps QC and analysis state in machine-readable artefacts rather
+than HTML reports. The retained metrics/status surfaces are:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Family
+     - Retained artefacts
+     - Notes
+   * - Alignment and coverage
+     - ``*.stats.json``, ``*.readstats.tsv.gz``, ``*.mosdepth.summary.txt``,
+       ``*.mosdepth.global.dist.txt``, ``*.thresholds.bed.gz``, optional
+       ``*.bed_summary.tsv`` and ``*.coverage_bed_summary.tsv``
+     - ``*.stats.json`` is the combined sample metrics JSON.
+   * - SNP
+     - SNP VCF/GVCF products and SNP metrics folded into ``*.stats.json``
+     - Intermediate ``*.snvs.json`` is a workflow metric input, not a public
+       output artefact.
+   * - SV
+     - SV VCF/SNF products and SV metrics folded into ``*.stats.json``
+     - Intermediate ``*.svs.json`` is a workflow metric input, not a public
+       output artefact.
+   * - CNV
+     - CNV VCF
+     - Spectre BED/karyotype and QDNAseq auxiliary files remain internal until
+       CNV output publication is rationalised; presentation PNG/PDF files are
+       not retained outputs.
+   * - STR
+     - STR VCF and ``*.wf_str.straglr.tsv``
+     - Additional STR sequence-content CSV files are machine-readable
+       intermediates until STR output publication is rationalised.
+   * - Methylation
+     - bedMethyl and bigWig artefacts
+     - These are data tracks, not viewer configuration.
+   * - Low coverage
+     - ``*.rejected_low_coverage.state.json`` and failing workflow status
+     - Poikilognostikon should project the ``rejected_low_coverage`` terminal
+       state through manifest state; no HTML failure output is produced.
+
 Workflow-generated EPI2ME HTML reports and viewer configuration files are not
 supported outputs on ``humvar3``. Dashboards, browser views, and API views
 belong in Poikilognostikon projections over the shared runtime manifest, using
