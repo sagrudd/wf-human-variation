@@ -44,6 +44,7 @@ Contents
    dependencies
    outputs
    testing
+   release-acceptance
    maintenance
    troubleshooting
    documentation
