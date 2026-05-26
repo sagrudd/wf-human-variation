@@ -32,8 +32,8 @@ When suitable data is available, run a minimal smoke test:
      --snp \
      -profile standard
 
-The Task 14 bounded-entry scaffold can be smoke-tested without genomic data by
-using the controller to create a params file:
+The Task 15 bounded mapping entry can be dry-run through the controller without
+genomic data by using a params file that declares the mapping-specific inputs:
 
 .. code-block:: bash
 
@@ -45,14 +45,23 @@ using the controller to create a params file:
      --key-field sample_id=smp_001 \
      --key-field reference_id=ref_001 \
      --key-field input_digest=sha256:abc \
-     --output bounded_launch_contract=contract/mapping.launch.json \
+     --key-field mapper=minimap2 \
+     --key-field mapper_options_digest=sha256:def \
+     --key-field container_digest=sha256:container \
+     --params-json mapping.params.json \
+     --output mapped_xam=outputs/reads.sorted.bam \
+     --output mapped_xam_index=outputs/reads.sorted.bam.bai \
+     --output alignment_metadata=metadata/alignment.json \
+     --output run_ids=metadata/runids.txt \
+     --output mapper_provenance=metadata/mapper-provenance.json \
+     --output qc_stats=metadata/mapping-qc.json \
      --dry-run
 
 Where Nextflow is available, the generated ``nextflow.params.json`` can then
 be run with ``nextflow run . -entry mapping -params-file <params-file>``. This
-validates the controller launch contract and writes the declared
-``bounded_launch_contract`` plus completion marker; it does not perform mapping
-analysis until Task 15.
+validates the mapping contract, executes only the bounded mapping unit, writes
+the declared outputs, and creates the completion marker used by controller
+skip/reuse checks.
 
 Broader smoke tests should cover combinations such as:
 

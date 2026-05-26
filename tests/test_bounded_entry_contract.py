@@ -19,8 +19,10 @@ class BoundedEntryContractTest(unittest.TestCase):
         main = read("main.nf")
 
         self.assertIn("workflow mapping {", main)
-        self.assertIn('boundedEntryParams(params, "mapping", "mapping")', main)
-        self.assertIn("writeMappingEntryContract(", main)
+        self.assertIn("boundedMappingEntryParams(params)", main)
+        self.assertIn("runBoundedMappingTask(", main)
+        self.assertIn("Channel.fromPath(entry_contract.input_xam, checkIfExists: true)", main)
+        self.assertIn("Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)", main)
         self.assertIn("// Compatibility entrypoint workflow\nworkflow {\n    WorkflowMain.initialise", main)
         self.assertNotIn("// entrypoint workflow\nWorkflowMain.initialise", main)
 
@@ -43,7 +45,7 @@ class BoundedEntryContractTest(unittest.TestCase):
 
     def test_bounded_entry_requires_controller_owned_task_params(self):
         helper = read("lib/bounded_entry.nf")
-        module = read("modules/local/bounded_entry.nf")
+        module = read("modules/local/bounded_mapping.nf")
 
         for param in [
             "task_family",
@@ -52,14 +54,53 @@ class BoundedEntryContractTest(unittest.TestCase):
             "task_cache_dir",
             "completion_marker_path",
             "output_paths",
+            "sample_id",
+            "input_xam",
+            "input_kind",
+            "input_digest",
+            "reference_fasta",
+            "reference_id",
+            "mapper",
+            "mapper_options_digest",
+            "container_digest",
         ]:
             with self.subTest(param=param):
                 self.assertIn(param, helper)
 
-        self.assertIn("wf-human-variation.bounded_entry.v1", helper)
-        self.assertIn("output_paths.bounded_launch_contract", helper)
+        self.assertIn("wf-human-variation.bounded_mapping.v1", helper)
+        self.assertIn('"mapped_xam"', helper)
+        self.assertIn('"mapped_xam_index"', helper)
+        self.assertIn('"alignment_metadata"', helper)
+        self.assertIn('"run_ids"', helper)
+        self.assertIn('"mapper_provenance"', helper)
+        self.assertIn('"qc_stats"', helper)
         self.assertIn('"marker_schema": "gnostikon.task_completion.v1"', module)
-        self.assertIn('"analysis_status": "not_implemented_scaffold"', module)
+        self.assertIn("bamstats ${out_xam}", module)
+        self.assertIn("workflow-glue check_sq_ref", module)
+        self.assertIn("workflow-glue check_mapped_reads", module)
+        self.assertIn("minimap2 -y", module)
+
+    def test_mapping_entry_declares_supported_input_kinds_and_allowlisted_mapper_options(self):
+        helper = read("lib/bounded_entry.nf")
+
+        for token in [
+            '"bam"',
+            '"cram"',
+            '"ubam"',
+            '"basecalled_bam"',
+            '"minimap2"',
+            '"minimap2_preset"',
+            '"cap_kalloc"',
+            '"cap_sw_mem"',
+            '"fastq_threads"',
+            '"map_threads"',
+            '"sort_threads"',
+            '"bamstats_threads"',
+        ]:
+            with self.subTest(token=token):
+                self.assertIn(token, helper)
+
+        self.assertIn("unsupported mapping option(s)", helper)
 
     def test_bounded_entry_docs_and_ledger_are_current(self):
         docs = "\n".join(
@@ -75,9 +116,10 @@ class BoundedEntryContractTest(unittest.TestCase):
         ledger = read("docs/maintenance.rst") + "\n" + read("docs/controller-execution.rst")
 
         self.assertIn("``-entry mapping``", docs)
-        self.assertIn("bounded launch-contract scaffold", docs)
+        self.assertIn("bounded mapping entry", docs)
         self.assertIn("Task 15", docs)
-        self.assertIn("mapping bounded entry scaffold", ledger)
+        self.assertIn("mapped_xam", docs)
+        self.assertIn("mapping bounded entry", ledger)
 
 
 if __name__ == "__main__":

@@ -65,12 +65,12 @@ include {
 
 include {
     boundedEntryContractJson;
-    boundedEntryParams;
+    boundedMappingEntryParams;
 } from './lib/bounded_entry.nf'
 
 include {
-    writeBoundedEntryContract as writeMappingEntryContract;
-} from './modules/local/bounded_entry'
+    runBoundedMappingTask;
+} from './modules/local/bounded_mapping'
 
 include {
     detect_basecall_model
@@ -100,10 +100,14 @@ include {
 
 
 workflow mapping {
-    entry_contract = boundedEntryParams(params, "mapping", "mapping")
-    writeMappingEntryContract(
+    entry_contract = boundedMappingEntryParams(params)
+    reads = Channel.fromPath(entry_contract.input_xam, checkIfExists: true)
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    runBoundedMappingTask(
         Channel.value(entry_contract),
-        Channel.value(boundedEntryContractJson(entry_contract))
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        reads,
+        reference
     )
 }
 

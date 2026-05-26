@@ -23,10 +23,9 @@ Current Operating Model
 Primary entry points:
 
 * ``main.nf``: compatibility workflow graph and global branch decisions.
-* ``-entry mapping``: first bounded launch-contract scaffold for
-  controller-provided task params and task keys. This entry does not yet run
-  mapping analysis; Task 15 replaces the scaffold with the bounded mapping
-  implementation.
+* ``-entry mapping``: bounded mapping entry for one controller-declared sample
+  artefact and reference. It emits mapped XAM, index, alignment metadata, run
+  IDs, mapper provenance, and QC-ready stats.
 * ``nextflow.config``: default parameters and workflow metadata.
 * ``nextflow_schema.json``: parameter schema used by command-line and UI
   surfaces.

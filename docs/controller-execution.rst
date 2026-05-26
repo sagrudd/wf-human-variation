@@ -50,7 +50,16 @@ The shared controller command is:
      --key-field sample_id=smp_001 \
      --key-field reference_id=ref_001 \
      --key-field input_digest=sha256:abc \
-     --output mapped_bam=outputs/reads.sorted.bam
+     --key-field mapper=minimap2 \
+     --key-field mapper_options_digest=sha256:def \
+     --key-field container_digest=sha256:container \
+     --params-json mapping.params.json \
+     --output mapped_xam=outputs/reads.sorted.bam \
+     --output mapped_xam_index=outputs/reads.sorted.bam.bai \
+     --output alignment_metadata=metadata/alignment.json \
+     --output run_ids=metadata/runids.txt \
+     --output mapper_provenance=metadata/mapper-provenance.json \
+     --output qc_stats=metadata/mapping-qc.json
 
 This writes a bounded params file containing:
 
@@ -66,7 +75,7 @@ task key unless the controller requests ``--force-refresh``.
 Current Bounded Entries
 -----------------------
 
-Task 14 introduces the first bounded launch-contract scaffold:
+Task 15 promotes the first bounded entry into a real mapping execution unit:
 
 .. code-block:: text
 
@@ -78,15 +87,28 @@ Task 14 introduces the first bounded launch-contract scaffold:
      --key-field sample_id=smp_001 \
      --key-field reference_id=ref_001 \
      --key-field input_digest=sha256:abc \
-     --output bounded_launch_contract=contract/mapping.launch.json
+     --key-field mapper=minimap2 \
+     --key-field mapper_options_digest=sha256:def \
+     --key-field container_digest=sha256:container \
+     --params-json mapping.params.json \
+     --output mapped_xam=outputs/reads.sorted.bam \
+     --output mapped_xam_index=outputs/reads.sorted.bam.bai \
+     --output alignment_metadata=metadata/alignment.json \
+     --output run_ids=metadata/runids.txt \
+     --output mapper_provenance=metadata/mapper-provenance.json \
+     --output qc_stats=metadata/mapping-qc.json
 
 This launches ``nextflow run ../wf-human-variation -entry mapping`` without
-executing the default compatibility graph. The entry validates the
-controller-provided bounded params, writes the declared
-``bounded_launch_contract`` file, and writes the standard
-``.gnostikon_task_complete.json`` marker. It is intentionally not a mapping
-analysis implementation; Task 15 replaces this scaffold with real bounded
-mapping while preserving the same controller launch boundary.
+executing the default compatibility graph. The params JSON must provide
+``sample_id``, ``input_xam``, ``input_kind`` (``bam``, ``cram``, ``ubam``, or
+``basecalled_bam``), ``input_digest``, ``reference_fasta``, ``reference_id``,
+``mapper``, ``mapper_options``, ``mapper_options_digest``,
+``container_digest``, and ``output_format``. The entry validates those
+controller-provided values, checks whether the input already matches the
+reference, remaps when required with the retained
+``samtools reset -> fastq -> minimap2 -> reheader -> sort/index`` command
+shape, writes the declared mapping outputs, and only then writes the standard
+``.gnostikon_task_complete.json`` marker.
 
 Workflow Maintenance Rules
 --------------------------

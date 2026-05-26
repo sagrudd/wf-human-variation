@@ -97,9 +97,10 @@ Maintenance Rules
 Current Entry Status
 --------------------
 
-The first named bounded entry is ``-entry mapping``. At Task 14 it is a bounded
-launch-contract scaffold only: it validates the controller-provided task
-params, writes a ``bounded_launch_contract`` artefact, and writes the standard
-completion marker without executing ``main.nf``. The scaffold exists so the
-controller/workflow boundary can be exercised before the mapping toolchain is
-moved out of the compatibility graph in Task 15.
+The first named bounded entry is ``-entry mapping``. As of Task 15 it validates
+the controller-provided mapping params, consumes exactly one declared input XAM
+and reference, emits ``mapped_xam``, ``mapped_xam_index``,
+``alignment_metadata``, ``run_ids``, ``mapper_provenance``, and ``qc_stats``,
+and writes the standard completion marker only after those declared outputs
+exist. This retires the Task 14 launch-only scaffold while keeping the broader
+compatibility graph in place until later families move.

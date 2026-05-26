@@ -144,12 +144,14 @@ must use Nextflow only for task execution. Relevant controller contracts live in
 ``../gnostikon-workflow-control`` and are documented for this workflow in
 ``docs/workflow-control.rst`` and ``docs/controller-execution.rst``.
 
-The first bounded entry is the Task 14 ``mapping`` bounded launch-contract
-scaffold. It proves that the controller can launch a named entry without
-running the whole graph and that the entry accepts ``task_family``,
-``task_key``, task-cache paths, a completion marker path, and declared output
-paths. It does not yet perform mapping; Task 15 owns the real mapping
-implementation.
+The first bounded entry is the Task 15 ``mapping`` execution unit. It accepts
+controller-provided ``task_family``, ``task_key``, task-cache paths, completion
+marker path, declared output paths, sample id, input XAM, input kind, input
+digest, reference, mapper options digest, and container digest. It runs only
+mapping-owned work: reference/header compatibility checks, remapping when
+needed, XAM conversion to the declared output format, run-id extraction,
+mapping provenance, and QC-ready stats. It does not discover other samples,
+run downstream analysis families, or decide project-wide readiness.
 
 Mutable ``params.wf[...]`` updates must not carry runtime state. Run IDs are
 kept as per-sample ``*.runids.txt`` artefacts in the compatibility graph and
