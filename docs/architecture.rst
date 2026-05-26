@@ -33,8 +33,10 @@ Several high-impact decisions are made once in ``main.nf``:
 * genome-build enforcement for CNV, STR, and annotated SNP/SV/phased work;
 * partner export activation from ``params.partner``.
 
-These decisions are maintenance-sensitive because they mean one visible flag
-can enable additional work. Document any change to these relationships in
+These decisions are compatibility debt because one visible flag can enable
+additional work. Do not reproduce them in bounded entries. New work must use
+the explicit prerequisite contract in ``docs/explicit-prerequisites.rst`` and
+``lib/feature_prerequisites.nf``. Document any compatibility-graph change in
 ``docs/subworkflows.rst`` and ``docs/parameters.rst``.
 
 Whole-Run Barriers

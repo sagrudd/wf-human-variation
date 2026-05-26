@@ -38,6 +38,7 @@ Contents
    controller-execution
    idempotency
    keyed-joins
+   explicit-prerequisites
    subworkflows
    parameters
    outputs

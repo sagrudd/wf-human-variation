@@ -21,10 +21,11 @@ The SNP route uses Clair3 components to create SNP/indel VCFs and optional
 GVCFs. It also contains phasing and haplotagging logic used by other
 subworkflows.
 
-Important couplings:
+Compatibility couplings:
 
-* STR and phased output can indirectly require SNP work.
-* Spectre CNV consumes SNP VCF output.
+* The static graph can run SNP work for STR and phased output because
+  haplotagging is implemented inside the SNP route.
+* Spectre CNV consumes SNP VCF output in the static graph.
 * Clair3 model selection depends on basecaller metadata unless explicitly
   overridden.
 * Genotyping mode with ``--vcf_fn`` changes allele-frequency behavior.
@@ -36,8 +37,10 @@ Phasing and haplotagging are implemented inside the SNP route. The generated
 haplotagged XAM and per-contig haplotagged BAMs can be consumed by SV, STR, and
 modified-base analysis depending on flags.
 
-This is a high-risk area because a downstream feature can cause a much larger
-upstream path to run. Update this page whenever those dependencies change.
+This is a high-risk compatibility area because a downstream feature can cause a
+much larger upstream path to run. New bounded entries must instead declare
+``variant_calling`` output prerequisites as described in
+``docs/explicit-prerequisites.rst``.
 
 SV Calling
 ----------
@@ -66,11 +69,14 @@ Files:
 
 Spectre is the default CNV mode. QDNAseq is enabled with ``--use_qdnaseq``.
 
-Important couplings:
+Compatibility couplings:
 
 * Spectre consumes SNP VCFs.
 * QDNAseq requires BAM-compatible input and can force format conversion.
 * CNV generally requires supported genome-build handling.
+
+Bounded CNV entries must declare Spectre's SNP VCF dependency explicitly and
+must not make Spectre mode silently activate SNP publication.
 
 STR Calling
 -----------
@@ -80,9 +86,11 @@ Files:
 * ``workflows/wf-human-str.nf``
 * ``modules/local/wf-human-str.nf``
 
-STR genotyping uses haplotagged contig BAMs from the SNP/haplotagging route and
-requires sample sex state. If ``--sex`` is not provided, sex inference can be
-used.
+STR genotyping uses haplotagged contig BAMs from the variant-calling
+haplotagging capability and requires sample sex state. If ``--sex`` is not
+provided, sex inference can be used. Bounded STR entries must declare
+``haplotagged_contig_bams`` as an explicit prerequisite rather than silently
+activating SNP or haplotagging work.
 
 Modified-Base Calling
 ---------------------

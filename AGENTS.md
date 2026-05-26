@@ -44,6 +44,10 @@ focused on understanding, maintaining, testing, and improving this workflow.
 - Do not grow `main.nf` as the scheduler for new dynamic behavior. New dynamic
   work should be a bounded Nextflow entry launched by the Python controller via
   `gnostikon-workflow-control nextflow-task`.
+- Do not encode feature booleans that implicitly activate other analysis
+  families. STR, Spectre CNV, phased methylation, and similar cases must
+  declare explicit task prerequisites using the contract in
+  `docs/explicit-prerequisites.rst` and `lib/feature_prerequisites.nf`.
 - New bounded entries must not use global `.collect()` or broad unkeyed
   `.combine()` for readiness. Use keyed per-sample/per-reference joins as
   documented in `docs/keyed-joins.rst` and `lib/keyed_joins.nf`.

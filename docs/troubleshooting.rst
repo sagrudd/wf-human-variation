@@ -37,7 +37,13 @@ STR Or Phased Output Runs More Work Than Expected
 
 STR and phased outputs rely on haplotagging. Haplotagging is currently
 implemented inside the SNP route, so enabling STR or phasing can cause SNP work
-to run even when ``--snp`` was not explicitly selected.
+to run even when ``--snp`` was not explicitly selected in the static
+compatibility graph.
+
+For bounded ``humvar3`` entries, this behavior should appear as visible
+``task.blocked`` or ``task.planned`` state: STR requires
+``haplotagged_contig_bams``, and the controller decides whether to plan the
+internal ``variant_calling`` prerequisite or wait for an existing output.
 
 QDNAseq Requires BAM-Compatible Input
 -------------------------------------

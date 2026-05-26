@@ -26,6 +26,8 @@ Review Focus
 Reviewers should check:
 
 * whether global branch decisions changed;
+* whether any feature flag silently activates another analysis family instead
+  of declaring an explicit prerequisite;
 * whether any channel operation introduces a new whole-run barrier;
 * whether optional values are represented clearly;
 * whether matching changes are needed in ``../gnostikon-workflow-control`` and
@@ -35,10 +37,10 @@ Reviewers should check:
 * whether report content still matches generated artefacts;
 * whether docs and tests moved with the code.
 
-Known Risk Areas
-----------------
+Known Compatibility Debt
+------------------------
 
-* Hidden SNP activation for STR, phasing, and Spectre CNV.
+* Static ``main.nf`` SNP activation for STR, phasing, and Spectre CNV.
 * QDNAseq format compatibility.
 * Placeholder optional files.
 * Drift between this workflow, ``gnostikon-workflow-control``, and
