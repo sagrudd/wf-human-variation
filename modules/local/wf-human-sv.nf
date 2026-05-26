@@ -39,7 +39,7 @@ process sniffles2 {
     """
     sniffles \
         --threads $task.cpus \
-        --sample-id ${xam_meta.alias} \
+        --sample-id ${xam_meta.sample_id} \
         --output-rnames \
         ${min_sv_len} \
         --cluster-merge-pos $params.cluster_merge_pos \

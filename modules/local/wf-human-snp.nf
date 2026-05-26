@@ -46,7 +46,7 @@ process make_chunks {
         """
         # CW-2456: save command line to add to VCF file (very long command...)
         mkdir -p clair_output/tmp
-        echo "run_clair3.sh --bam_fn=${xam} ${bedprnt} --ref_fn=${ref} ${vcfprnt} --output=clair_output --platform=ont --sample_name=${xam_meta.alias} --model_path=${model_path.simpleName} --ctg_name=${params.ctg_name} ${ctg_name} --include_all_ctgs=${params.include_all_ctgs} --chunk_num=0 --chunk_size=5000000 --qual=${params.min_qual} --var_pct_full=${params.var_pct_full} --ref_pct_full=${params.ref_pct_full} ${snp_min_af} ${indel_min_af} --min_contig_size=${params.min_contig_size}" > clair_output/tmp/CMD
+        echo "run_clair3.sh --bam_fn=${xam} ${bedprnt} --ref_fn=${ref} ${vcfprnt} --output=clair_output --platform=ont --sample_name=${xam_meta.sample_id} --model_path=${model_path.simpleName} --ctg_name=${params.ctg_name} ${ctg_name} --include_all_ctgs=${params.include_all_ctgs} --chunk_num=0 --chunk_size=5000000 --qual=${params.min_qual} --var_pct_full=${params.var_pct_full} --ref_pct_full=${params.ref_pct_full} ${snp_min_af} ${indel_min_af} --min_contig_size=${params.min_contig_size}" > clair_output/tmp/CMD
         # CW-2456: prepare other inputs normally
         python \$(which clair3.py) CheckEnvs \
             --bam_fn ${xam} \
@@ -60,7 +60,7 @@ process make_chunks {
             --include_all_ctgs ${params.include_all_ctgs} \
             --threads 1  \
             --qual ${params.min_qual} \
-            --sampleName ${xam_meta.alias} \
+            --sampleName ${xam_meta.sample_id} \
             --var_pct_full ${params.var_pct_full} \
             --ref_pct_full ${params.ref_pct_full} \
             ${snp_min_af} \
@@ -148,7 +148,7 @@ process aggregate_pileup_variants {
             --input_dir input_vcfs/ \
             --vcf_fn_prefix pileup \
             --output_fn pileup.vcf \
-            --sampleName !{xam_meta.alias} \
+            --sampleName !{xam_meta.sample_id} \
             --ref_fn !{ref} \
             --contigs_fn !{contigs} \
             --cmd_fn !{command}
@@ -357,7 +357,7 @@ process evaluate_candidates {
             --chkpnt_fn ${model}/full_alignment \
             --bam_fn ${phased_xam} \
             --call_fn output/full_alignment_${filename}.vcf \
-            --sampleName ${xam_meta.alias} \
+            --sampleName ${xam_meta.sample_id} \
             --ref_fn ${ref} \
             --full_aln_regions ${candidate_bed} \
             --ctgName ${contig} \
@@ -396,7 +396,7 @@ process aggregate_full_align_variants {
         pypy $(which clair3.py) SortVcf \
             --input_dir full_alignment \
             --output_fn full_alignment.vcf \
-            --sampleName !{xam_meta.alias} \
+            --sampleName !{xam_meta.sample_id} \
             --ref_fn !{ref} \
             --cmd_fn !{command} \
             --contigs_fn !{contigs}
@@ -412,7 +412,7 @@ process aggregate_full_align_variants {
                 --input_dir gvcf_tmp_path \
                 --vcf_fn_suffix .tmp.gvcf \
                 --output_fn non_var.gvcf \
-                --sampleName !{xam_meta.alias} \
+                --sampleName !{xam_meta.sample_id} \
                 --ref_fn !{ref} \
                 --cmd_fn !{command} \
                 --contigs_fn !{contigs}
@@ -564,7 +564,7 @@ process aggregate_all_variants{
             --input_dir merge_output \
             --vcf_fn_prefix $prefix \
             --output_fn ${xam_meta.alias}.wf_snp.vcf \
-            --sampleName ${xam_meta.alias} \
+            --sampleName ${xam_meta.sample_id} \
             --ref_fn ${ref} \
             --cmd_fn ${command} \
             --contigs_fn ${contigs}
@@ -581,13 +581,13 @@ process aggregate_all_variants{
                 --vcf_fn_prefix merge \
                 --vcf_fn_suffix .gvcf \
                 --output_fn tmp.gvcf \
-                --sampleName ${xam_meta.alias} \
+                --sampleName ${xam_meta.sample_id} \
                 --ref_fn ${ref} \
                 --cmd_fn ${command} \
                 --contigs_fn ${contigs}
 
-                # Reheading samples named "SAMPLE" to xam_meta.alias.
-                echo "SAMPLE" "${xam_meta.alias}" > rename.txt
+                # Rehead samples named "SAMPLE" to the durable sample identity.
+                echo "SAMPLE" "${xam_meta.sample_id}" > rename.txt
                 bcftools reheader -s rename.txt tmp.gvcf.gz > ${xam_meta.alias}.wf_snp.gvcf.gz
                 bcftools index -t ${xam_meta.alias}.wf_snp.gvcf.gz && rm tmp.gvcf.gz rename.txt
         fi
@@ -729,7 +729,7 @@ process makeStatsJson {
         """
         workflow-glue snp_stats_json \
             --vcf_stats ${vcfstats} \
-            --sample_name ${xam_meta.alias} \
+            --sample_name ${xam_meta.sample_id} \
             --output ${xam_meta.alias}.snvs.json
         """
 }

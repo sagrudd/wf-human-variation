@@ -44,6 +44,9 @@ Primary input parameters:
 * ``--project``, ``--flowcell``, and ``--run_id``: optional context supplied by
   the workflow controller. These fields are metadata for migration and do not
   replace the current filename label behavior of ``--sample_name``.
+  Identity-sensitive caller arguments and metrics metadata use ``--sample_id``;
+  current output filenames use ``--sample_name``/``meta.alias`` for
+  compatibility.
 * ``--bed``: target regions for variant calling and optional coverage summary.
 * ``--coverage_bed``: regions for coverage metrics only.
 

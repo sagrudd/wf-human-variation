@@ -264,7 +264,8 @@ process rejectedLowCoverage {
         """
         printf '%s\\n' \\
           '{' \\
-          '  "sample": "${xam_meta.alias}",' \\
+          '  "sample_id": "${xam_meta.sample_id}",' \\
+          '  "display_alias": "${xam_meta.alias}",' \\
           '  "state": "rejected_low_coverage",' \\
           '  "evidence": "${low_coverage_evidence}",' \\
           '  "bam_min_coverage": ${params.bam_min_coverage},' \\
@@ -273,7 +274,8 @@ process rejectedLowCoverage {
         mkdir -p "${params.out_dir}"
         cp "${xam_meta.alias}.rejected_low_coverage.state.json" "${params.out_dir}/"
         echo "Sample state: rejected_low_coverage" >&2
-        echo "Sample: ${xam_meta.alias}" >&2
+        echo "Sample: ${xam_meta.sample_id}" >&2
+        echo "Display alias: ${xam_meta.alias}" >&2
         echo "Low coverage evidence: ${low_coverage_evidence}" >&2
         echo "Coverage is below --bam_min_coverage=${params.bam_min_coverage}." >&2
         echo "Workflow status is failed by design for rejected_low_coverage." >&2
@@ -450,9 +452,8 @@ process sanitise_bed {
 // coverage, SNPs and SVs
 // NOTE The keys in here are rather sad to look at but form part of downstream
 //   processes for several 3rd party providers and MUST NOT be fiddled with.
-// Currently, the workflow's sample_name parameter is used to fill in
-//   meta.sample_sheet.alias, this should be populated more fully by an
-//   input sample_sheet in a not so distant future (and sample_name deprecated)
+// meta.alias is retained as a filename/display label. Durable identity is
+// meta.sample_id, supplied explicitly by the controller/operator.
 process combine_metrics_json {
     label "wf_common"
     cpus 1
@@ -486,7 +487,10 @@ process combine_metrics_json {
             ${haplocheck_arg} \
             ${sex_arg} \
             ${input_jsons} \
-            --metadata "sample_sheet.alias=${xam_meta.alias}" \
+            --metadata \
+              "sample_id=${xam_meta.sample_id}" \
+              "display_alias=${xam_meta.alias}" \
+              "sample_sheet.alias=${xam_meta.alias}" \
             --output ${xam_meta.alias}.stats.json
         """
 }
@@ -589,12 +593,12 @@ process haplocheck {
             # Otherwise, save as NV (no value) as opposed to ND (not determined)
             else
                 echo "Sample\tContamination Status\tContamination Level\tDistance\tSample Coverage" > ${xam_meta.alias}.haplocheck.tsv
-                echo "${xam_meta.alias}\tNA\tNV\t0\t0" >> ${xam_meta.alias}.haplocheck.tsv
+                echo "${xam_meta.sample_id}\tNA\tNV\t0\t0" >> ${xam_meta.alias}.haplocheck.tsv
             fi
         # If no reads are found, create the placeholder.
         else
             echo "Sample\tContamination Status\tContamination Level\tDistance\tSample Coverage" > ${xam_meta.alias}.haplocheck.tsv
-            echo "${xam_meta.alias}\tNA\tNV\t0\t0" >> ${xam_meta.alias}.haplocheck.tsv
+            echo "${xam_meta.sample_id}\tNA\tNV\t0\t0" >> ${xam_meta.alias}.haplocheck.tsv
         fi
         """
 }

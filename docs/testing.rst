@@ -26,6 +26,7 @@ When suitable data is available, run a minimal smoke test:
    nextflow run . \
      --bam /path/to/demo.bam \
      --ref /path/to/demo.fasta \
+     --sample_id DEMO-STABLE-ID \
      --sample_name DEMO \
      --snp \
      -profile standard

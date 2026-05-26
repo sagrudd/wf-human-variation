@@ -55,6 +55,12 @@ optional runtime context. Dynamic POD5 and BAM arrivals must carry
 Nextflow metadata now carries these fields when supplied through parameters,
 while ``meta.alias`` remains a display/output label.
 
+Task execution must preserve the distinction between these values. VCF sample
+names, caller ``--sample-id`` arguments, rejection-state JSON, and combined
+metrics metadata use ``sample_id``. File names and current publication paths
+continue to use ``meta.alias`` until the output contract is deliberately
+revised.
+
 Single-Sample Enforcement
 -------------------------
 

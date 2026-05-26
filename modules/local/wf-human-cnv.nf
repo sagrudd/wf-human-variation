@@ -21,7 +21,7 @@ process callCNV {
         spectre CNVCaller \
         --bin-size 1000 \
         --coverage readstats/ \
-        --sample-id ${xam_meta.alias} \
+        --sample-id ${xam_meta.sample_id} \
         --output-dir spectre_output/ \
         --reference ${ref} \
         --blacklist ${genome_build}_blacklist_v1.0 \

@@ -56,11 +56,11 @@ workflow str {
     }
 
     // merge the contig VCFs
-    // bam_channel.xam_meta is per contig (containing sq: and id:) 
-    // so just use meta.alias to combine with the grouped branched_annotation vcfs
+    // bam_channel.xam_meta is per contig (containing sq: and id:).
+    // Keep alias as the output label but preserve sample_id as durable identity.
     merged_vcf = concat_str_vcfs(
         bam_channel
-          | map { xam, xai, meta -> ['alias': meta.alias] }
+          | map { xam, xai, meta -> [alias: meta.alias, sample_id: meta.sample_id, display_alias: meta.display_alias] }
           | unique
           | combine(branched_annotations.stranger_vcfs_and_tbis)
           | groupTuple,

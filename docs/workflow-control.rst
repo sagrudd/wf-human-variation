@@ -110,6 +110,9 @@ aliases.
 
 The current workflow still uses ``meta.alias`` heavily for filenames and
 third-party export paths. Treat that as a display and compatibility label only.
+Identity-sensitive tool arguments and manifest-like metric metadata must use
+``sample_id``; any remaining alias use should be explainable as output naming,
+directory naming, or inherited export compatibility.
 
 Sample Sheets
 -------------

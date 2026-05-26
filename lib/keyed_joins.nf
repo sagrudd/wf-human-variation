@@ -6,7 +6,7 @@
  */
 
 def sampleJoinKey(meta) {
-    def key = meta.sample_id ?: meta.alias
+    def key = meta.sample_id
     if (!key) {
         throw new IllegalArgumentException("sample join key requires sample_id")
     }

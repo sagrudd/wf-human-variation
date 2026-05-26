@@ -22,7 +22,7 @@ process call_str {
         { grep '${chr}' -Fw ${repeat_bed} || true; } > repeats_subset.bed
         if [[ -s repeats_subset.bed ]]; then
             straglr-genotype --loci repeats_subset.bed \
-                --sample ${xam_meta.alias} \
+                --sample ${xam_meta.sample_id} \
                 --tsv ${chr}_straglr.tsv \
                 -v ${chr}_tmp.vcf \
                 --sex ${straglr_sex} \
@@ -74,7 +74,7 @@ process bam_region_filter {
     output:
         tuple path("*str_regions.bam"), path("*str_regions.bam.bai"), val(sub_meta), emit: region_bam, optional: true
     script:
-        sub_meta = [id: xam_meta.id, sq: xam_meta.sq, alias: xam_meta.alias]
+        sub_meta = [id: xam_meta.id, sq: xam_meta.sq, alias: xam_meta.alias, sample_id: xam_meta.sample_id, display_alias: xam_meta.display_alias]
         """
         { grep ${xam_meta.sq} -Fw ${repeat_bed} || true; } > repeats_subset.bed
 
@@ -112,7 +112,7 @@ process generate_str_content {
     output:
         tuple val(sub_meta), path ("*str-content.csv"), optional: true
     script:
-        sub_meta = ["alias": xam_meta.alias]
+        sub_meta = [alias: xam_meta.alias, sample_id: xam_meta.sample_id, display_alias: xam_meta.display_alias]
         """
         workflow-glue generate_str_content \
             --straglr ${straglr_tsv} \

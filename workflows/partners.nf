@@ -44,16 +44,16 @@ process publish_fabric {
     cpus 2
 
     input:
-        tuple val(alias), path(vcfs), path(tbis)
+        tuple val(meta), path(vcfs), path(tbis)
 
     output:
-        tuple path("${alias}.fabric.vcf.gz"), path("${alias}.fabric.vcf.gz.tbi")
+        tuple path("${meta.alias}.fabric.vcf.gz"), path("${meta.alias}.fabric.vcf.gz.tbi")
 
     script:
     """
     bcftools concat ${vcfs} --rm-dups exact -a -O u | \
-        bcftools sort -O z > ${alias}.fabric.vcf.gz && \
-        bcftools index -t ${alias}.fabric.vcf.gz
+        bcftools sort -O z > ${meta.alias}.fabric.vcf.gz && \
+        bcftools index -t ${meta.alias}.fabric.vcf.gz
     """
 }
 
@@ -87,12 +87,13 @@ workflow partners {
         if (params.partner == "fabric") {
             combined_vcf_ch = snv
             | mix(sv, cnv, str)
-            // Group using sample alias
+            // Group using stable sample identity; keep alias for output filenames.
             | map {
                 meta, vcf, tbi -> 
-                [meta.alias, vcf, tbi]
+                [meta.sample_id, meta, vcf, tbi]
             }
-            | groupTuple
+            | groupTuple(by: 0)
+            | map { sample_id, metas, vcfs, tbis -> [metas[0], vcfs, tbis] }
             | publish_fabric
         }
 }

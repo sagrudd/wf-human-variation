@@ -26,6 +26,7 @@ Run a basic small-variant and structural-variant analysis:
    nextflow run . \
      --bam /path/to/sample.bam \
      --ref /path/to/reference.fa \
+     --sample_id SAMPLE-STABLE-ID \
      --sample_name SAMPLE \
      --snp \
      --sv \

@@ -236,13 +236,13 @@ workflow mod {
             // Concatenate the haplotypes.
             bedmethyl = modkit_out.modkit_Hstar
                 | mix(modkit_out.modkit_H1, modkit_out.modkit_H2)
-                | map{ meta, group, bedmethyl -> [["alias": meta.alias], group, bedmethyl]}
+                | map{ meta, group, bedmethyl -> [[sample_id: meta.sample_id, alias: meta.alias, display_alias: meta.display_alias], group, bedmethyl]}
                 | groupTuple(by: [0,1])
                 | concat_bedmethyl
         } else {
             // Run modkit.
             bedmethyl = modkit(modkit_bam, reference.collect(), modkit_options)
-                | map{ meta, group, bedmethyl -> [["alias": meta.alias], group, bedmethyl]}
+                | map{ meta, group, bedmethyl -> [[sample_id: meta.sample_id, alias: meta.alias, display_alias: meta.display_alias], group, bedmethyl]}
                 | groupTuple(by: [0,1])
                 | concat_bedmethyl
         }

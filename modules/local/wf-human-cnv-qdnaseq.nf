@@ -18,12 +18,11 @@ process callCNV {
         # Fix known QDNAseq VCF malformations
         mv ${xam_meta.alias}_calls.vcf raw.vcf
         mv ${xam_meta.alias}_segs.vcf raw_segs.vcf
-        fix_qdnaseq_vcf.py -i raw.vcf -o ${xam_meta.alias}.wf_cnv.vcf --sample_id ${xam_meta.alias}
-        fix_qdnaseq_vcf.py -i raw_segs.vcf -o ${xam_meta.alias}_segs.vcf --sample_id ${xam_meta.alias}
+        fix_qdnaseq_vcf.py -i raw.vcf -o ${xam_meta.alias}.wf_cnv.vcf --sample_id ${xam_meta.sample_id}
+        fix_qdnaseq_vcf.py -i raw_segs.vcf -o ${xam_meta.alias}_segs.vcf --sample_id ${xam_meta.sample_id}
 
         # bgzip and index calls VCF
         bgzip ${xam_meta.alias}.wf_cnv.vcf
         tabix -f -p vcf ${xam_meta.alias}.wf_cnv.vcf.gz
         """
 }
-
