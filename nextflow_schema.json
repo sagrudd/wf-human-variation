@@ -132,6 +132,9 @@
             "type": "object",
             "fa_icon": "fas fa-arrow-right",
             "description": "Primary parameters for the data analysis.",
+            "required": [
+                "sample_id"
+            ],
             "overrides": {
                 "minknow": {
                     "title": "Human genome reference",
@@ -164,11 +167,8 @@
                 },
                 "sample_id": {
                     "type": "string",
-                    "description": "Stable sample identity supplied by the workflow controller."
-                },
-                "biosample_id": {
-                    "type": "string",
-                    "description": "Stable biological sample identity supplied by the workflow controller."
+                    "description": "Stable sample identity supplied by the workflow controller.",
+                    "help_text": "Required. This is the durable controller identity for the sample. It must not be derived from filenames or display aliases."
                 },
                 "bam": {
                     "title": "Input: BAM file",

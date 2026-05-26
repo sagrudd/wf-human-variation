@@ -96,6 +96,11 @@ workflow {
 
     can_start = true
 
+    if (!params.sample_id) {
+        log.error(colors.red + "Stable sample identity is required. Provide --sample_id." + colors.reset)
+        can_start = false
+    }
+
     // Check if it is in genotyping mode
     if (params.snp && params.vcf_fn) {
         if (params.bed){

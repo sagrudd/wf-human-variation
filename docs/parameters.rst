@@ -41,10 +41,11 @@ Primary input parameters:
 * ``--bam``: input BAM, CRAM, uBAM, or compatible directory.
 * ``--ref``: reference FASTA.
 * ``--sample_name``: display label used for current workflow outputs.
-* ``--project``, ``--flowcell``, ``--run_id``, ``--sample_id``, and
-  ``--biosample_id``: stable identity tuple supplied by the workflow
-  controller. These fields are metadata for migration and do not replace the
-  current filename/report label behavior of ``--sample_name``.
+* ``--sample_id``: mandatory stable sample identity supplied by the workflow
+  controller.
+* ``--project``, ``--flowcell``, and ``--run_id``: optional context supplied by
+  the workflow controller. These fields are metadata for migration and do not
+  replace the current filename/report label behavior of ``--sample_name``.
 * ``--bed``: target regions for variant calling and optional coverage summary.
 * ``--coverage_bed``: regions for coverage reporting only.
 

@@ -11,17 +11,10 @@ def stableIdentityFromParams(Map meta, params) {
         flowcell: params.flowcell,
         run_id: params.run_id,
         sample_id: params.sample_id,
-        biosample_id: params.biosample_id,
         display_alias: meta.alias,
         observed_aliases: [meta.alias, meta.barcode].findAll { it }.unique()
     ]
-    identity.identity_status = (
-        identity.project
-        && identity.flowcell
-        && identity.run_id
-        && identity.sample_id
-        && identity.biosample_id
-    ) ? "confirmed" : "unresolved"
+    identity.identity_status = identity.sample_id ? "confirmed" : "unresolved"
     return identity
 }
 

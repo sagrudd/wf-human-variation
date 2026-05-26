@@ -48,12 +48,12 @@ for outputs. It is not durable identity. The alias can come from:
 Maintainers must not confuse this alias with durable biological identity. It is
 a label used by the current workflow and by output filenames.
 
-The shared controller model treats the tuple ``{project, flowcell, run_id,
-sample_id, biosample_id}`` as authoritative sample identity for read artefacts.
-Dynamic POD5 and BAM arrivals must carry that tuple when they are projected
-into this workflow. The transitional Nextflow metadata now carries these fields
-when supplied through parameters, while ``meta.alias`` remains a display/output
-label.
+The shared controller model treats ``sample_id`` as authoritative sample
+identity for read artefacts. ``project``, ``flowcell``, and ``run_id`` are
+optional runtime context. Dynamic POD5 and BAM arrivals must carry
+``sample_id`` when they are projected into this workflow. The transitional
+Nextflow metadata now carries these fields when supplied through parameters,
+while ``meta.alias`` remains a display/output label.
 
 Single-Sample Enforcement
 -------------------------
