@@ -61,7 +61,8 @@ Known Compatibility Debt
 * ``main.nf`` remains a compatibility reference for tool invocations, process
   wiring, and expected outputs until bounded entries retire each responsibility.
 * QDNAseq format compatibility.
-* Placeholder optional files.
+* Placeholder optional files outside the finite transitional list in
+  ``docs/architecture.rst``.
 * Any reintroduction of mutable ``params.wf[...]`` runtime side effects.
   Ingress run IDs must stay as per-sample artefacts or controller-owned
   manifest/event records.

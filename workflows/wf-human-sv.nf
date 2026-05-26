@@ -96,8 +96,8 @@ workflow runBenchmark {
         }
         else {
             // Process-local boundary paths trigger bundled benchmark data.
-            truthset_vcf = Channel.fromPath("OPTIONAL_FILE.vcf.gz", checkIfExists: false)
-            truthset_tbi = Channel.fromPath("OPTIONAL_FILE.vcf.gz.tbi", checkIfExists: false)
+            truthset_vcf = Channel.of(optionalBoundaryPath("vcf.gz"))
+            truthset_tbi = Channel.of(optionalBoundaryPath("vcf.gz.tbi"))
         }
 
         // run benchmark

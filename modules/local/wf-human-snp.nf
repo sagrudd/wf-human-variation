@@ -3,6 +3,11 @@ def whatshap_memory = [4.GB, 8.GB, 12.GB]
 def haptag_memory = [4.GB, 8.GB, 12.GB]
 def aggregate_memory = [4.GB, 8.GB, 16.GB]
 
+include {
+    isOptionalBoundaryFile;
+    realOptionalArg;
+} from "../../lib/optional_inputs.nf"
+
 // As of Clair3 v1.0.6, set `--min_snp_af` and `--min_indel_af` to 0 with `--vcf_fn`.
 def snp_min_af = params.vcf_fn ? "--snp_min_af 0.0": "--snp_min_af ${params.snp_min_af}"
 def indel_min_af = params.vcf_fn ? "--indel_min_af 0.0" : "--indel_min_af ${params.indel_min_af}"
@@ -28,10 +33,10 @@ process make_chunks {
         path "clair_output/tmp/split_beds", emit: split_beds, optional: true
     script:
         // Prepare input BED and genotyping VCF arguments (mutually exclusive, checked in workflow)
-        def bedargs = bed.name != 'OPTIONAL_FILE' ? "--bed_fn ${bed}" : ''
-        def bedprnt = bed.name != 'OPTIONAL_FILE' ? "--bed_fn=${bed}" : ''
-        def vcfargs = genotyping_vcf.baseName != "OPTIONAL_FILE" ? "--vcf_fn ${genotyping_vcf}" : ""
-        def vcfprnt = genotyping_vcf.baseName != "OPTIONAL_FILE" ? "--vcf_fn=${genotyping_vcf}" : ""
+        def bedargs = realOptionalArg(bed, "--bed_fn")
+        def bedprnt = isOptionalBoundaryFile(bed) ? "" : "--bed_fn=${bed}"
+        def vcfargs = realOptionalArg(genotyping_vcf, "--vcf_fn")
+        def vcfprnt = isOptionalBoundaryFile(genotyping_vcf) ? "" : "--vcf_fn=${genotyping_vcf}"
         // Define contigs in order to enforce the mitochondrial genome calling, which is otherwise skipped.
         String ctgs = chromosome_codes.join(',')
         def ctg_name = "--ctg_name ${ctgs}"
@@ -40,7 +45,7 @@ process make_chunks {
             ctg_name = "--ctg_name ${params.ctg_name}"
         }
         // If all contigs are required, then set the ctg_name to EMPTY
-        if (params.include_all_ctgs || bed.name != 'OPTIONAL_FILE'){
+        if (params.include_all_ctgs || !isOptionalBoundaryFile(bed)){
             ctg_name = '--ctg_name "EMPTY"'
         }
         """
@@ -94,7 +99,7 @@ process pileup_variants {
         // note: the VCF output here is required to use the contig
         //       name since that's parsed in the SortVcf step
         // note: snp_min_af and indel_min_af have an impact on performance
-        def bedargs = bed.name != 'OPTIONAL_FILE' ? "--bed_fn ${bed} --extend_bed split_bed/${region.contig}" : ''
+        def bedargs = isOptionalBoundaryFile(bed) ? "" : "--bed_fn ${bed} --extend_bed split_bed/${region.contig}"
         """
         python \$(which clair3.py) CallVariantsFromCffi \
             --chkpnt_fn ${model}/pileup \

@@ -1,5 +1,9 @@
 // filter VCF such that only INS, DEL and DUP remain for benchmarking
 // possibly make this optional in future but there is only one canonical data set for this benchmarking currently
+include {
+    isOptionalBoundaryFile
+} from "../../lib/optional_inputs.nf"
+
 process filterBenchmarkVcf {
     label "wf_human_sv"
     cpus 2
@@ -29,7 +33,7 @@ process intersectBedWithTruthset {
         path "target_truthset.bed", emit: intersected_bed
     script:
     // use the bundled benchmark BED if the user_truthset_bed is the dummy
-    def tru_bed_arg = user_truthset_bed.name.startsWith("OPTIONAL_FILE") ? "\${WFSV_EVAL_DATA_PATH}/benchmark.bed" : user_truthset_bed
+    def tru_bed_arg = isOptionalBoundaryFile(user_truthset_bed) ? "\${WFSV_EVAL_DATA_PATH}/benchmark.bed" : user_truthset_bed
     """
     bedtools intersect \
         -a ${tru_bed_arg} \
@@ -58,7 +62,7 @@ process truvari {
         path "*.truvari.json", emit: truvari_json
     script:
     // use the bundled benchmark data if the user_truthset_vcf is the dummy
-    def tru_vcf_arg = user_truthset_vcf.name.startsWith("OPTIONAL_FILE") ? "\${WFSV_EVAL_DATA_PATH}/benchmark.vcf.gz" : user_truthset_vcf
+    def tru_vcf_arg = isOptionalBoundaryFile(user_truthset_vcf) ? "\${WFSV_EVAL_DATA_PATH}/benchmark.vcf.gz" : user_truthset_vcf
     """
     truvari bench \
         --passonly \

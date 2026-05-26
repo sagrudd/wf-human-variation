@@ -1,4 +1,9 @@
 //NOTE grep MOSDEPTH_TUPLE if changing output tuple
+include {
+    isOptionalBoundaryFile;
+    realOptionalArg;
+} from "../../lib/optional_inputs.nf"
+
 process mosdepth {
     cpus 4
     memory {4.GB * task.attempt}
@@ -179,13 +184,31 @@ process eval_downsampling {
     output:
         tuple val(xam_meta.sample_id), val(xam_meta), env(to_downsample), env(downsampling_rate), emit: downsampling_ratio
     script:
-        def with_bed = bed.name != 'OPTIONAL_FILE' ? "--bed ${bed}" : ""
         """
         result=\$(workflow-glue downsampling_ratio \
             --downsample_depth ${params.downsample_coverage_target} \
             --margin ${params.downsample_coverage_margin} \
             --summary ${mosdepth_summary} \
-            ${with_bed})
+            --bed ${bed})
+        export to_downsample=\$(echo "\${result}" | cut -d, -f1)
+        export downsampling_rate=\$(echo "\${result}" | cut -d, -f2)
+        """
+}
+
+process eval_downsampling_without_bed {
+    label "wf_common"
+    cpus 1
+    memory 4.GB
+    input:
+        tuple val(xam_meta), path(mosdepth_summary)
+    output:
+        tuple val(xam_meta.sample_id), val(xam_meta), env(to_downsample), env(downsampling_rate), emit: downsampling_ratio
+    script:
+        """
+        result=\$(workflow-glue downsampling_ratio \
+            --downsample_depth ${params.downsample_coverage_target} \
+            --margin ${params.downsample_coverage_margin} \
+            --summary ${mosdepth_summary})
         export to_downsample=\$(echo "\${result}" | cut -d, -f1)
         export downsampling_rate=\$(echo "\${result}" | cut -d, -f2)
         """
@@ -254,7 +277,6 @@ process evaluateCoveragePass {
 
     input:
         tuple val(xam_meta), path(mosdepth_summary), path(region_bed)
-        val require_regions
         val min_coverage
 
     output:
@@ -263,12 +285,28 @@ process evaluateCoveragePass {
     script:
         """
         export mean=\$(awk -F '\\t' '\$1 == "total_region" {print \$4; found=1} END {if (!found) print 0}' ${mosdepth_summary})
-        if [ "${require_regions}" = "true" ]; then
-            export region_count=\$(zcat -f ${region_bed} | wc -l | awk '{print \$1}')
-        else
-            export region_count=1
-        fi
+        export region_count=\$(zcat -f ${region_bed} | wc -l | awk '{print \$1}')
         export pass=\$(awk -v mean="\${mean}" -v min="${min_coverage}" -v regions="\${region_count}" 'BEGIN {print (mean > min && regions > 0) ? "true" : "false"}')
+        """
+}
+
+process evaluateCoveragePassWholeGenome {
+    label "wf_common"
+    cpus 1
+    memory 1.GB
+
+    input:
+        tuple val(xam_meta), path(mosdepth_summary)
+        val min_coverage
+
+    output:
+        tuple val(xam_meta.sample_id), env(pass), env(mean), env(region_count), emit: coverage_state
+
+    script:
+        """
+        export mean=\$(awk -F '\\t' '\$1 == "total_region" {print \$4; found=1} END {if (!found) print 0}' ${mosdepth_summary})
+        export region_count=1
+        export pass=\$(awk -v mean="\${mean}" -v min="${min_coverage}" 'BEGIN {print (mean > min) ? "true" : "false"}')
         """
 }
 
@@ -496,11 +534,11 @@ process combine_metrics_json {
     output:
         path "${xam_meta.alias}.stats.json", emit: json
     script:
-        String input_jsons = jsons.name != 'OPTIONAL_FILE' ? "--jsons ${jsons}" : ""
+        String input_jsons = realOptionalArg(jsons, "--jsons")
         // only emit an inferred sex if sex is defined and params.sex is not
         String sex_arg = (!params.sex && sex) ? "--inferred_sex ${sex}" : ""
         // If haplocheck is optional file, then skip it
-        String haplocheck_arg = params.haplocheck && haplocheck.baseName != "OPTIONAL_FILE" ? "--haplocheck ${haplocheck}" : ""
+        String haplocheck_arg = params.haplocheck ? realOptionalArg(haplocheck, "--haplocheck") : ""
         """
         workflow-glue combine_jsons \
             --bamstats_flagstats flagstat.tsv \

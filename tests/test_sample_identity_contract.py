@@ -175,6 +175,52 @@ class SampleIdentityContractTest(unittest.TestCase):
         self.assertEqual(runids["type"], "per-sample")
         self.assertIn("controller-owned manifest projection", runids["description"].lower())
 
+    def test_optional_file_checks_are_centralized_at_boundary_helpers(self):
+        checked_paths = [
+            "main.nf",
+            "modules/local/common.nf",
+            "modules/local/wf-human-snp.nf",
+            "modules/local/wf-human-sv.nf",
+            "modules/local/wf-human-sv-eval.nf",
+            "workflows/wf-human-sv.nf",
+        ]
+        combined = "\n".join(read(path) for path in checked_paths)
+
+        forbidden = [
+            "name != 'OPTIONAL_FILE'",
+            'baseName != "OPTIONAL_FILE"',
+            'startsWith("OPTIONAL_FILE")',
+            'Channel.fromPath("OPTIONAL_FILE',
+            "[meta, summary, OPTIONAL]",
+        ]
+        for token in forbidden:
+            with self.subTest(token=token):
+                self.assertNotIn(token, combined)
+
+        self.assertIn("process eval_downsampling_without_bed", read("modules/local/common.nf"))
+        self.assertIn("process evaluateCoveragePassWholeGenome", read("modules/local/common.nf"))
+        self.assertIn("optionalBoundaryPath(\"vcf.gz\")", read("workflows/wf-human-sv.nf"))
+        self.assertNotIn("filter{!isOptionalBoundaryFile(it)}", read("main.nf"))
+        self.assertIn("bed_summary = Channel.empty()", read("main.nf"))
+        self.assertIn("coverage_bed_summary = Channel.empty()", read("main.nf"))
+        self.assertIn("sniffles_vcf = Channel.empty()", read("main.nf"))
+        self.assertIn("mosdepth_perbase = Channel.empty()", read("workflows/wf-human-cnv.nf"))
+
+    def test_remaining_optional_file_boundaries_are_documented(self):
+        architecture = read("docs/architecture.rst")
+
+        expected = [
+            "absent haplocheck",
+            "absent SNP genotyping VCF",
+            "absent partner-export VCF inputs",
+            "absent SV benchmark truthset paths",
+            "Downsampling and coverage pass/fail no longer use placeholder files",
+            "channels use empty channels",
+        ]
+        for token in expected:
+            with self.subTest(token=token):
+                self.assertIn(token, architecture)
+
 
 if __name__ == "__main__":
     unittest.main()

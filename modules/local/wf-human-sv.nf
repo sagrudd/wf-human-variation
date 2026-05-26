@@ -4,6 +4,9 @@
 include {
     renderToolOptions
 } from "../../lib/tool_options.nf"
+include {
+    isOptionalBoundaryFile
+} from "../../lib/optional_inputs.nf"
 
 process sniffles2 {
     label "wf_human_sv"
@@ -25,7 +28,7 @@ process sniffles2 {
         // if tr_arg is not provided and genome_build is set
         // automatically pick the relevant TR BED from the SV image
         def tr_arg = ""
-        if (tr_bed.name != 'OPTIONAL_FILE'){
+        if (!isOptionalBoundaryFile(tr_bed)){
             tr_arg = "--tandem-repeats ${tr_bed}"
         }
         else if (genome_build) {

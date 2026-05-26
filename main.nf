@@ -26,10 +26,12 @@ include {
     publish_artifact;
     get_region_coverage;
     evaluateCoveragePass;
+    evaluateCoveragePassWholeGenome;
     rejectedLowCoverage;
     getVersions;
     validateReferenceCompatibility;
     eval_downsampling;
+    eval_downsampling_without_bed;
     downsampling;
     annotate_vcf as annotate_snp_vcf;
     concat_vcfs as concat_snp_vcfs;
@@ -286,14 +288,17 @@ workflow {
                 throw new Exception(colors.red + "Unexpected number of mitochondrial chromosome found: ${it}." + colors.reset) 
             }
         }
-        hap_check = haplocheck(bam_channel, ref_channel.collect(), mt_code)
+        hap_check_result = haplocheck(bam_channel, ref_channel.collect(), mt_code)
+        hap_check = hap_check_result
         | ifEmpty{
             log.warn "Haplocheck failed to run. The workflow will continue, but will not output a contamination determination."
             optionalBoundaryFile()
         }
+        hap_check_publish = hap_check_result
     } else {
         // If haplocheck is not needed, use the predefined boundary empty file.
         hap_check = optionalBoundaryChannel()
+        hap_check_publish = Channel.empty()
     }
 
     // Set BED (and create the default all chrom BED if necessary)
@@ -324,7 +329,7 @@ workflow {
 
     }
     else {
-        coverage_bed = optionalBoundaryChannel()
+        coverage_bed = Channel.empty()
     }
 
     // mosdepth for depth traces -- passed into wf-snp :/
@@ -343,7 +348,7 @@ workflow {
         bed_summary = mosdepth_input.out.bed_summary
     }
     else {
-        bed_summary = optionalBoundaryChannel()
+        bed_summary = Channel.empty()
     }
 
     // if requested, run mosdepth again to generate coverage summary for `--coverage_bed`
@@ -352,7 +357,7 @@ workflow {
         coverage_bed_summary = mosdepth_coverage.out.bed_summary
     }
     else {
-        coverage_bed_summary = optionalBoundaryChannel()
+        coverage_bed_summary = Channel.empty()
     }
 
     // Determine if the coverage threshold is met to perform analysis.
@@ -388,10 +393,14 @@ workflow {
         } else {
             downsampling_eval_input = downsampling_summary
                 .join(downsampling_bams, by: 0)
-                .map { alias, summary, xam, xai, meta -> [meta, summary, OPTIONAL] }
+                .map { alias, summary, xam, xai, meta -> [meta, summary] }
         }
-        eval_downsampling(downsampling_eval_input)
-        eval_downsampling.out.downsampling_ratio
+        if (params.bed) {
+            downsampling_ratio = eval_downsampling(downsampling_eval_input).downsampling_ratio
+        } else {
+            downsampling_ratio = eval_downsampling_without_bed(downsampling_eval_input).downsampling_ratio
+        }
+        downsampling_ratio
             .branch{
                 sample_id, meta, to_downsample, downsampling_rate ->
                 subset: to_downsample == 'true'
@@ -544,7 +553,7 @@ workflow {
                 .join(bam_for_coverage, by: 0)
                 .join(regions_for_coverage, by: 0)
                 .map { alias, summary, bam, bai, meta, regions -> [meta, summary, regions] }
-            depth_pass = evaluateCoveragePass(coverage_eval_input, true, params.bam_min_coverage).coverage_state
+            depth_pass = evaluateCoveragePass(coverage_eval_input, params.bam_min_coverage).coverage_state
 
         // Without a BED, use summary values for the region
         } else {
@@ -554,8 +563,8 @@ workflow {
                 | map { bam, bai, meta -> [meta.alias, bam, bai, meta] }
             coverage_eval_input = summary_for_coverage
                 .join(bam_for_coverage, by: 0)
-                .map { alias, summary, bam, bai, meta -> [meta, summary, OPTIONAL] }
-            depth_pass = evaluateCoveragePass(coverage_eval_input, false, params.bam_min_coverage).coverage_state
+                .map { alias, summary, bam, bai, meta -> [meta, summary] }
+            depth_pass = evaluateCoveragePassWholeGenome(coverage_eval_input, params.bam_min_coverage).coverage_state
         }
     } else {
         // Otherwise, set all BAM to pass.
@@ -710,7 +719,7 @@ workflow {
     } else {
         json_sv = Channel.empty()
         sv_vcf = Channel.empty()
-        sniffles_vcf = optionalBoundaryChannel()
+        sniffles_vcf = Channel.empty()
     }
 
     // Then, we finish working on the SNPs by refining with SVs and annotating them. This is needed to
@@ -940,9 +949,8 @@ workflow {
             final_json.flatten(),
             bed_summary.flatten(),
             coverage_bed_summary.flatten(),
-            hap_check.flatten()
+            hap_check_publish.flatten()
         )
-        | filter{it.name != 'OPTIONAL_FILE'}
     )
 
 }

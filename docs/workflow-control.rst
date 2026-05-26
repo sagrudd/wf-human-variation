@@ -69,9 +69,11 @@ controller state and Nextflow boundary behavior separate:
   ``OPTIONAL_FILE``;
 * do not add new sample-sheet primary ingress paths;
 * use explicit empty channels when a process can naturally consume no values;
+* use empty channels for publish-only optional outputs;
 * use ``lib/optional_inputs.nf`` when a process boundary still requires a
   concrete placeholder file;
-* document every remaining placeholder as transitional compatibility behavior.
+* document every remaining placeholder as transitional compatibility behavior
+  in ``docs/architecture.rst``.
 * implement new dynamic behavior as a bounded entry launched through
   ``gnostikon-workflow-control nextflow-task``.
 * write runtime state through control-package manifest/event commands such as

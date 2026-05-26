@@ -101,6 +101,19 @@ Nextflow process boundary, but those placeholders must be routed through
 boundary behavior. Do not pass ``OPTIONAL_FILE`` semantics back into controller
 events, manifests, or task-planning state.
 
+The remaining compatibility placeholders are finite:
+
+* absent haplocheck and optional SNP/SV metrics inputs for combined metrics;
+* absent SNP genotyping VCF, split BED, and optional GVCF intermediates inside
+  the imported SNP graph;
+* absent partner-export VCF inputs for disabled analysis families;
+* absent SV benchmark truthset paths that intentionally select bundled
+  benchmark resources.
+
+Downsampling and coverage pass/fail no longer use placeholder files for absent
+BED input; they branch to no-BED processes instead. Publish-only optional
+channels use empty channels rather than placeholder files.
+
 Task Reuse
 ----------
 
