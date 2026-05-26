@@ -1,6 +1,10 @@
 // NOTE VCF entries for alleles with no support are removed to prevent them from
 //      breaking downstream parsers that do not expect them
 // --input-exclude-flags 2308: Remove unmapped (4), non-primary (256) and supplemental (2048) alignments
+include {
+    renderToolOptions
+} from "../../lib/tool_options.nf"
+
 process sniffles2 {
     label "wf_human_sv"
     cpus params.threads
@@ -28,7 +32,7 @@ process sniffles2 {
             log.warn "Automatically selecting TR BED: ${genome_build}.trf.bed"
             tr_arg = "--tandem-repeats \${WFSV_TRBED_PATH}/${genome_build}.trf.bed"
         }
-        def sniffles_args = params.sniffles_args ?: ''
+        def sniffles_args = renderToolOptions("sniffles", params.sniffles_options, params.sniffles_args)
         def min_sv_len = params.min_sv_length ? "--minsvlen ${params.min_sv_length}" : ""
         // Perform internal phasing only if snp not requested; otherwise, use joint phasing.
         def phase = params.phased ? "--phase" : ""

@@ -1,3 +1,7 @@
+include {
+    renderToolOptions
+} from "../../lib/tool_options.nf"
+
 process callCNV {
     label "spectre"
     cpus 2
@@ -12,7 +16,7 @@ process callCNV {
         tuple val(xam_meta), path("spectre_output/${xam_meta.alias}_cnv.bed"), emit: spectre_bed
         tuple val(xam_meta), path("spectre_output/predicted_karyotype.txt"), emit: spectre_karyotype
     script:
-        def spectre_args = params.spectre_args ?: ''
+        def spectre_args = renderToolOptions("spectre", params.spectre_options, params.spectre_args)
         """
         spectre CNVCaller \
         --bin-size 1000 \

@@ -19,6 +19,10 @@ Bounded `humvar3` work must write task provenance into the shared manifest via
 `gnostikon-workflow-control`, including tool versions, container digests,
 command arguments, input checksums, task status, and output artefacts.
 
+Tool customisation on `humvar3` uses structured allowlisted option objects such
+as `sniffles_options`, `modkit_options`, and `spectre_options`; legacy
+free-form `*_args` shell pass-throughs are rejected.
+
 ## Documentation
 
 The canonical technical documentation is now the Sphinx documentation in

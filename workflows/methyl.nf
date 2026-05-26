@@ -1,3 +1,7 @@
+include {
+    renderToolOptions
+} from '../lib/tool_options.nf'
+
 // Pre-compute sample probabilities
 process sample_probs {
     label "wf_human_mod"
@@ -183,11 +187,12 @@ workflow mod {
         reference
         run_haplotagging
     main:
-        def modkit_options = params.force_strand ? '' : '--combine-strands --cpg'
-        // Custom options overwrite every custom setting.
-        if (params.modkit_args){
-            modkit_options = "${params.modkit_args}"
-        }
+        def default_modkit_options = params.force_strand ? [:] : [combine_strands: true, cpg: true]
+        def modkit_options = renderToolOptions(
+            "modkit",
+            params.modkit_options ?: default_modkit_options,
+            params.modkit_args
+        )
 
         // Create input channel
         // Process only contigs with reads mapped to them.

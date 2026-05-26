@@ -35,6 +35,8 @@ Reviewers should check:
   versions, container digests, command arguments, input checksums, task status,
   and output artefacts;
 * whether optional values are represented clearly;
+* whether tool command options are structured allowlisted objects rather than
+  free-form shell fragments;
 * whether matching changes are needed in ``../gnostikon-workflow-control`` and
   ``../poikilognostikon``;
 * whether sample alias use remains consistent;
@@ -52,6 +54,8 @@ Known Compatibility Debt
   ``ingress.run_ids`` in the imported compatibility graph.
 * Provenance still scattered across legacy logs or reports rather than shared
   manifest task records.
+* Any remaining free-form tool option pass-through outside the transitional
+  rejection path for legacy ``*_args`` parameters.
 * Drift between this workflow, ``gnostikon-workflow-control``, and
   Poikilognostikon migration records.
 * Low-coverage behavior.

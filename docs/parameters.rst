@@ -64,6 +64,25 @@ Coverage behavior is controlled by:
 When changing coverage semantics, update troubleshooting and output
 documentation because low-coverage behavior affects user interpretation.
 
+Structured Tool Options
+-----------------------
+
+Free-form shell option pass-throughs are not part of the ``humvar3`` contract.
+The legacy ``--sniffles_args``, ``--modkit_args``, and ``--spectre_args``
+surfaces are rejected by the transitional Nextflow helpers. Use structured
+objects instead:
+
+* ``--sniffles_options``: allowlisted Sniffles keys such as ``mosaic``,
+  ``min_support``, and ``minsvlen``;
+* ``--modkit_options``: allowlisted modkit keys such as ``combine_strands``,
+  ``cpg``, and ``preset``;
+* ``--spectre_options``: allowlisted Spectre keys such as ``min_cnv_len``.
+
+Every option that changes a tool command must be represented in the bounded
+task key and provenance. Adding a new tool option requires updating
+``nextflow_schema.json``, ``lib/tool_options.nf``, and the shared
+``gnostikon-workflow-control`` allowlist together.
+
 Maintenance Checklist
 ---------------------
 

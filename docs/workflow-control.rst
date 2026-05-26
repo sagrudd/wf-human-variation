@@ -45,7 +45,9 @@ this workflow:
 * explicit stable sample identity for read artefacts, matching the inherited
   Epignostikon requirement that POD5 and BAM arrivals are sample-bound;
 * typed optional file and channel inputs, where absence is represented as
-  state rather than as a placeholder filename.
+  state rather than as a placeholder filename;
+* structured allowlisted tool options for Sniffles, modkit, and Spectre instead
+  of free-form shell parameter pass-throughs.
 
 Current Workflow Boundary
 -------------------------
@@ -72,6 +74,9 @@ controller state and Nextflow boundary behavior separate:
 * write bounded task provenance through ``record-task-provenance`` or
   ``lib/runtime_manifest_events.nf`` rather than leaving provenance only in
   Nextflow logs, process reports, or ad hoc JSON files.
+* render tool-specific command options through structured allowlists in
+  ``lib/tool_options.nf`` and ``gnostikon-workflow-control`` rather than
+  interpolating operator-supplied shell fragments.
 
 Stable Identity
 ---------------

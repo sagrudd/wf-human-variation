@@ -103,6 +103,9 @@ Modified-base aggregation validates BAM tags, computes probabilities, runs
 modkit, and can produce phased bedMethyl output when phased processing is
 requested.
 
+Modkit command customisation must use the structured ``--modkit_options``
+object. Free-form ``--modkit_args`` shell fragments are rejected.
+
 Annotation, Reporting, And Export
 ---------------------------------
 

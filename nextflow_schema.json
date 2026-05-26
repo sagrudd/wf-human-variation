@@ -649,25 +649,67 @@
                         "cram"
                     ]
                 },
-                "modkit_args": {
-                    "title": "Modkit additional arguments",
-                    "type": "string",
-                    "description": "The additional options for modkit.",
-                    "hidden": false,
-                    "help_text": "This is an advanced option to allow running modkit with custom settings. The arguments specified in this option will fully override all options set by the workflow. To provide custom arguments to [modkit pileup](https://nanoporetech.github.io/modkit/advanced_usage.html#pileup) from command line proceed as follows: `--modkit_args=\"--preset traditional\"`"
+                "modkit_options": {
+                    "title": "Modkit structured options",
+                    "type": "object",
+                    "description": "Allowlisted options for modkit pileup.",
+                    "default": {},
+                    "additionalProperties": false,
+                    "properties": {
+                        "combine_strands": {
+                            "type": "boolean",
+                            "description": "Pass --combine-strands to modkit pileup."
+                        },
+                        "cpg": {
+                            "type": "boolean",
+                            "description": "Pass --cpg to modkit pileup."
+                        },
+                        "preset": {
+                            "type": "string",
+                            "enum": ["traditional"],
+                            "description": "Pass an approved --preset value to modkit pileup."
+                        }
+                    },
+                    "help_text": "Structured replacement for the removed free-form --modkit_args shell pass-through. Only the documented keys are accepted."
                 },
-                "sniffles_args": {
-                    "type": "string",
-                    "description": "Additional command line arguments to pass to the Sniffles2 process",
-                    "hidden": false,
-                    "help_text": "The additional command line arguments will be passed directly to [Sniffles2](https://github.com/fritzsedlazeck/Sniffles/tree/v2.6.3); ensure to use the right commands for the version and from command line provide them as follows: `--sniffles_args=\"--mosaic\"`."
+                "sniffles_options": {
+                    "title": "Sniffles structured options",
+                    "type": "object",
+                    "description": "Allowlisted options for Sniffles2.",
+                    "default": {},
+                    "additionalProperties": false,
+                    "properties": {
+                        "mosaic": {
+                            "type": "boolean",
+                            "description": "Pass --mosaic to Sniffles2."
+                        },
+                        "min_support": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Pass --minsupport to Sniffles2."
+                        },
+                        "minsvlen": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Pass --minsvlen to Sniffles2."
+                        }
+                    },
+                    "help_text": "Structured replacement for the removed free-form --sniffles_args shell pass-through. Only the documented keys are accepted."
                 },
-                "spectre_args": {
-                    "title": "Spectre additional arguments",
-                    "type": "string",
-                    "description": "Additional command line arguments to pass to the Spectre process",
-                    "hidden": false,
-                    "help_text": "The additional command line arguments will be passed directly to [Spectre](https://github.com/epi2me-labs/ont-spectre); from the command line provide them as follows: `--spectre_args=\"--min-cnv-len 80000\"`."
+                "spectre_options": {
+                    "title": "Spectre structured options",
+                    "type": "object",
+                    "description": "Allowlisted options for Spectre CNVCaller.",
+                    "default": {},
+                    "additionalProperties": false,
+                    "properties": {
+                        "min_cnv_len": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Pass --min-cnv-len to Spectre CNVCaller."
+                        }
+                    },
+                    "help_text": "Structured replacement for the removed free-form --spectre_args shell pass-through. Only the documented keys are accepted."
                 },
                 "override_basecaller_cfg": {
                     "title": "Basecaller configuration",
