@@ -81,3 +81,12 @@ Dynamic Scheduling
 Schedulers must check for a valid completion marker before queuing work. If new
 data arrives, only task keys affected by the new input or changed configuration
 should be planned. Successful old work with the same task key remains reusable.
+If required outputs are removed or the marker belongs to a different task key,
+the controller must treat the task as not reusable and queue a new bounded
+attempt. ``--force-refresh`` deliberately bypasses a valid marker but must keep
+the same deterministic task-cache path for the same key fields.
+
+Phase 2 task 24 keeps this behaviour under local regression tests. Those tests
+fail if public HTML reports, report-only Python dependencies, new
+``OPTIONAL_FILE`` consumers, mutable ``params.wf`` runtime assignments, or
+undocumented performance-sensitive joins are reintroduced.
