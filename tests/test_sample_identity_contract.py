@@ -242,7 +242,7 @@ class SampleIdentityContractTest(unittest.TestCase):
         self.assertEqual(runids["type"], "per-sample")
         self.assertIn("controller-owned manifest projection", runids["description"].lower())
 
-    def test_optional_file_checks_are_centralized_at_boundary_helpers(self):
+    def test_absent_input_checks_are_centralized_at_boundary_helpers(self):
         checked_paths = [
             "main.nf",
             "modules/local/common.nf",
@@ -258,11 +258,20 @@ class SampleIdentityContractTest(unittest.TestCase):
             'baseName != "OPTIONAL_FILE"',
             'startsWith("OPTIONAL_FILE")',
             'Channel.fromPath("OPTIONAL_FILE',
+            'Channel.fromPath("${projectDir}/data/OPTIONAL_FILE"',
+            'data/OPTIONAL_FILE',
             "[meta, summary, OPTIONAL]",
         ]
         for token in forbidden:
             with self.subTest(token=token):
                 self.assertNotIn(token, combined)
+
+        helper = read("lib/optional_inputs.nf")
+        self.assertIn("__wf_human_variation_absent_input__", helper)
+        self.assertIn("workflow.workDir", helper)
+        self.assertIn("optional-input-boundary", helper)
+        self.assertNotIn("data/OPTIONAL_FILE", helper)
+        self.assertFalse((REPO_ROOT / "data" / "OPTIONAL_FILE").exists())
 
         self.assertIn("process eval_downsampling_without_bed", read("modules/local/common.nf"))
         self.assertIn("process evaluateCoveragePassWholeGenome", read("modules/local/common.nf"))
@@ -281,8 +290,8 @@ class SampleIdentityContractTest(unittest.TestCase):
             "absent SNP genotyping VCF",
             "absent partner-export VCF inputs",
             "absent SV benchmark truthset paths",
-            "Downsampling and coverage pass/fail no longer use placeholder files",
-            "channels use empty channels",
+            "Downsampling and coverage pass/fail no longer use marker files",
+            "optional channels\nuse empty channels",
         ]
         for token in expected:
             with self.subTest(token=token):

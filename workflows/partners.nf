@@ -70,7 +70,7 @@ workflow partners {
         // Transitional Nextflow boundary enables this process to keep its
         // file-shaped inputs while the controller models absent analyses as
         // typed optional state.
-        placeholder_ch = bam
+        absent_input_ch = bam
         | map{
             xam, xai, meta -> 
             [meta, optionalBoundaryFile(), optionalBoundaryFile()]
@@ -78,10 +78,10 @@ workflow partners {
 
         if (params.partner == "geneyx"){
             combined_vcf_ch = publish_geneyx(
-                params.snp || run_haplotagging ? snv : placeholder_ch,
-                params.sv ? sv : placeholder_ch,
-                params.cnv ? cnv : placeholder_ch,
-                params.str ? str : placeholder_ch
+                params.snp || run_haplotagging ? snv : absent_input_ch,
+                params.sv ? sv : absent_input_ch,
+                params.cnv ? cnv : absent_input_ch,
+                params.str ? str : absent_input_ch
             )
         }
         if (params.partner == "fabric") {

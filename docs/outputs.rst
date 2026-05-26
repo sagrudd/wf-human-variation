@@ -104,5 +104,5 @@ For any output filename, type, optionality, or semantics change:
 5. Add or update a test that asserts the output contract.
 
 Optional outputs must be genuinely optional in both Nextflow and the declared
-output definition. Do not add placeholder-file behavior without documenting the
+output definition. Do not add marker-file behavior without documenting the
 reason and a removal path.

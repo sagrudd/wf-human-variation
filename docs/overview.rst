@@ -67,7 +67,7 @@ Important Constraints
   compatibility debt.
 * Sample aliases are used heavily in paths, but stable controller
   identity is ``sample_id``.
-* Some optional inputs are represented by placeholder files.
+* Some optional inputs are represented by generated absent-input marker files.
 * Some downstream work is triggered implicitly by other features.
 * Large channel joins and collections create whole-run barriers.
 * Bounded entries must be launched by the controller with ``task_family``,

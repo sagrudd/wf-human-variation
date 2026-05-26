@@ -88,5 +88,5 @@ the same deterministic task-cache path for the same key fields.
 
 Phase 2 task 24 keeps this behaviour under local regression tests. Those tests
 fail if public HTML reports, report-only Python dependencies, new
-``OPTIONAL_FILE`` consumers, mutable ``params.wf`` runtime assignments, or
+absent-input marker consumers, mutable ``params.wf`` runtime assignments, or
 undocumented performance-sensitive joins are reintroduced.

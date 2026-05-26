@@ -66,13 +66,15 @@ class Phase2PerformanceGateTest(unittest.TestCase):
             with self.subTest(pattern=pattern):
                 self.assertIsNone(re.search(pattern, runtime, flags=re.MULTILINE))
 
-    def test_optional_file_consumers_are_centralized_at_boundary_helper(self):
+    def test_absent_input_consumers_are_centralized_at_boundary_helper(self):
+        """Block absent-input marker consumers outside the boundary helper."""
         offenders = []
         for path in runtime_files():
             relative = path.relative_to(REPO_ROOT).as_posix()
             if relative == "lib/optional_inputs.nf":
                 continue
-            if "OPTIONAL_FILE" in path.read_text(errors="ignore"):
+            text = path.read_text(errors="ignore")
+            if "OPTIONAL_FILE" in text or "__wf_human_variation_absent_input__" in text:
                 offenders.append(relative)
 
         self.assertEqual(offenders, [])

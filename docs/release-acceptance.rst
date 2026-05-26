@@ -130,7 +130,7 @@ Any of these changes blocks phase-2 release acceptance:
 * hidden STR, Spectre, or phased-methylation activation;
 * new global ``.collect()``, broad unkeyed ``.combine()``, ``first()``, or
   ``groupTuple()`` barriers outside the documented compatibility inventory;
-* new ``OPTIONAL_FILE`` consumers outside ``lib/optional_inputs.nf``;
+* new absent-input marker consumers outside ``lib/optional_inputs.nf``;
 * mutable runtime state written through ``params.wf[...]``;
 * bounded entries that omit deterministic task keys, task-cache paths, required
   outputs, provenance, or completion markers.

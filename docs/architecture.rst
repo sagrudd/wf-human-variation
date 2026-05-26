@@ -97,23 +97,23 @@ annotation, STR merging, methylation grouping, CNV compatibility, haplocheck,
 and partner export paths. They must not be used to decide readiness for any
 controller-launched bounded task.
 
-Placeholder Optionality
------------------------
+Absent-Input Optionality
+------------------------
 
-The workflow currently uses placeholder files such as ``data/OPTIONAL_FILE`` in
-several places to satisfy Nextflow input shapes. Treat these as compatibility
+The workflow currently uses generated absent-input marker files in several
+places to satisfy legacy Nextflow input shapes. Treat these as compatibility
 mechanisms, not as a design pattern to extend. New optional behavior should be
 represented with explicit channel branching, optional outputs, or documented
 schema state wherever possible.
 
 The shared controller package represents optional inputs as typed present or
-absent state. This workflow may still materialise a placeholder file at a
-Nextflow process boundary, but those placeholders must be routed through
-``lib/optional_inputs.nf`` where practical and documented as transitional
-boundary behavior. Do not pass ``OPTIONAL_FILE`` semantics back into controller
-events, manifests, or task-planning state.
+absent state. This workflow may still materialise a generated marker file under
+the Nextflow work directory at a process boundary, but those markers must be
+routed through ``lib/optional_inputs.nf`` where practical and documented as
+transitional boundary behavior. Do not pass marker-file semantics back into
+controller events, manifests, or task-planning state.
 
-The remaining compatibility placeholders are finite:
+The remaining compatibility markers are finite:
 
 * absent haplocheck and optional SNP/SV metrics inputs for combined metrics;
 * absent SNP genotyping VCF, split BED, and optional GVCF intermediates inside
@@ -122,9 +122,9 @@ The remaining compatibility placeholders are finite:
 * absent SV benchmark truthset paths that intentionally select bundled
   benchmark resources.
 
-Downsampling and coverage pass/fail no longer use placeholder files for absent
-BED input; they branch to no-BED processes instead. Publish-only optional
-channels use empty channels rather than placeholder files.
+Downsampling and coverage pass/fail no longer use marker files for absent BED
+input; they branch to no-BED processes instead. Publish-only optional channels
+use empty channels rather than marker files.
 
 Task Reuse
 ----------

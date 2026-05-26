@@ -656,7 +656,7 @@ process haplocheck {
                 echo "Sample\tContamination Status\tContamination Level\tDistance\tSample Coverage" > ${xam_meta.alias}.haplocheck.tsv
                 echo "${xam_meta.sample_id}\tNA\tNV\t0\t0" >> ${xam_meta.alias}.haplocheck.tsv
             fi
-        # If no reads are found, create the placeholder.
+        # If no reads are found, create an empty output.
         else
             echo "Sample\tContamination Status\tContamination Level\tDistance\tSample Coverage" > ${xam_meta.alias}.haplocheck.tsv
             echo "${xam_meta.sample_id}\tNA\tNV\t0\t0" >> ${xam_meta.alias}.haplocheck.tsv

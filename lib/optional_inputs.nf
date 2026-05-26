@@ -3,27 +3,38 @@
  *
  * Shared controller code models optional values as typed present/absent state
  * in gnostikon-workflow-control. This workflow may still need concrete files or
- * empty channels at process boundaries, but placeholder semantics should be
+ * empty channels at process boundaries, but absent-input semantics should be
  * created through these helpers rather than spread through workflow logic.
  */
 
-def optionalBoundaryFile() {
-    return file("${projectDir}/data/OPTIONAL_FILE")
+def absentInputPrefix() {
+    return "__wf_human_variation_absent_input__"
+}
+
+def optionalBoundaryFile(String name = "file") {
+    def boundaryDir = new File("${workflow.workDir}/optional-input-boundary")
+    boundaryDir.mkdirs()
+
+    def boundaryFile = new File(boundaryDir, "${absentInputPrefix()}.${name}")
+    if (!boundaryFile.exists()) {
+        boundaryFile.text = ""
+    }
+    return file(boundaryFile.toString())
 }
 
 def optionalBoundaryChannel() {
-    return Channel.fromPath("${projectDir}/data/OPTIONAL_FILE", checkIfExists: true)
+    return Channel.of(optionalBoundaryFile())
 }
 
 def optionalBoundaryPath(String name) {
-    return file("OPTIONAL_FILE.${name}")
+    return optionalBoundaryFile(name)
 }
 
 def isOptionalBoundaryFile(def value) {
     if (value == null) {
         return true
     }
-    return value.name == "OPTIONAL_FILE" || value.name.startsWith("OPTIONAL_FILE.")
+    return value.name == absentInputPrefix() || value.name.startsWith("${absentInputPrefix()}.")
 }
 
 def realOptionalArg(def value, String option) {

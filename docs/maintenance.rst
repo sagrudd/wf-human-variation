@@ -96,7 +96,7 @@ Known Compatibility Debt
   and must not appear as successful workflow completions.
 * Basecaller model detection.
 * Annotation, CNV, STR, and publication genome-build restrictions.
-* Partner export placeholder handling.
+* Partner export absent-input marker handling.
 * Publication joins over multiple channels.
 
 Release Hygiene

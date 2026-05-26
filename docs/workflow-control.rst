@@ -49,7 +49,7 @@ this workflow:
 * explicit stable sample identity for read artefacts, matching the inherited
   Epignostikon requirement that POD5 and BAM arrivals are sample-bound;
 * typed optional file and channel inputs, where absence is represented as
-  state rather than as a placeholder filename;
+  state rather than as a marker filename;
 * structured allowlisted tool options for Sniffles, modkit, and Spectre instead
   of free-form shell parameter pass-throughs.
 
@@ -65,14 +65,14 @@ selected bounded entry.
 Until the imported workflow behavior is fully replaced by bounded entries, keep
 controller state and Nextflow boundary behavior separate:
 
-* do not introduce new controller semantics by naming a file
-  ``OPTIONAL_FILE``;
+* do not introduce new controller semantics through generated absent-input
+  marker files;
 * do not add new sample-sheet primary ingress paths;
 * use explicit empty channels when a process can naturally consume no values;
 * use empty channels for publish-only optional outputs;
 * use ``lib/optional_inputs.nf`` when a process boundary still requires a
-  concrete placeholder file;
-* document every remaining placeholder as transitional compatibility behavior
+  concrete generated absent-input marker file;
+* document every remaining marker as transitional compatibility behavior
   in ``docs/architecture.rst``.
 * implement new dynamic behavior as a bounded entry launched through
   ``gnostikon-workflow-control nextflow-task``.

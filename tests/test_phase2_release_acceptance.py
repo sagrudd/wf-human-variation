@@ -66,7 +66,7 @@ class Phase2ReleaseAcceptanceTest(unittest.TestCase):
         for token in [
             ".html",
             "ezcharts",
-            "OPTIONAL_FILE",
+            "absent-input",
             "params\\.wf",
             ".collect(",
             ".combine(",
