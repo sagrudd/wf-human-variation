@@ -28,7 +28,7 @@ def taskFamilyOwners() {
         "methylation": ["modified_base_calling", "modkit", "phased_methylation"],
         "cnv": ["spectre", "qdnaseq"],
         "str": ["straglr", "sex_prerequisite"],
-        "reporting": ["qc_reporting", "igv_packaging", "partner_export", "publication"],
+        "reporting": ["qc_metrics", "manifest_projection", "partner_export", "publication"],
     ]
 }
 

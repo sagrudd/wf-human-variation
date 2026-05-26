@@ -29,7 +29,6 @@ Supporting or modifying flags include:
 * ``--use_qdnaseq``
 * ``--sv_benchmark``
 * ``--annotation``
-* ``--igv``
 * ``--partner``
 
 Input And Reference

@@ -70,10 +70,6 @@ include {
 } from './lib/_ingress.nf'
 
 include {
-    igv
-} from './lib/igv.nf'
-
-include {
     prepare_reference;
 } from './lib/reference.nf'
 
@@ -218,7 +214,6 @@ workflow {
     ref = reference.ref
     ref_index = reference.ref_idx
     ref_cache = reference.ref_cache
-    ref_gzindex = reference.ref_gzidx
     // canonical ref and BAM channels to pass around to all processes
     ref_channel = ref
     | concat(ref_index)
@@ -847,10 +842,8 @@ workflow {
             run_haplotagging  // Define if the data are haplotagged.
         )
         mod_bedmethyl = results.bedmethyl
-        mod_igv = results.igv
     } else {
         mod_bedmethyl = Channel.empty()
-        mod_igv = Channel.empty()
     }
 
     // wf-human-cnv
@@ -929,45 +922,6 @@ workflow {
         )
     }
 
-    // Prepare IGV viewer
-    if (params.igv){
-        // Indicate which output files should be displayed
-        // Note igv() is not responsible for publishing these files
-        igv_out = ref_channel
-            // Add gzipped reference indexes
-            | combine(ref_gzindex | ifEmpty([null, null, null]))
-            | map {
-                fasta, fai, cache, path_env, gzref, gzfai, gzi ->
-                if (gzref){
-                    [gzref, gzfai, gzi]
-                } else {
-                    [fasta, fai]
-                }
-            }
-            | mix(
-                // set correct BAM for IGV depending on whether haplotagging requested
-                // or alignment carried out - if neither then fall back to the original
-                // unchanged BAM
-                (run_haplotagging 
-                    ? clair_vcf.haplotagged_xam | map { xam, xai, meta -> [xam, xai] } 
-                    : bam_channel | map { 
-                        xam, xai, meta -> [
-                            meta.to_align ? xam : file(meta.src_xam),
-                            meta.to_align || !meta.src_xai ? xai : file(meta.src_xai)
-                        ] 
-                    }
-                ),
-                snp_vcf | map { meta, vcf, tbi -> [vcf, tbi] },
-                sv_vcf | map { meta, vcf, tbi -> [vcf, tbi] },
-                str_vcf | map { meta, vcf, tbi -> [vcf, tbi] },
-                cnv_vcf | map { meta, vcf, tbi -> [vcf, tbi] },
-                mod_igv,
-            )
-            | igv
-    } else {
-        igv_out = Channel.empty()
-    }
-
     publish_artifact(
         // emit bams with the "to_align" meta tag
         // but only if haplotagging is not on
@@ -975,19 +929,6 @@ workflow {
         bam_channel
         | filter( { it[2].to_align && !run_haplotagging} )
         | map { xam, xai, meta -> [xam, xai] }
-        // Emit fasta or fai if they were changed from the input
-        // (i.e. decompressed for fasta, generated for the fai)
-        // if they are required for use with IGV
-        | mix(
-            ref_channel
-            | map {
-                fasta, fai, cache, path_env -> [fasta, fai]
-            }
-            | flatten
-            | filter{
-                it.toString().startsWith("${workflow.workDir}") && params.igv
-            }
-        )
         | mix(
             bam_stats.flatten(),
             bam_flag.flatten(),
@@ -998,8 +939,7 @@ workflow {
             final_json.flatten(),
             bed_summary.flatten(),
             coverage_bed_summary.flatten(),
-            hap_check.flatten(),
-            igv_out.flatten()
+            hap_check.flatten()
         )
         | filter{it.name != 'OPTIONAL_FILE'}
     )

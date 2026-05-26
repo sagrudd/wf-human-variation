@@ -17,8 +17,7 @@ broad steps:
    ``rejected_low_coverage`` and intentionally fail the run.
 7. Infer or accept sample sex when required.
 8. Run enabled analysis branches.
-9. Combine metrics, package export or browser outputs, and publish selected
-   artefacts.
+9. Combine metrics, package export outputs, and publish selected artefacts.
 
 This is one launch-time graph. It is not the target dynamic runtime scheduler.
 Keep it initially as a reference for exact tool invocations, process wiring,

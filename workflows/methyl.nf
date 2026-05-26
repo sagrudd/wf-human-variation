@@ -255,17 +255,7 @@ workflow mod {
             bedmethyl | combine(["m:5mC"]),
         )
 
-        // IGV tracks
-        // send H0, unless phased then send H1, H2
-        // TODO(CW-6944) send bigwig files to IGV instead
-        igv = bedmethyl
-          | filter { _meta, group, _bedmethyl ->
-              (!params.phased && group == "*") || (params.phased && group != "*")
-          }
-          | map { _meta, _group, bedmethyl -> bedmethyl }
-          | collect
     emit:
         bedmethyl = bedmethyl | map { _meta, _group, bedmethyl -> bedmethyl } | collect
         bigwig = bigwig | map { _meta, _group, _mod, bigwig -> bigwig } | collect
-        igv = igv
 }

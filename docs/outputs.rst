@@ -33,18 +33,18 @@ Modified-base outputs:
 
 * bedMethyl;
 * phased bedMethyl when applicable;
-* bigWig tracks where enabled.
+* bigWig artefacts where enabled.
 
-Publication, Export, And Presentation:
+Publication And Export:
 
 * combined metrics JSON;
-* optional IGV/JBrowse configuration;
 * partner-specific export products.
 
-Workflow-generated EPI2ME HTML reports are not supported outputs on
-``humvar3``. Dashboards and API views belong in Poikilognostikon projections
-over the shared runtime manifest, using machine-readable QC, analysis,
-provenance, and output artefacts from this workflow.
+Workflow-generated EPI2ME HTML reports and viewer configuration files are not
+supported outputs on ``humvar3``. Dashboards, browser views, and API views
+belong in Poikilognostikon projections over the shared runtime manifest, using
+machine-readable QC, analysis, provenance, and output artefacts from this
+workflow.
 
 Maintenance Checklist
 ---------------------
@@ -54,7 +54,7 @@ For any output filename, type, optionality, or semantics change:
 1. Update producing process outputs.
 2. Update ``output_definition.json``.
 3. Update this page.
-4. Update export or presentation documentation if affected.
+4. Update export documentation if affected.
 5. Add or update a test that asserts the output contract.
 
 Optional outputs must be genuinely optional in both Nextflow and the declared

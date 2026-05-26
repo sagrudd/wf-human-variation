@@ -3,7 +3,7 @@
 
 This script addresses:
 - CW-1491: Single CNV calls broken over multiple lines.
-- CW-5819: <DIP> REF leads to invalid VCF for IGV.
+- CW-5819: <DIP> REF leads to invalid downstream VCF rendering.
 """
 
 import argparse

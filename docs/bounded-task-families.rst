@@ -45,9 +45,9 @@ unit it was given.
      - STR genotyping from haplotagged contig BAMs and sex state.
    * - ``reporting``
      - sample or project, publication family
-     - Machine-readable QC publication, manifest projections, IGV packaging,
-       partner export, and publication from any explicitly completed subset of
-       requested families.
+     - Machine-readable QC publication, manifest projections, partner export,
+       and publication from any explicitly completed subset of requested
+       families.
 
 Dependency Shape
 ----------------
@@ -82,11 +82,12 @@ Maintenance Rules
 
 * Do not introduce a new top-level scheduler family without updating this page,
   ``lib/task_families.nf``, and the shared controller registry.
-* Annotation, publication, partner export, and IGV packaging are not standalone
-  top-level families in this split; they are owned by ``variant_calling`` or
-  ``reporting``. Workflow-generated EPI2ME HTML reports are not a supported
-  ``humvar3`` output contract; dashboards and API views are Poikilognostikon
-  manifest projections.
+* Annotation, publication, and partner export are not standalone top-level
+  families in this split; they are owned by ``variant_calling`` or
+  ``reporting``. Workflow-generated EPI2ME HTML reports and viewer
+  configuration files are not supported ``humvar3`` output contracts;
+  dashboards, browser views, and API views are Poikilognostikon manifest
+  projections.
 * SNP, SV, phasing, and haplotagging are modes or products of
   ``variant_calling``. They can have internal task keys, but their scheduler
   state rolls up to the family.
