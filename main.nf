@@ -239,8 +239,6 @@ workflow {
     // code must model optionality as typed state before reaching this layer.
     OPTIONAL = optionalBoundaryFile()
 
-    Pinguscript.ping_start(nextflow, workflow, params)
-
     // Determine if (re)alignment is required for input BAM
     bam_channel = ingress(
         ref,
@@ -1054,11 +1052,4 @@ workflow {
         | filter{it.name != 'OPTIONAL_FILE'}
     )
 
-}
-
-workflow.onComplete {
-    Pinguscript.ping_complete(nextflow, workflow, params)
-}
-workflow.onError {
-    Pinguscript.ping_error(nextflow, workflow, params)
 }

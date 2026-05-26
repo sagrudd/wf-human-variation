@@ -828,16 +828,6 @@
                 }
             },
             "properties": {
-                "disable_ping": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Enable to prevent sending a workflow ping.",
-                    "overrides": {
-                        "epi2mecloud": {
-                            "hidden": true
-                        }
-                    }
-                },
                 "help": {
                     "type": "boolean",
                     "default": false,

@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Removed
+- Removed EPI2ME telemetry ping support, stale GitHub issue templates, the
+  inherited issue autoreply workflow, Tower report presentation metadata, and
+  unused nf-core AWS Batch, hostname, summary, email, and pipeline-report
+  helper code.
+
 ## [v2.8.0]
 This minor release of wf-human-variation updates [modkit](https://github.com/nanoporetech/modkit) to improve the performance of modkit pileup processes for the base modifications subworkflow.
 On our HG002 dataset, the per-chromosome `modkit_phase` processes run 10x faster on average while still returning the same base modifications, with some minor differences to the score and count columns.
@@ -729,4 +737,3 @@ Users are recommended to upgrade to this version to benefit from improved SV cal
 
 ## [v0.0.0]
 Initialised wf-human-variation from wf-template #195cab5
-
