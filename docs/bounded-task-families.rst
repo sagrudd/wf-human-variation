@@ -46,7 +46,7 @@ unit it was given.
    * - ``reporting``
      - sample or project, report family
      - QC reports, workflow reports, IGV packaging, partner export, and
-       publication.
+       publication from any explicitly completed subset of requested families.
 
 Dependency Shape
 ----------------
@@ -60,11 +60,16 @@ The normal dynamic dependency shape is:
    sample_aggregation -> methylation
    sample_aggregation -> cnv
    variant_calling -> str
-   requested families -> reporting
+   any completed subset of requested families -> reporting
 
 Basecalling is optional when ready BAM/CRAM/uBAM artefacts are imported.
 Mapping still owns ingress and compatibility conversion before downstream
 families consume aggregate sample state.
+
+Reporting is intentionally not blocked on every requested family. It declares a
+``completed_subset`` prerequisite and can run when at least one selected
+upstream family has completed, while recording missing or still-running
+families in report metadata.
 
 Maintenance Rules
 -----------------
