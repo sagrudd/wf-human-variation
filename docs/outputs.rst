@@ -54,9 +54,11 @@ than HTML reports. The retained metrics/status surfaces are:
      - Notes
    * - Alignment and coverage
      - ``*.stats.json``, ``*.readstats.tsv.gz``, ``*.mosdepth.summary.txt``,
-       ``*.mosdepth.global.dist.txt``, ``*.thresholds.bed.gz``, optional
-       ``*.bed_summary.tsv`` and ``*.coverage_bed_summary.tsv``
-     - ``*.stats.json`` is the combined sample metrics JSON.
+       ``*.mosdepth.global.dist.txt``, ``*.thresholds.bed.gz``,
+       ``*.runids.txt``, optional ``*.bed_summary.tsv`` and
+       ``*.coverage_bed_summary.tsv``
+     - ``*.stats.json`` is the combined sample metrics JSON. ``*.runids.txt``
+       is the per-sample run-id artefact for controller manifest projection.
    * - SNP
      - SNP VCF/GVCF products and SNP metrics folded into ``*.stats.json``
      - Intermediate ``*.snvs.json`` is a workflow metric input, not a public

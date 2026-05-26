@@ -76,9 +76,9 @@ Workflow Maintenance Rules
   mutable ``params.wf`` state must not be introduced into bounded entries.
   Follow ``docs/keyed-joins.rst``.
 * Runtime state that used to be pushed into ``params.wf[...]`` must be written
-  through ``gnostikon-workflow-control`` manifest/event commands. For example,
-  ingressed run ids use ``record-ingress-runids`` rather than
-  ``params.wf["ingress.run_ids"]``.
+  through ``gnostikon-workflow-control`` manifest/event commands. Ingressed run
+  IDs use ``record-ingress-runids`` in bounded/controller-led paths and remain
+  visible as per-sample ``*.runids.txt`` artefacts in the compatibility graph.
 * Bounded entries must emit a provenance JSON document and submit it through
   ``record-task-provenance``. The manifest record must include tool versions,
   container image and digest, command arguments, input checksums, task status,

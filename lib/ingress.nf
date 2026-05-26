@@ -52,15 +52,12 @@ def is_excluded(Path p, Map margs) {
  * @return: channel with lists of run IDs and basecall models added to the metamap
  */
 def add_run_IDs_and_basecall_models_to_meta(ch, boolean allow_multiple_basecall_models) {
-    // HashSet for all observed run_ids
-    Set<String> ingressed_run_ids = new HashSet<String>()
-
-    // extract run_ids from fastcat stats / bamstats results and add to metadata as well
-    // as `ingressed_run_ids`
+    // Extract run_ids from fastcat stats / bamstats results and add them to
+    // per-record metadata. Runtime-wide run-id projection belongs in
+    // controller-owned manifest/event state, not mutable params.wf globals.
     ch = ch | map { meta, reads, stats ->
         if (stats) {
             def run_ids = stats.resolve("run_ids").splitText().collect { it.strip() }
-            ingressed_run_ids += run_ids
 
             def basecall_models = \
                 stats.resolve("basecallers").splitText().collect { it.strip() }
@@ -80,16 +77,6 @@ def add_run_IDs_and_basecall_models_to_meta(ch, boolean allow_multiple_basecall_
         }
         [meta, reads, stats]
     }
-    // put run_ids somewhere global for trivial access later
-    // bit grim but decouples ingress metadata from workflow main.nf
-    // additionally no need to use CWUtil as we're not overriding any user params
-    ch | subscribe(onComplete: {
-        if (params.wf["ingress.run_ids"] == null) {
-            params.wf["ingress.run_ids"] = ingressed_run_ids
-        } else {
-            params.wf["ingress.run_ids"] += ingressed_run_ids
-        }
-    })
     return ch
 }
 

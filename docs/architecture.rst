@@ -125,7 +125,8 @@ must use Nextflow only for task execution. Relevant controller contracts live in
 ``../gnostikon-workflow-control`` and are documented for this workflow in
 ``docs/workflow-control.rst`` and ``docs/controller-execution.rst``.
 
-Mutable ``params.wf[...]`` updates in the imported graph are compatibility
-debt. New bounded work must emit manifest/event writes through
-``gnostikon-workflow-control`` instead; ``lib/runtime_manifest_events.nf``
-contains the transitional command helpers for this boundary.
+Mutable ``params.wf[...]`` updates must not carry runtime state. Run IDs are
+kept as per-sample ``*.runids.txt`` artefacts in the compatibility graph and
+new bounded work must emit manifest/event writes through
+``gnostikon-workflow-control``; ``lib/runtime_manifest_events.nf`` contains the
+transitional command helpers for this boundary.

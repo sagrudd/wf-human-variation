@@ -525,18 +525,10 @@ workflow {
     bam_stats = readStats.out.read_stats
     bam_flag = readStats.out.flagstat
     bam_hists = readStats.out.histograms
-    // populate output json with ingressed runids and models
+    // Keep run IDs as per-sample artefacts. Controller-owned manifest/event
+    // projection replaces the inherited params.wf runtime mutation.
     bam_runids = readStats.out.runids
     bam_basecallers = readStats.out.basecallers
-    ArrayList ingressed_run_ids = []
-    bam_runids.splitText().subscribe(
-        onNext: {
-            ingressed_run_ids += it.strip()
-        },
-        onComplete: {
-            params.wf["ingress.run_ids"] = ingressed_run_ids
-        }
-    )
 
     // Define per-sample depth_pass channel.
     if (params.bam_min_coverage > 0){
@@ -940,6 +932,7 @@ workflow {
         | mix(
             bam_stats.flatten(),
             bam_flag.flatten(),
+            bam_runids.flatten(),
             mosdepth_stats.map{ meta, bed, dist, threshold -> [bed, dist, threshold]}.flatten(),
             mosdepth_summary.flatten(),
             mosdepth_perbase.flatten(),

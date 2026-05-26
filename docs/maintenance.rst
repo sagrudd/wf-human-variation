@@ -62,8 +62,9 @@ Known Compatibility Debt
   wiring, and expected outputs until bounded entries retire each responsibility.
 * QDNAseq format compatibility.
 * Placeholder optional files.
-* Mutable ``params.wf[...]`` runtime side effects, especially
-  ``ingress.run_ids`` in the imported compatibility graph.
+* Any reintroduction of mutable ``params.wf[...]`` runtime side effects.
+  Ingress run IDs must stay as per-sample artefacts or controller-owned
+  manifest/event records.
 * Provenance still scattered across legacy logs and ad hoc files rather than
   shared manifest task records.
 * AWS Batch mirrored images need registry-specific digest values; do not fall

@@ -16,6 +16,14 @@
       "optional": true,
       "type": "per-sample"
     },
+    "ingress-run-ids": {
+      "filepath": "{{ alias }}.runids.txt",
+      "title": "Ingress run IDs",
+      "description": "Machine-readable list of sequencing run IDs observed in the ingressed reads for the sample. Controller-owned manifest projection should consume this artefact rather than mutable workflow parameters.",
+      "mime-type": "text/plain",
+      "optional": false,
+      "type": "per-sample"
+    },
     "snp-vcf": {
       "filepath": "{{ alias }}.wf_snp.vcf.gz",
       "title": "Short variant VCF",

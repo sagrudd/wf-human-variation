@@ -1,6 +1,7 @@
 """Static contract tests for transitional sample identity handling."""
 
 from pathlib import Path
+import json
 import unittest
 
 
@@ -146,6 +147,33 @@ class SampleIdentityContractTest(unittest.TestCase):
         self.assertNotIn("single-sample enforcement", docs)
         self.assertNotIn("only one sample is being ingressed", docs)
         self.assertNotIn("effective operation is single-sample", docs)
+
+    def test_ingress_run_ids_are_not_mutated_into_params_wf(self):
+        legacy_key = 'params.wf["' + 'ingress.' + 'run_ids' + '"]'
+        checked = "\n".join(
+            read(path)
+            for path in [
+                "main.nf",
+                "lib/ingress.nf",
+                "docs/architecture.rst",
+                "docs/controller-execution.rst",
+                "docs/maintenance.rst",
+                "docs/workflow-control.rst",
+            ]
+        )
+
+        self.assertNotIn(legacy_key, checked)
+        self.assertIn("bam_runids.flatten()", read("main.nf"))
+        self.assertIn("path \"${xam_meta.alias}.runids.txt\", emit: runids", read("modules/local/common.nf"))
+
+    def test_ingress_run_ids_are_declared_machine_readable_outputs(self):
+        outputs = json.loads(read("output_definition.json"))
+        runids = outputs["files"]["ingress-run-ids"]
+
+        self.assertEqual(runids["filepath"], "{{ alias }}.runids.txt")
+        self.assertEqual(runids["mime-type"], "text/plain")
+        self.assertEqual(runids["type"], "per-sample")
+        self.assertIn("controller-owned manifest projection", runids["description"].lower())
 
 
 if __name__ == "__main__":
