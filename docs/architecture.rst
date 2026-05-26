@@ -60,6 +60,15 @@ Nextflow process boundary, but those placeholders must be routed through
 boundary behavior. Do not pass ``OPTIONAL_FILE`` semantics back into controller
 events, manifests, or task-planning state.
 
+Task Reuse
+----------
+
+The ``humvar3`` migration requires bounded task families that can be skipped
+when equivalent successful work already exists. New or refactored task families
+must use deterministic task keys, task-cache output paths, and completion
+markers as described in ``docs/idempotency.rst``. Existing Nextflow work
+directories and published output filenames are not sufficient reuse contracts.
+
 Dynamic Runtime Direction
 -------------------------
 

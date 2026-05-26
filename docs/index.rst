@@ -34,6 +34,7 @@ Contents
    architecture
    ingress
    workflow-control
+   idempotency
    subworkflows
    parameters
    outputs

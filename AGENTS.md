@@ -32,4 +32,8 @@ focused on understanding, maintaining, testing, and improving this workflow.
   `docs/outputs.rst` together.
 - When changing workflow structure, update `docs/architecture.rst`,
   `docs/subworkflows.rst`, and `docs/maintenance.rst` as needed.
+- Every new or refactored bounded task must have a deterministic task key,
+  deterministic task-cache output paths, and a `.gnostikon_task_complete.json`
+  marker written only after required outputs exist. Update `docs/idempotency.rst`
+  and tests when changing this contract.
 - Prefer small, reviewable changes with focused tests.
