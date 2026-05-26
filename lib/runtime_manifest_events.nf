@@ -24,3 +24,27 @@ def recordIngressRunIdsCommand(String manifest, List runIds, String eventDir = "
     }
     return command.join(" ")
 }
+
+def recordTaskProvenanceCommand(String manifest, String provenanceJson, String eventDir = "", String eventStore = "") {
+    if (!manifest) {
+        throw new IllegalArgumentException("recordTaskProvenanceCommand requires manifest")
+    }
+    if (!provenanceJson) {
+        throw new IllegalArgumentException("recordTaskProvenanceCommand requires provenanceJson")
+    }
+    def command = [
+        "gnostikon-workflow-control",
+        "record-task-provenance",
+        "--manifest",
+        manifest,
+        "--provenance-json",
+        provenanceJson
+    ]
+    if (eventDir) {
+        command += ["--event-dir", eventDir]
+    }
+    if (eventStore) {
+        command += ["--event-store", eventStore]
+    }
+    return command.join(" ")
+}

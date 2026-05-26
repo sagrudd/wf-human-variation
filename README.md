@@ -15,6 +15,10 @@ scheduling, and provenance model. Workflow-level behavior and documentation
 remain scoped to `wf-human-variation`; Poikilognostikon orchestration and
 integration design are maintained in the Poikilognostikon repository.
 
+Bounded `humvar3` work must write task provenance into the shared manifest via
+`gnostikon-workflow-control`, including tool versions, container digests,
+command arguments, input checksums, task status, and output artefacts.
+
 ## Documentation
 
 The canonical technical documentation is now the Sphinx documentation in

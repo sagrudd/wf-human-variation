@@ -19,7 +19,10 @@ Every bounded task must define:
 * a completion marker named ``.gnostikon_task_complete.json`` written only
   after all required outputs exist and validate;
 * a manifest or runtime event projection that records output paths and the
-  completion marker path.
+  completion marker path;
+* a shared manifest provenance record containing tool versions, container
+  digest, command arguments, input checksums, task status, and output
+  artefacts.
 
 Existing files are not enough to prove that a task is reusable. Reuse requires
 a successful completion marker whose ``task_key`` matches the current logical
@@ -66,6 +69,11 @@ body, output declarations, documentation, and tests together.
 The Python controller is responsible for deciding whether to launch or refresh
 the task. A Nextflow entry should trust the bounded params file it receives and
 should not scan the project for additional work.
+
+Bounded entries must not treat Nextflow logs as the only provenance store. They
+should write a task provenance JSON document and submit it through
+``gnostikon-workflow-control record-task-provenance`` or the
+``recordTaskProvenanceCommand`` helper in ``lib/runtime_manifest_events.nf``.
 
 Dynamic Scheduling
 ------------------

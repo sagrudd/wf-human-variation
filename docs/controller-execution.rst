@@ -9,8 +9,10 @@ The target operating model is:
    refresh.
 3. Nextflow executes the selected bounded unit.
 4. The bounded unit writes declared outputs and a completion marker.
-5. The controller records task and output events, then plans any newly unblocked
-   downstream family.
+5. The bounded unit or controller writes task provenance into the shared
+   manifest.
+6. The controller records task and output events, then plans any newly
+   unblocked downstream family.
 
 Nextflow is therefore an execution backend for bounded work. It should not be
 responsible for discovering unrelated new samples, waiting for all samples, or
@@ -73,5 +75,9 @@ Workflow Maintenance Rules
   through ``gnostikon-workflow-control`` manifest/event commands. For example,
   ingressed run ids use ``record-ingress-runids`` rather than
   ``params.wf["ingress.run_ids"]``.
+* Bounded entries must emit a provenance JSON document and submit it through
+  ``record-task-provenance``. The manifest record must include tool versions,
+  container image and digest, command arguments, input checksums, task status,
+  completion marker path, and output artefacts.
 * ``main.nf`` remains a compatibility path until the bounded entries replace
   the imported launch-time workflow behavior.

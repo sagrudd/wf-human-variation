@@ -37,6 +37,9 @@ this workflow:
 * watched event-directory and SQLite event-store ingress;
 * controller-owned manifest updates, including ``manifest_updated`` events for
   runtime state previously stored in ``params.wf[...]``;
+* task provenance manifest writes for tool versions, container digests, command
+  arguments, input checksums, task status, completion markers, and output
+  artefacts;
 * sample-sheet bootstrap import, where inherited ``sample,pod5_dir`` rows are
   converted into normal runtime events;
 * explicit stable sample identity for read artefacts, matching the inherited
@@ -66,6 +69,9 @@ controller state and Nextflow boundary behavior separate:
   ``gnostikon-workflow-control nextflow-task``.
 * write runtime state through control-package manifest/event commands such as
   ``record-ingress-runids`` instead of mutating ``params.wf[...]``.
+* write bounded task provenance through ``record-task-provenance`` or
+  ``lib/runtime_manifest_events.nf`` rather than leaving provenance only in
+  Nextflow logs, process reports, or ad hoc JSON files.
 
 Stable Identity
 ---------------

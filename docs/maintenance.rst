@@ -31,6 +31,9 @@ Reviewers should check:
 * whether any channel operation introduces a new whole-run barrier;
 * whether runtime state is written through manifest/event APIs rather than
   mutable ``params.wf[...]`` side effects;
+* whether task provenance is present in the shared manifest, including tool
+  versions, container digests, command arguments, input checksums, task status,
+  and output artefacts;
 * whether optional values are represented clearly;
 * whether matching changes are needed in ``../gnostikon-workflow-control`` and
   ``../poikilognostikon``;
@@ -47,6 +50,8 @@ Known Compatibility Debt
 * Placeholder optional files.
 * Mutable ``params.wf[...]`` runtime side effects, especially
   ``ingress.run_ids`` in the imported compatibility graph.
+* Provenance still scattered across legacy logs or reports rather than shared
+  manifest task records.
 * Drift between this workflow, ``gnostikon-workflow-control``, and
   Poikilognostikon migration records.
 * Low-coverage behavior.
