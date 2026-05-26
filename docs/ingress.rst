@@ -60,8 +60,8 @@ Single-Sample Enforcement
 
 The human-variation wrapper counts ingressed channel entries and errors when
 more than one sample is found. This is deliberate current behavior. Do not
-remove it without also redesigning downstream output naming, report generation,
-channel grouping, and tests.
+remove it without also redesigning downstream output naming, publication
+artefacts, channel grouping, and tests.
 
 Maintenance Risks
 -----------------

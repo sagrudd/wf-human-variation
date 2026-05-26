@@ -47,7 +47,7 @@ Reviewers should check:
   expanding the monolithic graph;
 * whether sample alias use remains consistent;
 * whether output filenames and schema entries match;
-* whether report content still matches generated artefacts;
+* whether publication/export content still matches generated artefacts;
 * whether docs and tests moved with the code.
 
 Known Compatibility Debt
@@ -60,8 +60,8 @@ Known Compatibility Debt
 * Placeholder optional files.
 * Mutable ``params.wf[...]`` runtime side effects, especially
   ``ingress.run_ids`` in the imported compatibility graph.
-* Provenance still scattered across legacy logs or reports rather than shared
-  manifest task records.
+* Provenance still scattered across legacy logs and ad hoc files rather than
+  shared manifest task records.
 * AWS Batch mirrored images need registry-specific digest values; do not fall
   back to tags when a mirror digest is missing.
 * Any remaining free-form tool option pass-through outside the transitional
@@ -71,9 +71,9 @@ Known Compatibility Debt
 * Low-coverage behavior: rejected samples must use ``rejected_low_coverage``
   and must not appear as successful workflow completions.
 * Basecaller model detection.
-* Annotation, CNV, STR, and reporting genome-build restrictions.
+* Annotation, CNV, STR, and publication genome-build restrictions.
 * Partner export placeholder handling.
-* Report joins over multiple channels.
+* Publication joins over multiple channels.
 
 Release Hygiene
 ---------------

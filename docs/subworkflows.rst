@@ -5,7 +5,7 @@ The existing files below are the upstream-derived implementation units. The
 dynamic ``humvar3`` maintenance boundary is the bounded family split documented
 in ``docs/bounded-task-families.rst``. In particular, SNP, SV, phasing, and
 annotation roll up to ``variant_calling``; modified-base work rolls up to
-``methylation``; report, export, and publication work rolls up to
+``methylation``; export and publication work rolls up to
 ``reporting``.
 
 SNP Calling
@@ -51,14 +51,14 @@ Files:
 * ``modules/local/wf-human-sv.nf``
 * ``modules/local/wf-human-sv-eval.nf``
 
-The SV route uses Sniffles2, filtering, optional annotation, optional
-benchmarking, and reporting.
+The SV route uses Sniffles2, filtering, optional annotation, and optional
+benchmarking.
 
 Benchmarking requires SV calling. Missing benchmark truth resources currently
 use compatibility behavior that must be documented if changed.
 
 Genome-build restricted annotation should consume the central reference
-compatibility result. Do not add SNP-, SV-, CNV-, STR-, or report-local
+compatibility result. Do not add SNP-, SV-, CNV-, STR-, or publication-local
 hg19/hg38 checks.
 
 CNV Calling
@@ -110,13 +110,17 @@ requested.
 Modkit command customisation must use the structured ``--modkit_options``
 object. Free-form ``--modkit_args`` shell fragments are rejected.
 
-Annotation, Reporting, And Export
----------------------------------
+Annotation, Publication, And Export
+-----------------------------------
 
-Annotation is embedded in several analysis routes. Reporting is split across
-alignment, SNP, SV, CNV, STR, and combined metrics processes. Partner export is
-handled by ``workflows/partners.nf``.
+Annotation is embedded in several analysis routes. Combined metrics and
+publication/export surfaces are split across alignment, SNP, SV, CNV, STR, and
+partner-export processes. Partner export is handled by
+``workflows/partners.nf``.
 
 Maintain these as user-visible contracts: changing filenames, optionality, or
-report content requires updates to ``output_definition.json`` and
-``docs/outputs.rst``.
+machine-readable publication content requires updates to
+``output_definition.json`` and ``docs/outputs.rst``. Workflow-generated EPI2ME
+HTML reports are no longer part of the ``humvar3`` public output contract;
+Poikilognostikon dashboards and API views should be derived from manifest state
+and machine-readable artefacts.

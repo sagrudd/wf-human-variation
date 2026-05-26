@@ -2,7 +2,8 @@
 
 `wf-human-variation` is a Nextflow DSL2 workflow for human Oxford Nanopore
 whole-genome variant analysis. It supports small variant, structural variant,
-copy-number, STR, modified-base, coverage, reporting, and export workflows.
+copy-number, STR, modified-base, coverage, machine-readable QC, and export
+workflows.
 
 ## Branch Stewardship
 
@@ -27,13 +28,18 @@ Runtime containers are pinned with immutable OCI digests rather than SHA-like
 tags; the source tag to digest resolution is part of manifest provenance.
 
 Low-coverage inputs are treated as explicit `rejected_low_coverage` sample
-state. Optional failure reports may be produced, but the workflow exits
-non-zero so Poikilognostikon does not treat a rejected sample as a completed
-analysis.
+state. The workflow exits non-zero so Poikilognostikon does not treat a
+rejected sample as a completed analysis.
 
 Genome-build and reference compatibility are validated as a reusable workflow
-stage. SNP, CNV, STR, annotation, and reporting code should consume that state
+stage. SNP, CNV, STR, annotation, and export code should consume that state
 rather than implementing their own hg19/hg38 checks.
+
+The `humvar3` branch no longer treats workflow-generated EPI2ME HTML reports
+as supported outputs. Operator dashboards and API views belong in
+Poikilognostikon projections over the shared runtime manifest; this workflow's
+public contract is the machine-readable analysis, QC, and provenance artefacts
+declared by `output_definition.json`.
 
 Tool customisation on `humvar3` uses structured allowlisted option objects such
 as `sniffles_options`, `modkit_options`, and `spectre_options`; legacy

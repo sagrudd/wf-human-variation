@@ -273,13 +273,6 @@
                         }
                     }
                 },
-                "output_report": {
-                    "type": "boolean",
-                    "default": true,
-                    "hidden": true,
-                    "description": "Emits HTML reports for the individual analyses",
-                    "help_text": "By default, the workflow generates HTML reports summarising the results for each analysis; setting this value to `false` disables the reporting functions and the workflow will not output reports."
-                },
                 "haplocheck": {
                     "type": "boolean",
                     "hidden": true,
@@ -548,7 +541,7 @@
                     "type": "boolean",
                     "default": false,
                     "description": "Require modkit to call strand-aware modifications.",
-                    "help_text": "By default strand calls are collapsed (strand reported as '.'). Enabling this will force stranding to be considered when calling modifications, creating one output per modification per strand and the report will be tabulated by both modification and strand."
+                    "help_text": "By default strand calls are collapsed (strand reported as '.'). Enabling this will force stranding to be considered when calling modifications, creating one output per modification per strand."
                 }
             }
         },
@@ -764,13 +757,6 @@
                     "format": "file-path",
                     "description": "Input BED file containing tandem repeat annotations for the reference genome.",
                     "help_text": "Providing a tandem repeat BED can improve calling in repetitive regions. The workflow will attempt to select an appropriate hg19 or hg38 TR BED depending on the genome detected, but this can be overridden with a custom TR BED with this parameter."
-                },
-                "alignment_report_coverage_threshold": {
-                    "title": "Alignment report coverage threshold",
-                    "type": "number",
-                    "default": 20,
-                    "description": "If a BED file is provided to the workflow, the \"Regions below target coverage\" section in the alignment report tabulates BED regions with mean coverage below this threshold.",
-                    "help_text": "This parameter is used to identify target regions where the mean coverage falls below a specified threshold"
                 }
             }
         },

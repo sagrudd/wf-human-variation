@@ -29,7 +29,6 @@ Supporting or modifying flags include:
 * ``--use_qdnaseq``
 * ``--sv_benchmark``
 * ``--annotation``
-* ``--output_report``
 * ``--igv``
 * ``--partner``
 
@@ -45,7 +44,7 @@ Primary input parameters:
   controller.
 * ``--project``, ``--flowcell``, and ``--run_id``: optional context supplied by
   the workflow controller. These fields are metadata for migration and do not
-  replace the current filename/report label behavior of ``--sample_name``.
+  replace the current filename label behavior of ``--sample_name``.
 * ``--bed``: target regions for variant calling and optional coverage summary.
 * ``--coverage_bed``: regions for coverage reporting only.
 
@@ -55,7 +54,7 @@ Reference Compatibility
 CNV, STR, and annotation paths require a validated human genome build. The
 compatibility graph centralises this through ``lib/reference_compatibility.nf``
 and ``validateReferenceCompatibility`` rather than scattering separate checks
-across SNP, CNV, STR, annotation, and reporting code.
+across SNP, CNV, STR, annotation, and export code.
 
 STR currently requires hg38-compatible reference state. Annotation and CNV
 paths accept hg19 or hg38. Bounded controller-launched work should mirror this
@@ -76,8 +75,18 @@ Coverage behavior is controlled by:
 When changing coverage semantics, update troubleshooting and output
 documentation because low-coverage behavior affects user interpretation.
 Inputs below ``--bam_min_coverage`` are represented as
-``rejected_low_coverage``. A report can be emitted when ``--output_report`` is
-enabled, but the workflow status remains non-zero for the rejected sample.
+``rejected_low_coverage``. The workflow status remains non-zero for the
+rejected sample.
+
+HTML Reporting
+--------------
+
+Workflow-generated EPI2ME HTML reports are not part of the ``humvar3`` public
+contract. The legacy ``--output_report`` and
+``--alignment_report_coverage_threshold`` parameters have been removed from
+configuration, schema, documentation, and output declarations. Operator
+dashboards and API views are expected to be built by Poikilognostikon from the
+shared runtime manifest and machine-readable workflow artefacts.
 
 Structured Tool Options
 -----------------------

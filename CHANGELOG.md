@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   inherited issue autoreply workflow, Tower report presentation metadata, and
   unused nf-core AWS Batch, hostname, summary, email, and pipeline-report
   helper code.
+- Removed workflow-generated EPI2ME HTML reports from the public `humvar3`
+  output contract by deleting `output_report` and
+  `alignment_report_coverage_threshold` from config/schema documentation and
+  removing HTML report entries from `output_definition.json`.
 
 ## [v2.8.0]
 This minor release of wf-human-variation updates [modkit](https://github.com/nanoporetech/modkit) to improve the performance of modkit pileup processes for the base modifications subworkflow.

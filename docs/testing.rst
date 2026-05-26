@@ -12,7 +12,7 @@ Tests should protect:
 * reference/genome-build compatibility validation for annotation, CNV, and STR;
 * branch activation and hidden couplings;
 * output filenames and optionality;
-* report generation;
+* machine-readable publication/export outputs;
 * failure behavior for invalid inputs and low coverage, including the
   ``rejected_low_coverage`` non-zero workflow status.
 
@@ -38,7 +38,7 @@ Broader smoke tests should cover combinations such as:
 * ``--str``;
 * ``--mod``;
 * ``--phased``;
-* low-coverage rejection/report paths;
+* low-coverage rejection paths;
 * incompatible reference builds, especially STR with non-hg38 reference state;
 * CRAM and uBAM ingress.
 

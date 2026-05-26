@@ -17,10 +17,10 @@ Coverage Is Too Low
 
 The workflow uses ``--bam_min_coverage`` to decide whether downstream analysis
 should proceed. Low coverage is an explicit terminal sample condition:
-``rejected_low_coverage``. Downstream analysis is skipped, an alignment failure
-report may be produced when ``--output_report`` is enabled, and the workflow
+``rejected_low_coverage``. Downstream analysis is skipped, and the workflow
 exits with a non-zero status so orchestration layers do not mistake the result
-for a successful analysis.
+for a successful analysis. Poikilognostikon should present low-coverage state
+from the shared manifest, not from a workflow-generated HTML report.
 
 Reference Does Not Match Input
 ------------------------------

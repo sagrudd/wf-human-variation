@@ -31,15 +31,15 @@ The explicit contract is:
 * Phased or haplotagged methylation may declare an optional
   ``variant_calling`` prerequisite for a ready ``haplotagged_bam`` and degrade
   explicitly if that output is unavailable.
-* Reporting declares a ``task_family_subset`` prerequisite requiring at least
-  one completed upstream analysis family. Reports over partial results are
-  allowed only when that partial state is visible.
+* Reporting/publication declares a ``task_family_subset`` prerequisite requiring
+  at least one completed upstream analysis family. Publication over partial
+  results is allowed only when that partial state is visible.
 
 The controller may plan the prerequisite task, block the requesting task until
 the prerequisite output exists, degrade explicitly, skip explicitly, or fail
 invalid requests according to the declared missing policy. It must not publish
-or report an internal prerequisite as a user-requested family unless that family
-was separately requested.
+an internal prerequisite as a user-requested family unless that family was
+separately requested.
 
 Prerequisite State
 ------------------
@@ -51,7 +51,7 @@ Bounded entries must model the prerequisite state directly:
 * ``completed`` means the named family has a successful completion marker for
   the current task key.
 * ``completed_subset`` means at least ``minimum_count`` families in a declared
-  subset have completed. This is intended for reporting and export tasks that
+  subset have completed. This is intended for publication and export tasks that
   can run over partial completed results.
 
 Nextflow Helper
@@ -66,7 +66,7 @@ prerequisite map for bounded entries:
   prerequisite.
 * ``explicitTaskPrerequisites("cnv", "qdnaseq")`` returns no SNP
   prerequisite.
-* ``explicitTaskPrerequisites("reporting")`` returns a partial-reporting
+* ``explicitTaskPrerequisites("reporting")`` returns a partial-publication
   prerequisite over completed upstream family state.
 
 Use this helper only to emit or validate visible task-planning state. Do not

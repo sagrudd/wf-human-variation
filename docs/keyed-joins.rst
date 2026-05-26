@@ -33,14 +33,15 @@ Compatibility Debt
 ------------------
 
 The imported ``main.nf`` compatibility graph still contains whole-run joins for
-legacy reports, annotation, and packaging. Do not copy those patterns into
+legacy publication, annotation, and packaging. Do not copy those patterns into
 bounded entries. Retire them as the relevant family is moved behind
 controller-led execution:
 
 * ``sample_aggregation`` owns per-sample/per-reference aggregate refresh;
 * ``variant_calling`` owns SNP/SV/phasing/annotation joins;
 * ``methylation``, ``cnv``, and ``str`` own their family-specific joins;
-* ``reporting`` owns report/package reductions from manifest-indexed outputs.
+* ``reporting`` owns publication/package reductions from manifest-indexed
+  outputs.
 
 Review Checklist
 ----------------

@@ -10,7 +10,7 @@ from a BAM, CRAM, or uBAM input and a reference FASTA:
 * copy-number variant calling with Spectre or QDNAseq;
 * short tandem repeat genotyping with Straglr;
 * modified-base aggregation with modkit;
-* alignment, coverage, and report generation.
+* alignment, coverage, machine-readable QC, and export artefacts.
 
 The workflow is a static single-run workflow. It builds one Nextflow graph from
 launch-time parameters and then executes enabled branches. Some branches
@@ -38,7 +38,7 @@ Important Constraints
 
 * The workflow is currently structured around global feature flags.
 * Effective operation is single-sample, despite generic ingress machinery.
-* Sample aliases are used heavily in paths and reports, but stable controller
+* Sample aliases are used heavily in paths, but stable controller
   identity is ``sample_id``.
 * Some optional inputs are represented by placeholder files.
 * Some downstream work is triggered implicitly by other features.

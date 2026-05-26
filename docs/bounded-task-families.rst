@@ -44,9 +44,10 @@ unit it was given.
      - sample, reference
      - STR genotyping from haplotagged contig BAMs and sex state.
    * - ``reporting``
-     - sample or project, report family
-     - QC reports, workflow reports, IGV packaging, partner export, and
-       publication from any explicitly completed subset of requested families.
+     - sample or project, publication family
+     - Machine-readable QC publication, manifest projections, IGV packaging,
+       partner export, and publication from any explicitly completed subset of
+       requested families.
 
 Dependency Shape
 ----------------
@@ -60,7 +61,7 @@ The normal dynamic dependency shape is:
    sample_aggregation -> methylation
    sample_aggregation -> cnv
    variant_calling -> str
-   any completed subset of requested families -> reporting
+   any completed subset of requested families -> reporting/publication
 
 Basecalling is optional when ready BAM/CRAM/uBAM artefacts are imported.
 Mapping still owns ingress and compatibility conversion before downstream
@@ -71,10 +72,10 @@ sample A in ``basecalling``, sample B in ``mapping``, and sample C in
 ``variant_calling`` at the same time. New bounded entries must preserve that
 independence.
 
-Reporting is intentionally not blocked on every requested family. It declares a
-``completed_subset`` prerequisite and can run when at least one selected
-upstream family has completed, while recording missing or still-running
-families in report metadata.
+Reporting/publication is intentionally not blocked on every requested family.
+It declares a ``completed_subset`` prerequisite and can run when at least one
+selected upstream family has completed, while recording missing or still-running
+families in manifest-backed publication metadata.
 
 Maintenance Rules
 -----------------
@@ -83,7 +84,9 @@ Maintenance Rules
   ``lib/task_families.nf``, and the shared controller registry.
 * Annotation, publication, partner export, and IGV packaging are not standalone
   top-level families in this split; they are owned by ``variant_calling`` or
-  ``reporting``.
+  ``reporting``. Workflow-generated EPI2ME HTML reports are not a supported
+  ``humvar3`` output contract; dashboards and API views are Poikilognostikon
+  manifest projections.
 * SNP, SV, phasing, and haplotagging are modes or products of
   ``variant_calling``. They can have internal task keys, but their scheduler
   state rolls up to the family.

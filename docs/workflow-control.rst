@@ -38,7 +38,7 @@ this workflow:
 * controller-owned manifest updates, including ``manifest_updated`` events for
   runtime state previously stored in ``params.wf[...]``;
 * reference/genome-build compatibility validation shared across annotation,
-  CNV, STR, and reporting decisions;
+  CNV, STR, and publication decisions;
 * task provenance manifest writes for tool versions, container digests, command
   arguments, input checksums, task status, completion markers, and output
   artefacts;
@@ -78,10 +78,10 @@ controller state and Nextflow boundary behavior separate:
   ``record-ingress-runids`` instead of mutating ``params.wf[...]``.
 * write bounded task provenance through ``record-task-provenance`` or
   ``lib/runtime_manifest_events.nf`` rather than leaving provenance only in
-  Nextflow logs, process reports, or ad hoc JSON files.
+  Nextflow logs, execution traces, or ad hoc JSON files.
 * write reference compatibility through
   ``validate-reference-compatibility`` before planning build-restricted
-  annotation, CNV, STR, or reporting work.
+  annotation, CNV, STR, or publication work.
 * launch containers with ``image@sha256:...`` references. If a source tag is
   used for release readability, record its digest resolution through
   ``record-container-digest`` or ``recordContainerDigestCommand``.
@@ -108,9 +108,8 @@ controller-facing task contracts must use ``sample_id`` instead of deriving
 sample identity from ``meta.alias``, filenames, barcode folders, or sample-sheet
 aliases.
 
-The current workflow still uses ``meta.alias`` heavily for filenames, reports,
-and third-party export paths. Treat that as a display and compatibility label
-only.
+The current workflow still uses ``meta.alias`` heavily for filenames and
+third-party export paths. Treat that as a display and compatibility label only.
 
 Sample Sheets
 -------------
