@@ -56,10 +56,11 @@ this workflow:
 Current Workflow Boundary
 -------------------------
 
-The imported compatibility workflow is still a launch-time static graph. New
-``humvar3`` work must not extend that graph as the scheduler. The Python
-controller decides when to launch or refresh each bounded unit, and Nextflow
-executes the selected bounded entry.
+The imported compatibility workflow is still a launch-time static graph. Keep
+it initially as a source of tool invocations, process wiring, and output
+expectations, but do not extend it as the scheduler. The Python controller
+decides when to launch or refresh each bounded unit, and Nextflow executes the
+selected bounded entry.
 
 Until the imported workflow behavior is fully replaced by bounded entries, keep
 controller state and Nextflow boundary behavior separate:
@@ -87,6 +88,15 @@ controller state and Nextflow boundary behavior separate:
 * render tool-specific command options through structured allowlists in
   ``lib/tool_options.nf`` and ``gnostikon-workflow-control`` rather than
   interpolating operator-supplied shell fragments.
+
+Main Graph Retirement
+---------------------
+
+Each migrated family should leave a clear audit trail from imported
+``main.nf`` behavior to the bounded entry that replaces it. The fork may retain
+``main.nf`` while compatibility coverage is still needed, but new work should
+retire responsibilities from that graph instead of adding new global branches,
+runtime state, or cross-sample barriers to it.
 
 Stable Identity
 ---------------

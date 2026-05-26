@@ -2,6 +2,10 @@ Controller-Led Execution
 ========================
 
 ``humvar3`` must not evolve by making ``main.nf`` a larger monolithic DAG.
+The imported graph remains useful as a source of known tool invocations,
+process wiring, and output expectations, but those contracts should be moved
+behind controller-launched bounded entries as each family is migrated.
+
 The target operating model is:
 
 1. The Python controller observes runtime events and projects manifest state.
@@ -79,5 +83,6 @@ Workflow Maintenance Rules
   ``record-task-provenance``. The manifest record must include tool versions,
   container image and digest, command arguments, input checksums, task status,
   completion marker path, and output artefacts.
-* ``main.nf`` remains a compatibility path until the bounded entries replace
-  the imported launch-time workflow behavior.
+* ``main.nf`` remains a compatibility path and reference implementation until
+  the bounded entries replace the imported launch-time workflow behavior. Do
+  not add new dynamic runtime semantics there.

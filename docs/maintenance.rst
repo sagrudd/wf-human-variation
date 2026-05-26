@@ -43,6 +43,8 @@ Reviewers should check:
   ``lib/reference_compatibility.nf`` and shared controller manifest state;
 * whether matching changes are needed in ``../gnostikon-workflow-control`` and
   ``../poikilognostikon``;
+* whether a bounded entry has replaced a ``main.nf`` responsibility rather than
+  expanding the monolithic graph;
 * whether sample alias use remains consistent;
 * whether output filenames and schema entries match;
 * whether report content still matches generated artefacts;
@@ -52,6 +54,8 @@ Known Compatibility Debt
 ------------------------
 
 * Static ``main.nf`` SNP activation for STR, phasing, and Spectre CNV.
+* ``main.nf`` remains a compatibility reference for tool invocations, process
+  wiring, and expected outputs until bounded entries retire each responsibility.
 * QDNAseq format compatibility.
 * Placeholder optional files.
 * Mutable ``params.wf[...]`` runtime side effects, especially

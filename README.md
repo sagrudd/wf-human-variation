@@ -15,6 +15,11 @@ scheduling, and provenance model. Workflow-level behavior and documentation
 remain scoped to `wf-human-variation`; Poikilognostikon orchestration and
 integration design are maintained in the Poikilognostikon repository.
 
+The imported `main.nf` graph is retained as a transitional source of tool
+invocations, process wiring, and output expectations. New `humvar3` runtime
+work should progressively move those contracts into controller-launched bounded
+entries rather than extending `main.nf` as a monolithic scheduler.
+
 Bounded `humvar3` work must write task provenance into the shared manifest via
 `gnostikon-workflow-control`, including tool versions, container digests,
 command arguments, input checksums, task status, and output artefacts.

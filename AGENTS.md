@@ -24,6 +24,9 @@ focused on understanding, maintaining, testing, and improving this workflow.
 
 - Preserve useful upstream workflow behavior deliberately; do not carry forward
   accidental behavior without documenting it.
+- Treat the imported `main.nf` graph as a transitional source of tool
+  invocations, process wiring, and output expectations. Mine it for contracts;
+  do not make it the long-term dynamic scheduler.
 - Keep sample identity, aliases, barcodes, and read-group names distinct in
   explanations and code comments.
 - When changing workflow parameters, update `nextflow_schema.json`,
@@ -44,6 +47,9 @@ focused on understanding, maintaining, testing, and improving this workflow.
 - Do not grow `main.nf` as the scheduler for new dynamic behavior. New dynamic
   work should be a bounded Nextflow entry launched by the Python controller via
   `gnostikon-workflow-control nextflow-task`.
+- When a bounded entry reproduces an imported `main.nf` behavior, document the
+  copied tool invocation and expected outputs, add or update focused tests, and
+  mark the corresponding `main.nf` responsibility as retirement debt.
 - Do not encode feature booleans that implicitly activate other analysis
   families. STR, Spectre CNV, phased methylation, and similar cases must
   declare explicit task prerequisites using the contract in

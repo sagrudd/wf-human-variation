@@ -22,8 +22,26 @@ broad steps:
    selected artefacts.
 
 This is one launch-time graph. It is not the target dynamic runtime scheduler.
-New ``humvar3`` work should be implemented as controller-launched bounded
-entries, as described in ``docs/controller-execution.rst``.
+Keep it initially as a reference for exact tool invocations, process wiring,
+and expected output artefacts. New ``humvar3`` work should progressively move
+those contracts into controller-launched bounded entries, as described in
+``docs/controller-execution.rst``.
+
+``main.nf`` Retirement Rule
+---------------------------
+
+When a bounded entry replaces imported behavior:
+
+1. record the source ``main.nf`` process or subworkflow path that was mined;
+2. preserve the relevant tool command shape and expected outputs in the bounded
+   contract;
+3. add focused tests for the new bounded behavior;
+4. update documentation to show the new controller-launched boundary;
+5. mark the old ``main.nf`` responsibility as compatibility debt until it is
+   no longer required for transitional launches.
+
+Do not add new dynamic readiness, multi-sample scheduling, or runtime manifest
+state to ``main.nf``. That work belongs in the controller and bounded entries.
 
 Global Branch Decisions
 -----------------------
