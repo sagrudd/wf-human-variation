@@ -68,6 +68,7 @@ include {
     boundedMappingEntryParams;
     boundedSampleAggregationEntryParams;
     boundedVariantCallingEntryParams;
+    boundedCnvEntryParams;
 } from './lib/bounded_entry.nf'
 
 include {
@@ -84,6 +85,11 @@ include {
 include {
     runBoundedStructuralVariantTask;
 } from './modules/local/bounded_structural_variant_calling'
+
+include {
+    runBoundedSpectreCnvTask;
+    runBoundedQdnaseqCnvTask;
+} from './modules/local/bounded_cnv'
 
 include {
     detect_basecall_model
@@ -170,6 +176,46 @@ workflow variant_calling {
             reference,
             reference_index,
             clair3_model
+        )
+    }
+}
+
+workflow cnv {
+    entry_contract = boundedCnvEntryParams(params)
+    aggregate_xam = Channel.fromPath(entry_contract.aggregate_xam, checkIfExists: true)
+    aggregate_xam_index = Channel.fromPath(entry_contract.aggregate_xam_index, checkIfExists: true)
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
+    if (entry_contract.cnv_mode == "spectre") {
+        snp_vcf = Channel.fromPath(entry_contract.snp_vcf, checkIfExists: true)
+        snp_vcf_index = Channel.fromPath(entry_contract.snp_vcf_index, checkIfExists: true)
+        mosdepth_summary = Channel.fromPath(entry_contract.mosdepth_summary, checkIfExists: true)
+        mosdepth_regions = Channel.fromPath(entry_contract.mosdepth_regions, checkIfExists: true)
+        mosdepth_distribution = Channel.fromPath(entry_contract.mosdepth_distribution, checkIfExists: true)
+        mosdepth_thresholds = Channel.fromPath(entry_contract.mosdepth_thresholds, checkIfExists: true)
+        runBoundedSpectreCnvTask(
+            Channel.value(entry_contract),
+            Channel.value(boundedEntryContractJson(entry_contract)),
+            aggregate_xam,
+            aggregate_xam_index,
+            reference,
+            reference_index,
+            snp_vcf,
+            snp_vcf_index,
+            mosdepth_summary,
+            mosdepth_regions,
+            mosdepth_distribution,
+            mosdepth_thresholds
+        )
+    }
+    else {
+        runBoundedQdnaseqCnvTask(
+            Channel.value(entry_contract),
+            Channel.value(boundedEntryContractJson(entry_contract)),
+            aggregate_xam,
+            aggregate_xam_index,
+            reference,
+            reference_index
         )
     }
 }

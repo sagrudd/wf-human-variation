@@ -274,6 +274,51 @@ def _structuralVariantOptions(def raw) {
     ]
 }
 
+def _cnvOptions(def raw) {
+    def options = raw instanceof Map ? raw : [:]
+    def allowed = [
+        "threads",
+        "genome_build",
+        "spectre_options",
+        "qdnaseq_options",
+    ] as Set
+    def unexpected = options.keySet().collect { it.toString() }.findAll { !allowed.contains(it) }.sort()
+    if (unexpected) {
+        throw new IllegalArgumentException("unsupported CNV option(s): ${unexpected.join(', ')}")
+    }
+    def positiveInt = { name, defaultValue ->
+        def value = options.containsKey(name) ? options[name] : defaultValue
+        def number = value as Integer
+        if (number < 1) {
+            throw new IllegalArgumentException("CNV option '${name}' must be >= 1")
+        }
+        return number
+    }
+    def spectreOptions = options.spectre_options instanceof Map ? options.spectre_options : [:]
+    def spectreAllowed = ["min_cnv_len"] as Set
+    def unexpectedSpectre = spectreOptions.keySet().collect { it.toString() }.findAll { !spectreAllowed.contains(it) }.sort()
+    if (unexpectedSpectre) {
+        throw new IllegalArgumentException("unsupported Spectre option(s): ${unexpectedSpectre.join(', ')}")
+    }
+    if (spectreOptions.containsKey("min_cnv_len") && (spectreOptions.min_cnv_len as Integer) < 0) {
+        throw new IllegalArgumentException("Spectre option 'min_cnv_len' must be >= 0")
+    }
+    def qdnaseqOptions = options.qdnaseq_options instanceof Map ? options.qdnaseq_options : [:]
+    def qdnaseqAllowed = ["bin_size"] as Set
+    def unexpectedQdnaseq = qdnaseqOptions.keySet().collect { it.toString() }.findAll { !qdnaseqAllowed.contains(it) }.sort()
+    if (unexpectedQdnaseq) {
+        throw new IllegalArgumentException("unsupported QDNAseq option(s): ${unexpectedQdnaseq.join(', ')}")
+    }
+    return [
+        threads: positiveInt("threads", 2),
+        genome_build: (options.genome_build ?: "").toString(),
+        spectre_options: spectreOptions,
+        qdnaseq_options: [
+            bin_size: qdnaseqOptions.containsKey("bin_size") ? positiveInt("qdnaseq_options.bin_size", qdnaseqOptions.bin_size) : 500,
+        ],
+    ]
+}
+
 def boundedEntryParams(params, String expectedFamily, String entryName) {
     def task_family = _requiredBoundedParam(params, "task_family")
     if (task_family != expectedFamily) {
@@ -453,6 +498,79 @@ def boundedVariantCallingEntryParams(params) {
         entry.clair3_model = _requiredBoundedParam(params, "clair3_model")
         entry.clair3_model_digest = _requiredBoundedParam(params, "clair3_model_digest")
         entry.variant_options = options
+    }
+    return entry
+}
+
+def boundedCnvEntryParams(params) {
+    def mode = _choice(
+        "cnv_mode",
+        _requiredBoundedParam(params, "cnv_mode"),
+        ["spectre", "qdnaseq"] as Set
+    )
+    def expected_outputs = [
+        "cnv_vcf",
+        "cnv_vcf_index",
+        "cnv_manifest",
+        "cnv_provenance",
+        "qc_stats",
+    ] as Set
+    if (mode == "spectre") {
+        expected_outputs += ["cnv_bed", "cnv_karyotype"] as Set
+    }
+    else {
+        expected_outputs += ["cnv_segments_bed", "cnv_segments_vcf"] as Set
+    }
+    def output_paths = _requireOutputPaths(
+        _boundedOutputPaths(params.output_paths),
+        expected_outputs
+    )
+    def options = _cnvOptions(params.cnv_options)
+    if (!options.genome_build) {
+        throw new IllegalArgumentException("CNV option 'genome_build' is required")
+    }
+    def aggregate_xam_kind = _choice(
+        "aggregate_xam_kind",
+        _optionalBoundedParam(params, "aggregate_xam_kind", "bam"),
+        ["bam", "cram"] as Set
+    )
+    if (mode == "qdnaseq" && aggregate_xam_kind != "bam") {
+        throw new IllegalArgumentException("cnv_mode 'qdnaseq' requires aggregate_xam_kind=bam; convert CRAM in a visible prerequisite task")
+    }
+    def entry = [
+        entry_schema: "wf-human-variation.bounded_cnv.v1",
+        entry_name: "cnv",
+        task_family: _choice(
+            "task_family",
+            _requiredBoundedParam(params, "task_family"),
+            ["cnv"] as Set
+        ),
+        task_key: _requiredBoundedParam(params, "task_key"),
+        task_dir: _requiredBoundedParam(params, "task_dir"),
+        task_cache_dir: _requiredBoundedParam(params, "task_cache_dir"),
+        completion_marker_path: _requiredBoundedParam(params, "completion_marker_path"),
+        sample_id: _requiredBoundedParam(params, "sample_id"),
+        reference_id: _requiredBoundedParam(params, "reference_id"),
+        aggregate_xam: _requiredBoundedParam(params, "aggregate_xam"),
+        aggregate_xam_index: _requiredBoundedParam(params, "aggregate_xam_index"),
+        aggregate_xam_kind: aggregate_xam_kind,
+        aggregate_xam_digest: _requiredBoundedParam(params, "aggregate_xam_digest"),
+        reference_fasta: _requiredBoundedParam(params, "reference_fasta"),
+        reference_index: _requiredBoundedParam(params, "reference_index"),
+        cnv_mode: mode,
+        cnv_config_digest: _requiredBoundedParam(params, "cnv_config_digest"),
+        container_digest: _requiredBoundedParam(params, "container_digest"),
+        cnv_options: options,
+        output_paths: output_paths,
+    ]
+    if (mode == "spectre") {
+        entry.snp_vcf = _requiredBoundedParam(params, "snp_vcf")
+        entry.snp_vcf_index = _requiredBoundedParam(params, "snp_vcf_index")
+        entry.snp_vcf_digest = _requiredBoundedParam(params, "snp_vcf_digest")
+        entry.mosdepth_summary = _requiredBoundedParam(params, "mosdepth_summary")
+        entry.mosdepth_regions = _requiredBoundedParam(params, "mosdepth_regions")
+        entry.mosdepth_distribution = _requiredBoundedParam(params, "mosdepth_distribution")
+        entry.mosdepth_thresholds = _requiredBoundedParam(params, "mosdepth_thresholds")
     }
     return entry
 }

@@ -217,6 +217,41 @@ unsupported null-support records, applies the retained coverage/target
 filtering command, sorts and indexes the VCF, writes SNF output, and records
 benchmarking as deferred manifest state rather than launching Truvari.
 
+Task 19 adds the bounded CNV entry with explicit Spectre and QDNAseq modes:
+
+.. code-block:: text
+
+   gnostikon-workflow-control nextflow-task \
+     --workflow ../wf-human-variation \
+     --entry cnv \
+     --outdir /analysis/project-001 \
+     --task-family cnv \
+     --key-field sample_id=smp_001 \
+     --key-field reference_id=ref_001 \
+     --key-field cnv_mode=spectre \
+     --key-field aggregate_xam_digest=sha256:aggregate \
+     --key-field snp_vcf_digest=sha256:snp \
+     --key-field cnv_config_digest=sha256:cnv \
+     --key-field container_digest=sha256:container \
+     --params-json cnv-spectre.params.json \
+     --output cnv_vcf=cnv/cnv.vcf.gz \
+     --output cnv_vcf_index=cnv/cnv.vcf.gz.tbi \
+     --output cnv_bed=cnv/cnv.bed \
+     --output cnv_karyotype=cnv/predicted-karyotype.txt \
+     --output cnv_manifest=metadata/cnv-manifest.json \
+     --output cnv_provenance=metadata/cnv-provenance.json \
+     --output qc_stats=qc/cnv-qc.json
+
+The Spectre params JSON must provide ``sample_id``, aggregate XAM fields,
+reference fields, ``snp_vcf``, ``snp_vcf_index``, ``snp_vcf_digest``,
+mosdepth summary/regions/distribution/threshold artefacts, ``cnv_mode``,
+``cnv_config_digest``, ``container_digest``, and structured ``cnv_options``.
+The QDNAseq mode uses the same entry with ``cnv_mode=qdnaseq`` and declared
+``cnv_segments_bed``/``cnv_segments_vcf`` outputs. QDNAseq requires
+``aggregate_xam_kind=bam`` and uses the structured option
+``cnv_options.qdnaseq_options.bin_size`` so CRAM-to-BAM conversion remains a
+visible prerequisite.
+
 Workflow Maintenance Rules
 --------------------------
 

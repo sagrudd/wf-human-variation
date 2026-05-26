@@ -88,6 +88,10 @@ Compatibility couplings:
 Bounded CNV entries must declare Spectre's SNP VCF dependency explicitly and
 must not make Spectre mode silently activate SNP publication.
 
+Task 19 starts replacing this route with ``-entry cnv``. Spectre and QDNAseq
+are explicit ``cnv_mode`` values, and QDNAseq rejects non-BAM aggregate input
+instead of hiding conversion inside the global graph.
+
 STR Calling
 -----------
 

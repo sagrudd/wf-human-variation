@@ -60,18 +60,19 @@ Known Compatibility Debt
 * Static ``main.nf`` SNP activation for STR, phasing, and Spectre CNV.
 * ``main.nf`` remains a compatibility reference for tool invocations, process
   wiring, and expected outputs until bounded entries retire each responsibility.
-* The mapping bounded entry, sample aggregation bounded entry, small-variant
-  bounded entry, and structural-variant bounded entry are the first real named
-  execution units. Later family work must preserve their controller-owned
-  params contracts, declared output paths, and completion-marker semantics
-  rather than moving readiness back into the compatibility graph. The sample
-  aggregation bounded entry owns machine-readable coverage QC and
-  ``rejected_low_coverage`` state; this must not drift back into HTML reporting.
-  The small-variant bounded entry owns Clair3 SNP/GVCF execution only. The
-  structural-variant bounded entry owns Sniffles2 VCF/SNF generation plus
-  filter/sort/index only; benchmarking, phasing, SV refinement, and annotation
-  must remain explicit modes or prerequisites.
-* QDNAseq format compatibility.
+* The mapping bounded entry, sample aggregation bounded entry, variant bounded
+  entries, and CNV bounded entry are the first real named execution units.
+  Later family work must preserve their controller-owned params contracts,
+  declared output paths, and completion-marker semantics rather than moving
+  readiness back into the compatibility graph. The sample aggregation bounded
+  entry owns machine-readable coverage QC and ``rejected_low_coverage`` state;
+  this must not drift back into HTML reporting. The small-variant bounded entry
+  owns Clair3 SNP/GVCF execution only. The structural-variant bounded entry owns
+  Sniffles2 VCF/SNF generation plus filter/sort/index only. The CNV bounded
+  entry owns Spectre/QDNAseq execution only; hidden SNP activation, hidden CRAM
+  conversion, CNV annotation, and CNV HTML reporting must remain outside it.
+* QDNAseq format compatibility now belongs to explicit upstream conversion or
+  bounded-entry rejection rather than a hidden global branch.
 * Placeholder optional files outside the finite transitional list in
   ``docs/architecture.rst``.
 * Any reintroduction of mutable ``params.wf[...]`` runtime side effects.

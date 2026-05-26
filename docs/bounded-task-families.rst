@@ -134,3 +134,12 @@ variant/container digests. It emits ``structural_variant_vcf``,
 ``qc_stats``. Truvari benchmarking is intentionally not part of this bounded
 entry; it remains a separate future evaluation task because the compatibility
 path still relies on bundled truthset fallbacks.
+
+Task 19 adds ``-entry cnv`` as the bounded CNV entry. Spectre and QDNAseq are
+separate ``cnv_mode`` values. Spectre requires an explicit ``snp_vcf``
+prerequisite plus mosdepth coverage artefacts, so selecting CNV no longer
+silently activates SNP. QDNAseq requires ``aggregate_xam_kind=bam``; CRAM input
+must be converted by a visible upstream mapping or adapter task. Both modes
+emit ``cnv_vcf``, ``cnv_vcf_index``, ``cnv_manifest``, ``cnv_provenance``, and
+``qc_stats``. Spectre additionally emits ``cnv_bed`` and ``cnv_karyotype``;
+QDNAseq additionally emits ``cnv_segments_bed`` and ``cnv_segments_vcf``.

@@ -160,6 +160,37 @@ executes only bounded SV calling for one sample/reference/mode and records
 deferred benchmark, phasing, and annotation products as explicit manifest
 state.
 
+The Task 19 bounded CNV entry can be dry-run in Spectre mode:
+
+.. code-block:: bash
+
+   gnostikon-workflow-control nextflow-task \
+     --workflow . \
+     --entry cnv \
+     --outdir /tmp/humvar-bounded \
+     --task-family cnv \
+     --key-field sample_id=smp_001 \
+     --key-field reference_id=ref_001 \
+     --key-field cnv_mode=spectre \
+     --key-field aggregate_xam_digest=sha256:aggregate \
+     --key-field snp_vcf_digest=sha256:snp \
+     --key-field cnv_config_digest=sha256:cnv \
+     --key-field container_digest=sha256:container \
+     --params-json cnv-spectre.params.json \
+     --output cnv_vcf=cnv/cnv.vcf.gz \
+     --output cnv_vcf_index=cnv/cnv.vcf.gz.tbi \
+     --output cnv_bed=cnv/cnv.bed \
+     --output cnv_karyotype=cnv/predicted-karyotype.txt \
+     --output cnv_manifest=metadata/cnv-manifest.json \
+     --output cnv_provenance=metadata/cnv-provenance.json \
+     --output qc_stats=qc/cnv-qc.json \
+     --dry-run
+
+QDNAseq dry-runs use ``cnv_mode=qdnaseq`` and declare ``cnv_segments_bed`` and
+``cnv_segments_vcf`` instead of Spectre ``cnv_bed`` and ``cnv_karyotype``.
+The params must also declare ``aggregate_xam_kind=bam`` and may set
+``cnv_options.qdnaseq_options.bin_size``.
+
 Broader smoke tests should cover combinations such as:
 
 * two ingressed sample folders with ``--sample_id alias_a=smp_a,alias_b=smp_b``;

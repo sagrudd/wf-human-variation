@@ -180,6 +180,14 @@ manifest/provenance, and QC JSON. SV benchmarking is deferred to a future
 machine-readable evaluation contract rather than being activated implicitly
 inside variant calling.
 
+Task 19 adds the bounded ``cnv`` execution unit. ``cnv_mode=spectre`` consumes
+one aggregate XAM, reference, SNP VCF prerequisite, and declared mosdepth
+coverage artefacts; ``cnv_mode=qdnaseq`` consumes a BAM aggregate only. The
+bounded entry emits CNV VCF/index, machine-readable segment or karyotype
+artefacts, manifest/provenance, and QC JSON. It does not activate SNP calling,
+perform hidden CRAM-to-BAM conversion, generate CNV HTML reports, or annotate
+CNV output as a side effect.
+
 Mutable ``params.wf[...]`` updates must not carry runtime state. Run IDs are
 kept as per-sample ``*.runids.txt`` artefacts in the compatibility graph and
 new bounded work must emit manifest/event writes through

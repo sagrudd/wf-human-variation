@@ -35,6 +35,10 @@ Primary entry points:
   currently supports SNP/GVCF modes and the bounded structural-variant entry,
   emitting declared VCF/index products, manifest/provenance JSON, and
   variant-calling QC stats.
+* ``-entry cnv``: bounded CNV entry for one controller-declared aggregate XAM,
+  reference, and ``cnv_mode``. It supports explicit Spectre and QDNAseq modes,
+  emitting machine-readable CNV VCF/index, segment/karyotype artefacts,
+  manifest/provenance JSON, and CNV QC stats.
 * ``nextflow.config``: default parameters and workflow metadata.
 * ``nextflow_schema.json``: parameter schema used by command-line and UI
   surfaces.

@@ -33,6 +33,10 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertIn("runBoundedSmallVariantTask(", main)
         self.assertIn("Channel.fromPath(entry_contract.aggregate_xam, checkIfExists: true)", main)
         self.assertIn("Channel.fromPath(entry_contract.clair3_model, type: \"dir\", checkIfExists: true)", main)
+        self.assertIn("workflow cnv {", main)
+        self.assertIn("boundedCnvEntryParams(params)", main)
+        self.assertIn("runBoundedSpectreCnvTask(", main)
+        self.assertIn("runBoundedQdnaseqCnvTask(", main)
         self.assertIn("// Compatibility entrypoint workflow\nworkflow {\n    WorkflowMain.initialise", main)
         self.assertNotIn("// entrypoint workflow\nWorkflowMain.initialise", main)
 
@@ -98,6 +102,28 @@ class BoundedEntryContractTest(unittest.TestCase):
         for token in forbidden:
             with self.subTest(token=token):
                 self.assertNotIn(token, variant_entry)
+
+    def test_cnv_entry_does_not_launch_compatibility_graph_or_reports(self):
+        main = read("main.nf")
+        cnv_entry = main.split("workflow cnv {", 1)[1].split(
+            "// Compatibility entrypoint workflow", 1
+        )[0]
+
+        forbidden = [
+            "ingress(",
+            "prepare_reference(",
+            "snp(",
+            "cnv_spectre(",
+            "cnv_qdnaseq(",
+            "output_cnv(",
+            "annotate_vcf(",
+            "combine_metrics_json(",
+            "publish_artifact(",
+            "str(",
+        ]
+        for token in forbidden:
+            with self.subTest(token=token):
+                self.assertNotIn(token, cnv_entry)
 
     def test_bounded_entry_requires_controller_owned_task_params(self):
         helper = read("lib/bounded_entry.nf")
@@ -282,6 +308,67 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertNotIn("makeReport", module)
         self.assertNotIn("output_sv", module)
 
+    def test_cnv_entry_requires_mode_specific_controller_owned_task_params(self):
+        helper = read("lib/bounded_entry.nf")
+        module = read("modules/local/bounded_cnv.nf")
+        main = read("main.nf")
+
+        for param in [
+            "cnv_mode",
+            "aggregate_xam",
+            "aggregate_xam_index",
+            "aggregate_xam_kind",
+            "aggregate_xam_digest",
+            "reference_fasta",
+            "reference_index",
+            "reference_id",
+            "cnv_config_digest",
+            "container_digest",
+            "cnv_options",
+            "qdnaseq_options",
+            "snp_vcf",
+            "snp_vcf_index",
+            "snp_vcf_digest",
+            "mosdepth_summary",
+            "mosdepth_regions",
+            "mosdepth_distribution",
+            "mosdepth_thresholds",
+        ]:
+            with self.subTest(param=param):
+                self.assertIn(param, helper)
+
+        for output in [
+            '"cnv_vcf"',
+            '"cnv_vcf_index"',
+            '"cnv_bed"',
+            '"cnv_karyotype"',
+            '"cnv_segments_bed"',
+            '"cnv_segments_vcf"',
+            '"cnv_manifest"',
+            '"cnv_provenance"',
+            '"qc_stats"',
+        ]:
+            with self.subTest(output=output):
+                self.assertIn(output, helper)
+
+        self.assertIn('if (entry_contract.cnv_mode == "spectre")', main)
+        self.assertIn("wf-human-variation.bounded_cnv.v1", helper)
+        self.assertIn('"spectre"', helper)
+        self.assertIn('"qdnaseq"', helper)
+        self.assertIn("cnv_mode 'qdnaseq' requires aggregate_xam_kind=bam", helper)
+        self.assertIn("unsupported CNV option(s)", helper)
+        self.assertIn("unsupported Spectre option(s)", helper)
+        self.assertIn("unsupported QDNAseq option(s)", helper)
+        self.assertIn('"marker_schema": "gnostikon.task_completion.v1"', module)
+        self.assertIn('"spectre", "CNVCaller"', module)
+        self.assertIn("run_qdnaseq.r", module)
+        self.assertIn("fix_qdnaseq_vcf.py", module)
+        self.assertIn('"tool": "spectre"', module)
+        self.assertIn('"tool": "qdnaseq"', module)
+        self.assertIn('"html_report": {"requested": False', module)
+        self.assertNotIn("output_cnv", module)
+        self.assertNotIn("makeReport", module)
+
     def test_mapping_entry_declares_supported_input_kinds_and_allowlisted_mapper_options(self):
         helper = read("lib/bounded_entry.nf")
 
@@ -320,22 +407,27 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertIn("``-entry mapping``", docs)
         self.assertIn("``-entry sample_aggregation``", docs)
         self.assertIn("``-entry variant_calling``", docs)
+        self.assertIn("``-entry cnv``", docs)
         self.assertIn("bounded mapping entry", docs)
         self.assertIn("bounded sample aggregation entry", docs)
         self.assertIn("bounded small-variant entry", docs)
         self.assertIn("bounded structural-variant entry", docs)
+        self.assertIn("bounded CNV entry", docs)
         self.assertIn("Task 15", docs)
         self.assertIn("Task 16", docs)
         self.assertIn("Task 17", docs)
         self.assertIn("Task 18", docs)
+        self.assertIn("Task 19", docs)
         self.assertIn("mapped_xam", docs)
         self.assertIn("coverage_state", docs)
         self.assertIn("snp_vcf", docs)
         self.assertIn("structural_variant_vcf", docs)
+        self.assertIn("cnv_vcf", docs)
         self.assertIn("mapping bounded entry", ledger)
         self.assertIn("sample aggregation bounded entry", ledger)
         self.assertIn("small-variant bounded entry", ledger)
         self.assertIn("structural-variant bounded entry", ledger)
+        self.assertIn("CNV bounded entry", ledger)
 
 
 if __name__ == "__main__":
