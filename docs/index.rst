@@ -41,6 +41,7 @@ Contents
    explicit-prerequisites
    subworkflows
    parameters
+   dependencies
    outputs
    testing
    maintenance

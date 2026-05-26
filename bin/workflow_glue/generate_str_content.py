@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Generate data input files for STR content plot."""
+"""Generate machine-readable STR sequence content tables."""
 
 import json
 import re
@@ -44,7 +44,7 @@ def argparser():
 
 
 def truncate_interruption(interruption_seq):
-    """Shorten long interruption sequences for display on Bokeh HoverTool."""
+    """Shorten long interruption sequences for compact tabular output."""
     if len(interruption_seq) > 20:
         return interruption_seq[:21] + "..."
     else:
@@ -197,7 +197,7 @@ def extract_sequences(bam, merged_tsv):
 
 
 def create_plot_input_files(str_seq_json):
-    """Extract info relevant for plots from JSON and save as CSV."""
+    """Extract STR sequence intervals from JSON and save as CSV."""
     data = json.loads(str_seq_json)
 
     for str_identifier, str_data in data.items():

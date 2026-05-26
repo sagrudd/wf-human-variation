@@ -11,6 +11,15 @@ def test_metrics_module_is_not_a_cli_command():
     assert "metrics" not in get_components()
 
 
+def test_report_only_components_are_not_cli_commands():
+    """Removed report and browser helpers must not reappear as CLI commands."""
+    components = get_components()
+
+    assert "configure_jbrowse" not in components
+    assert "configure_igv" not in components
+    assert all(not name.startswith("report_") for name in components)
+
+
 def test_parse_bcfstats(tmp_path):
     """SNP JSON metrics are extracted without report dependencies."""
     stats = tmp_path / "variants.stats"

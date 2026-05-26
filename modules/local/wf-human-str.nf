@@ -102,7 +102,7 @@ process bam_read_filter {
 }
 
 process generate_str_content {
-    // extract content info from BAM and generate TSV files for plot data
+    // extract STR sequence content from BAM and generate machine-readable CSV
     label "wf_common"
     cpus 1
     memory 4.GB

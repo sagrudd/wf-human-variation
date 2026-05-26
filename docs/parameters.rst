@@ -118,6 +118,8 @@ with ``gnostikon-workflow-control record-container-digest``. Mirrored registries
 such as AWS Batch must provide their own digest values. Missing mirror digests
 should block execution rather than falling back to tags.
 
+Runtime dependency policy is documented in ``docs/dependencies.rst``.
+
 Maintenance Checklist
 ---------------------
 

@@ -16,6 +16,7 @@ Required documentation updates:
   ``docs/workflow-control.rst``;
 * analysis branch changes: update ``docs/subworkflows.rst``;
 * parameter changes: update ``docs/parameters.rst``;
+* dependency changes: update ``docs/dependencies.rst``;
 * output changes: update ``docs/outputs.rst``;
 * test strategy changes: update ``docs/testing.rst``;
 * failure-mode changes: update ``docs/troubleshooting.rst``.
@@ -36,6 +37,9 @@ Reviewers should check:
   and output artefacts;
 * whether containers are referenced by immutable ``@sha256:`` digests and any
   source tag resolution has been recorded in the manifest;
+* whether report-only dependencies such as ``ezcharts``, ``dominate``,
+  ``bokeh``, or browser layout libraries have been kept out of maintained
+  runtime surfaces;
 * whether optional values are represented clearly;
 * whether tool command options are structured allowlisted objects rather than
   free-form shell fragments;

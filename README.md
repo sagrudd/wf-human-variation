@@ -26,6 +26,8 @@ Bounded `humvar3` work must write task provenance into the shared manifest via
 command arguments, input checksums, task status, and output artefacts.
 Runtime containers are pinned with immutable OCI digests rather than SHA-like
 tags; the source tag to digest resolution is part of manifest provenance.
+Report-only Python dependencies and browser layout helpers are not maintained
+runtime dependencies on `humvar3`.
 
 Low-coverage inputs are treated as explicit `rejected_low_coverage` sample
 state. The workflow exits non-zero so Poikilognostikon does not treat a
