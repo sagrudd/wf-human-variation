@@ -11,7 +11,9 @@ broad steps:
 2. Prepare the reference.
 3. Ingress and, when needed, align or realign the input XAM.
 4. Compute alignment statistics and coverage.
-5. Apply coverage gating and optional downsampling.
+5. Apply coverage gating and optional downsampling. Low-coverage inputs become
+   ``rejected_low_coverage`` and intentionally fail the run after optional
+   report generation.
 6. Infer or accept sample sex when required.
 7. Run enabled analysis branches.
 8. Combine metrics, generate reports, package browser outputs, and publish

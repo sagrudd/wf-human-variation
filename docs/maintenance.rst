@@ -62,7 +62,8 @@ Known Compatibility Debt
   rejection path for legacy ``*_args`` parameters.
 * Drift between this workflow, ``gnostikon-workflow-control``, and
   Poikilognostikon migration records.
-* Low-coverage behavior.
+* Low-coverage behavior: rejected samples must use ``rejected_low_coverage``
+  and must not appear as successful workflow completions.
 * Basecaller model detection.
 * Annotation genome-build restrictions.
 * Partner export placeholder handling.

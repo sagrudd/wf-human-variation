@@ -12,7 +12,8 @@ Tests should protect:
 * branch activation and hidden couplings;
 * output filenames and optionality;
 * report generation;
-* failure behavior for invalid inputs and low coverage.
+* failure behavior for invalid inputs and low coverage, including the
+  ``rejected_low_coverage`` non-zero workflow status.
 
 Local Smoke Test
 ----------------
@@ -36,7 +37,7 @@ Broader smoke tests should cover combinations such as:
 * ``--str``;
 * ``--mod``;
 * ``--phased``;
-* low-coverage failure/report paths;
+* low-coverage rejection/report paths;
 * CRAM and uBAM ingress.
 
 Documentation Build Test

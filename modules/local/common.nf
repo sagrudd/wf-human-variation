@@ -322,6 +322,28 @@ process failedQCReport  {
         """
 }
 
+process rejectedLowCoverage {
+    label "wf_common"
+    cpus 1
+    memory 1.GB
+
+    input:
+        path low_coverage_evidence
+
+    output:
+        path "rejected_low_coverage.status.txt", optional: true
+
+    script:
+        """
+        echo "rejected_low_coverage" > rejected_low_coverage.status.txt
+        echo "Sample state: rejected_low_coverage" >&2
+        echo "Low coverage evidence: ${low_coverage_evidence}" >&2
+        echo "Coverage is below --bam_min_coverage=${params.bam_min_coverage}." >&2
+        echo "Reports are optional; workflow status is failed by design for rejected_low_coverage." >&2
+        exit 1
+        """
+}
+
 // Alignment report
 process makeAlignmentReport {
     label "wf_common"
@@ -750,4 +772,3 @@ process extract_not_haplotagged_contigs {
     samtools view '${xam}' '*' -@ ${extra_view_threads} --no-PG -o output/unaligned.bam -T '${ref}'
     """
 }
-

@@ -21,6 +21,11 @@ command arguments, input checksums, task status, and output artefacts.
 Runtime containers are pinned with immutable OCI digests rather than SHA-like
 tags; the source tag to digest resolution is part of manifest provenance.
 
+Low-coverage inputs are treated as explicit `rejected_low_coverage` sample
+state. Optional failure reports may be produced, but the workflow exits
+non-zero so Poikilognostikon does not treat a rejected sample as a completed
+analysis.
+
 Tool customisation on `humvar3` uses structured allowlisted option objects such
 as `sniffles_options`, `modkit_options`, and `spectre_options`; legacy
 free-form `*_args` shell pass-throughs are rejected.

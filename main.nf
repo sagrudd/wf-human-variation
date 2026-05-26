@@ -26,6 +26,7 @@ include {
     publish_artifact;
     get_region_coverage;
     failedQCReport; 
+    rejectedLowCoverage;
     makeAlignmentReport; 
     getVersions;
     getGenome; 
@@ -601,14 +602,15 @@ workflow {
             dp_pass, dp, bam, bai, meta ->
             // check where it failed
             def fail_depth_reason = !meta.has_mapped_reads ? "no mapped reads" : dp < params.bam_min_coverage ? "depth: ${dp} < ${params.bam_min_coverage}" : "failed for unknown reason"
-            // Raise the alarm quite obviously but do not error the workflow -- we'll successfully issue a failed report
+            // Raise the alarm explicitly. Reports are optional; the workflow status must still reflect the rejected sample.
             String fail_depth_msg = """\
             ################################################################################
-            # INPUT DATA PROBLEM
+            # INPUT DATA PROBLEM: rejected_low_coverage
             An input file has insufficient coverage for analysis and will not be processed
             by the workflow:
 
             ${bam.getName()} has ${fail_depth_reason}
+            Sample state: rejected_low_coverage
             ################################################################################
             """.stripIndent()
             log.error fail_depth_msg
@@ -666,9 +668,13 @@ workflow {
             .combine(coverage_bed_summary)
             .flatten()
             .collect() | failedQCReport
+        rejected_low_coverage_status = report_fail | rejectedLowCoverage
     } else {
         report_pass = Channel.empty()
         report_fail = Channel.empty()
+        rejected_low_coverage_status = discarded_bams
+            .map{ bam, bai, meta -> bam }
+            | rejectedLowCoverage
     }
 
     // Set up BED for wf-human-snp, wf-human-str or run_haplotagging

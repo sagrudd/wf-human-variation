@@ -63,6 +63,9 @@ Coverage behavior is controlled by:
 
 When changing coverage semantics, update troubleshooting and output
 documentation because low-coverage behavior affects user interpretation.
+Inputs below ``--bam_min_coverage`` are represented as
+``rejected_low_coverage``. A report can be emitted when ``--output_report`` is
+enabled, but the workflow status remains non-zero for the rejected sample.
 
 Structured Tool Options
 -----------------------

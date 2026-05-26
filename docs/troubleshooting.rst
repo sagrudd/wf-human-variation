@@ -16,9 +16,11 @@ Coverage Is Too Low
 -------------------
 
 The workflow uses ``--bam_min_coverage`` to decide whether downstream analysis
-should proceed. Low coverage can produce failure reports or stop requested
-analysis depending on the branch. When changing this behavior, update the
-maintenance and outputs documentation.
+should proceed. Low coverage is an explicit terminal sample condition:
+``rejected_low_coverage``. Downstream analysis is skipped, an alignment failure
+report may be produced when ``--output_report`` is enabled, and the workflow
+exits with a non-zero status so orchestration layers do not mistake the result
+for a successful analysis.
 
 Reference Does Not Match Input
 ------------------------------
