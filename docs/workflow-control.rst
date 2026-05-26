@@ -37,7 +37,7 @@ this workflow:
 * watched event-directory and SQLite event-store ingress;
 * sample-sheet bootstrap import, where inherited ``sample,pod5_dir`` rows are
   converted into normal runtime events;
-* explicit sample association for read artefacts, matching the inherited
+* explicit stable sample identity for read artefacts, matching the inherited
   Epignostikon requirement that POD5 and BAM arrivals are sample-bound;
 * typed optional file and channel inputs, where absence is represented as
   state rather than as a placeholder filename.
@@ -58,6 +58,19 @@ state and Nextflow boundary behavior separate:
 * use ``lib/optional_inputs.nf`` when a process boundary still requires a
   concrete placeholder file;
 * document every remaining placeholder as transitional compatibility behavior.
+
+Stable Identity
+---------------
+
+Stable sample identity is the tuple ``{project, flowcell, run_id, sample_id,
+biosample_id}``. These fields are added to ``meta`` by
+``lib/stable_identity.nf`` when supplied through parameters. They must be used
+by future controller-facing task contracts instead of deriving sample identity
+from ``meta.alias``, filenames, barcode folders, or sample-sheet aliases.
+
+The current workflow still uses ``meta.alias`` heavily for filenames, reports,
+and third-party export paths. Treat that as a display and compatibility label
+only.
 
 Sample Sheets
 -------------

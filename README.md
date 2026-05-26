@@ -41,3 +41,6 @@ This `humvar3` branch is maintained alongside
 `../gnostikon-workflow-control` and `../poikilognostikon`. Runtime-controller
 changes, dynamic-ingress assumptions, optional-input semantics, and migration
 records should be updated in parallel across the affected repositories.
+Stable controller identity is `{project, flowcell, run_id, sample_id,
+biosample_id}`; `--sample_name` and `meta.alias` remain display/output labels
+for current workflow compatibility.

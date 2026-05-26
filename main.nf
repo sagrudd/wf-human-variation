@@ -54,6 +54,10 @@ include {
 } from './lib/optional_inputs.nf'
 
 include {
+    withStableIdentity;
+} from './lib/stable_identity.nf'
+
+include {
     detect_basecall_model
 } from './lib/model.nf'
 
@@ -234,6 +238,7 @@ workflow {
         params.bam,
         ingress_ext,
     )
+    | map { xam, xai, meta -> [xam, xai, withStableIdentity(meta, params)] }
 
     // enforce_genome_build determines if getGenome should be run
     //   and can be used later to determine if a genome build was enforced

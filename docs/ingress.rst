@@ -37,7 +37,7 @@ Identity Handling
 -----------------
 
 The current workflow frequently uses ``meta.alias`` as the sample-facing label
-for outputs. The alias can come from:
+for outputs. It is not durable identity. The alias can come from:
 
 * ``--sample_name``;
 * a file stem;
@@ -48,9 +48,12 @@ for outputs. The alias can come from:
 Maintainers must not confuse this alias with durable biological identity. It is
 a label used by the current workflow and by output filenames.
 
-The shared controller model treats sample identity as authoritative for read
-artefacts. Dynamic POD5 and BAM arrivals must remain associated with a sample
-when they are projected into this workflow.
+The shared controller model treats the tuple ``{project, flowcell, run_id,
+sample_id, biosample_id}`` as authoritative sample identity for read artefacts.
+Dynamic POD5 and BAM arrivals must carry that tuple when they are projected
+into this workflow. The transitional Nextflow metadata now carries these fields
+when supplied through parameters, while ``meta.alias`` remains a display/output
+label.
 
 Single-Sample Enforcement
 -------------------------

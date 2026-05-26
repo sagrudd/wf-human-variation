@@ -38,7 +38,8 @@ Important Constraints
 
 * The workflow is currently structured around global feature flags.
 * Effective operation is single-sample, despite generic ingress machinery.
-* Sample aliases are used heavily in paths and reports.
+* Sample aliases are used heavily in paths and reports, but stable controller
+  identity is ``{project, flowcell, run_id, sample_id, biosample_id}``.
 * Some optional inputs are represented by placeholder files.
 * Some downstream work is triggered implicitly by other features.
 * Large channel joins and collections create whole-run barriers.

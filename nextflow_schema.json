@@ -150,6 +150,26 @@
                         }
                     }
                 },
+                "project": {
+                    "type": "string",
+                    "description": "Stable project identity supplied by the workflow controller."
+                },
+                "flowcell": {
+                    "type": "string",
+                    "description": "Stable flowcell identity supplied by the workflow controller."
+                },
+                "run_id": {
+                    "type": "string",
+                    "description": "Stable sequencing-run identity supplied by the workflow controller."
+                },
+                "sample_id": {
+                    "type": "string",
+                    "description": "Stable sample identity supplied by the workflow controller."
+                },
+                "biosample_id": {
+                    "type": "string",
+                    "description": "Stable biological sample identity supplied by the workflow controller."
+                },
                 "bam": {
                     "title": "Input: BAM file",
                     "type": "string",
