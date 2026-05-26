@@ -30,9 +30,10 @@ Primary entry points:
   controller-declared sample/reference aggregate. It emits aggregate XAM,
   readstats, flagstat, run IDs, basecallers, mosdepth outputs,
   ``coverage_state``, QC stats, and an aggregation manifest.
-* ``-entry variant_calling``: bounded small-variant entry for one
-  controller-declared aggregate XAM, reference, Clair3 model, and
-  ``variant_mode``. It emits SNP VCF/index, manifest/provenance JSON, and
+* ``-entry variant_calling``: bounded variant entry for one
+  controller-declared aggregate XAM, reference, and ``variant_mode``. It
+  currently supports SNP/GVCF modes and the bounded structural-variant entry,
+  emitting declared VCF/index products, manifest/provenance JSON, and
   variant-calling QC stats.
 * ``nextflow.config``: default parameters and workflow metadata.
 * ``nextflow_schema.json``: parameter schema used by command-line and UI

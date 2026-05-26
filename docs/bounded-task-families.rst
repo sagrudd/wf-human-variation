@@ -124,3 +124,13 @@ execution declared as the separate ``variant_mode=snp_gvcf`` contract. It emits
 Phasing, haplotagging, SV refinement, and annotation are recorded as explicit
 optional products in the manifest and remain separate bounded modes rather than
 hidden ``run_snp`` side effects.
+
+Task 18 extends ``-entry variant_calling`` with the bounded structural-variant
+entry for ``variant_mode=sv``. It consumes one controller-declared aggregate
+XAM, reference, mosdepth summary, target BED, structured Sniffles options, and
+variant/container digests. It emits ``structural_variant_vcf``,
+``structural_variant_vcf_index``, ``structural_variant_snf``,
+``variant_calling_manifest``, ``variant_calling_provenance``, and
+``qc_stats``. Truvari benchmarking is intentionally not part of this bounded
+entry; it remains a separate future evaluation task because the compatibility
+path still relies on bundled truthset fallbacks.

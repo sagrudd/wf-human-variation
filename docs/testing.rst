@@ -129,6 +129,37 @@ executes only bounded SNP calling for one sample/reference/mode and records
 deferred phasing, haplotagging, SV refinement, and annotation as explicit
 manifest state.
 
+The Task 18 bounded structural-variant entry can be dry-run through the same
+entry point:
+
+.. code-block:: bash
+
+   gnostikon-workflow-control nextflow-task \
+     --workflow . \
+     --entry variant_calling \
+     --outdir /tmp/humvar-bounded \
+     --task-family variant_calling \
+     --key-field sample_id=smp_001 \
+     --key-field reference_id=ref_001 \
+     --key-field variant_mode=sv \
+     --key-field aggregate_xam_digest=sha256:aggregate \
+     --key-field variant_config_digest=sha256:sv-config \
+     --key-field container_digest=sha256:container \
+     --params-json structural-variant.params.json \
+     --output structural_variant_vcf=variants/sv.vcf.gz \
+     --output structural_variant_vcf_index=variants/sv.vcf.gz.tbi \
+     --output structural_variant_snf=variants/sv.snf \
+     --output variant_calling_manifest=metadata/variant-calling-manifest.json \
+     --output variant_calling_provenance=metadata/variant-calling-provenance.json \
+     --output qc_stats=qc/variant-calling-qc.json \
+     --dry-run
+
+Where Nextflow and Sniffles2 are available, run the generated params with
+``nextflow run . -entry variant_calling -params-file <params-file>``. This
+executes only bounded SV calling for one sample/reference/mode and records
+deferred benchmark, phasing, and annotation products as explicit manifest
+state.
+
 Broader smoke tests should cover combinations such as:
 
 * two ingressed sample folders with ``--sample_id alias_a=smp_a,alias_b=smp_b``;

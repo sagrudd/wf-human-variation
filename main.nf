@@ -81,6 +81,9 @@ include {
 include {
     runBoundedSmallVariantTask;
 } from './modules/local/bounded_variant_calling'
+include {
+    runBoundedStructuralVariantTask;
+} from './modules/local/bounded_structural_variant_calling'
 
 include {
     detect_basecall_model
@@ -143,16 +146,32 @@ workflow variant_calling {
     aggregate_xam_index = Channel.fromPath(entry_contract.aggregate_xam_index, checkIfExists: true)
     reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
     reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
-    clair3_model = Channel.fromPath(entry_contract.clair3_model, type: "dir", checkIfExists: true)
-    runBoundedSmallVariantTask(
-        Channel.value(entry_contract),
-        Channel.value(boundedEntryContractJson(entry_contract)),
-        aggregate_xam,
-        aggregate_xam_index,
-        reference,
-        reference_index,
-        clair3_model
-    )
+    if (entry_contract.variant_mode == "sv") {
+        mosdepth_summary = Channel.fromPath(entry_contract.mosdepth_summary, checkIfExists: true)
+        target_bed = Channel.fromPath(entry_contract.target_bed, checkIfExists: true)
+        runBoundedStructuralVariantTask(
+            Channel.value(entry_contract),
+            Channel.value(boundedEntryContractJson(entry_contract)),
+            aggregate_xam,
+            aggregate_xam_index,
+            reference,
+            reference_index,
+            mosdepth_summary,
+            target_bed
+        )
+    }
+    else {
+        clair3_model = Channel.fromPath(entry_contract.clair3_model, type: "dir", checkIfExists: true)
+        runBoundedSmallVariantTask(
+            Channel.value(entry_contract),
+            Channel.value(boundedEntryContractJson(entry_contract)),
+            aggregate_xam,
+            aggregate_xam_index,
+            reference,
+            reference_index,
+            clair3_model
+        )
+    }
 }
 
 // Compatibility entrypoint workflow

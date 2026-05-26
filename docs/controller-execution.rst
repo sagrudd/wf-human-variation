@@ -185,6 +185,38 @@ is selected by ``variant_mode=snp_gvcf`` plus
 annotation are explicit optional products in the manifest and are not activated
 by STR, Spectre, or reporting side effects.
 
+Task 18 adds the bounded structural-variant entry as ``variant_mode=sv``:
+
+.. code-block:: text
+
+   gnostikon-workflow-control nextflow-task \
+     --workflow ../wf-human-variation \
+     --entry variant_calling \
+     --outdir /analysis/project-001 \
+     --task-family variant_calling \
+     --key-field sample_id=smp_001 \
+     --key-field reference_id=ref_001 \
+     --key-field variant_mode=sv \
+     --key-field aggregate_xam_digest=sha256:aggregate \
+     --key-field variant_config_digest=sha256:sv-config \
+     --key-field container_digest=sha256:container \
+     --params-json structural-variant.params.json \
+     --output structural_variant_vcf=variants/sv.vcf.gz \
+     --output structural_variant_vcf_index=variants/sv.vcf.gz.tbi \
+     --output structural_variant_snf=variants/sv.snf \
+     --output variant_calling_manifest=metadata/variant-calling-manifest.json \
+     --output variant_calling_provenance=metadata/variant-calling-provenance.json \
+     --output qc_stats=qc/variant-calling-qc.json
+
+The params JSON must provide ``sample_id``, ``aggregate_xam``,
+``aggregate_xam_index``, ``aggregate_xam_digest``, ``reference_fasta``,
+``reference_index``, ``reference_id``, ``mosdepth_summary``, ``target_bed``,
+``variant_mode=sv``, ``variant_config_digest``, ``container_digest``, and
+structured ``structural_variant_options``. The entry runs Sniffles2, removes
+unsupported null-support records, applies the retained coverage/target
+filtering command, sorts and indexes the VCF, writes SNF output, and records
+benchmarking as deferred manifest state rather than launching Truvari.
+
 Workflow Maintenance Rules
 --------------------------
 

@@ -221,6 +221,9 @@ class BoundedEntryContractTest(unittest.TestCase):
             '"snp_vcf_index"',
             '"snp_gvcf"',
             '"snp_gvcf_index"',
+            '"structural_variant_vcf"',
+            '"structural_variant_vcf_index"',
+            '"structural_variant_snf"',
             '"variant_calling_manifest"',
             '"variant_calling_provenance"',
             '"qc_stats"',
@@ -231,9 +234,11 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertIn("wf-human-variation.bounded_variant_calling.v1", helper)
         self.assertIn('"snp"', helper)
         self.assertIn('"snp_gvcf"', helper)
+        self.assertIn('"sv"', helper)
         self.assertIn("variant_mode 'snp_gvcf' requires variant_options.emit_gvcf=true", helper)
         self.assertIn("target_bed and genotyping_vcf are mutually exclusive", helper)
         self.assertIn("unsupported variant calling option(s)", helper)
+        self.assertIn("unsupported structural variant option(s)", helper)
         self.assertIn('"marker_schema": "gnostikon.task_completion.v1"', module)
         self.assertIn("run_clair3.sh", module)
         self.assertIn('path "snp.gvcf.gz", optional: true', module)
@@ -242,6 +247,40 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertIn('"haplotagged_contig_bams": {"requested": False', module)
         self.assertNotIn("output_snp", module)
         self.assertNotIn("makeReport", module)
+
+    def test_structural_variant_entry_requires_controller_owned_task_params(self):
+        helper = read("lib/bounded_entry.nf")
+        module = read("modules/local/bounded_structural_variant_calling.nf")
+        main = read("main.nf")
+
+        for param in [
+            "mosdepth_summary",
+            "target_bed",
+            "structural_variant_options",
+            "cluster_merge_pos",
+            "min_sv_length",
+            "min_read_support",
+            "min_read_support_limit",
+            "chromosome_codes",
+            "sniffles_options",
+        ]:
+            with self.subTest(param=param):
+                self.assertIn(param, helper)
+
+        self.assertIn('if (entry_contract.variant_mode == "sv")', main)
+        self.assertIn("runBoundedStructuralVariantTask", main)
+        self.assertIn('"marker_schema": "gnostikon.task_completion.v1"', module)
+        self.assertIn("sniffles", module)
+        self.assertIn("get_filter_calls_command.py", module)
+        self.assertIn("bcftools sort", module)
+        self.assertIn('path "structural_variant.vcf.gz"', module)
+        self.assertIn('path "structural_variant.vcf.gz.tbi"', module)
+        self.assertIn('path "structural_variant.snf"', module)
+        self.assertIn('"tool": "sniffles2"', module)
+        self.assertIn('"sv_benchmark": {"requested": False', module)
+        self.assertIn("deferred_machine_readable_evaluation_contract", module)
+        self.assertNotIn("makeReport", module)
+        self.assertNotIn("output_sv", module)
 
     def test_mapping_entry_declares_supported_input_kinds_and_allowlisted_mapper_options(self):
         helper = read("lib/bounded_entry.nf")
@@ -284,15 +323,19 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertIn("bounded mapping entry", docs)
         self.assertIn("bounded sample aggregation entry", docs)
         self.assertIn("bounded small-variant entry", docs)
+        self.assertIn("bounded structural-variant entry", docs)
         self.assertIn("Task 15", docs)
         self.assertIn("Task 16", docs)
         self.assertIn("Task 17", docs)
+        self.assertIn("Task 18", docs)
         self.assertIn("mapped_xam", docs)
         self.assertIn("coverage_state", docs)
         self.assertIn("snp_vcf", docs)
+        self.assertIn("structural_variant_vcf", docs)
         self.assertIn("mapping bounded entry", ledger)
         self.assertIn("sample aggregation bounded entry", ledger)
         self.assertIn("small-variant bounded entry", ledger)
+        self.assertIn("structural-variant bounded entry", ledger)
 
 
 if __name__ == "__main__":

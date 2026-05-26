@@ -195,6 +195,85 @@ def _variantCallingOptions(def raw) {
     ]
 }
 
+def _structuralVariantOptions(def raw) {
+    def options = raw instanceof Map ? raw : [:]
+    def allowed = [
+        "threads",
+        "cluster_merge_pos",
+        "min_sv_length",
+        "min_read_support",
+        "min_read_support_limit",
+        "include_all_ctgs",
+        "chromosome_codes",
+        "tandem_repeats_bed",
+        "genome_build",
+        "sniffles_options",
+    ] as Set
+    def unexpected = options.keySet().collect { it.toString() }.findAll { !allowed.contains(it) }.sort()
+    if (unexpected) {
+        throw new IllegalArgumentException("unsupported structural variant option(s): ${unexpected.join(', ')}")
+    }
+    def positiveInt = { name, defaultValue ->
+        def value = options.containsKey(name) ? options[name] : defaultValue
+        def number = value as Integer
+        if (number < 1) {
+            throw new IllegalArgumentException("structural variant option '${name}' must be >= 1")
+        }
+        return number
+    }
+    def nonNegativeInt = { name, defaultValue ->
+        def value = options.containsKey(name) ? options[name] : defaultValue
+        def number = value as Integer
+        if (number < 0) {
+            throw new IllegalArgumentException("structural variant option '${name}' must be >= 0")
+        }
+        return number
+    }
+    def readSupport = options.containsKey("min_read_support") ? options.min_read_support : "auto"
+    if (readSupport.toString() != "auto") {
+        def readSupportNumber = readSupport as Integer
+        if (readSupportNumber < 0) {
+            throw new IllegalArgumentException("structural variant option 'min_read_support' must be 'auto' or >= 0")
+        }
+        readSupport = readSupportNumber
+    }
+    def chromosomeCodes = options.chromosome_codes ?: [
+        "chr1", "1", "chr2", "2", "chr3", "3", "chr4", "4", "chr5", "5",
+        "chr6", "6", "chr7", "7", "chr8", "8", "chr9", "9", "chr10", "10",
+        "chr11", "11", "chr12", "12", "chr13", "13", "chr14", "14",
+        "chr15", "15", "chr16", "16", "chr17", "17", "chr18", "18",
+        "chr19", "19", "chr20", "20", "chr21", "21", "chr22", "22",
+        "chrX", "X", "chrY", "Y", "chrM", "M", "chrMT", "MT",
+    ]
+    if (chromosomeCodes instanceof String) {
+        chromosomeCodes = chromosomeCodes.split(",").collect { it.trim() }.findAll { it }
+    }
+    if (!(chromosomeCodes instanceof Collection) || chromosomeCodes.isEmpty()) {
+        throw new IllegalArgumentException("structural variant option 'chromosome_codes' must be a non-empty list or comma-separated string")
+    }
+    def snifflesOptions = options.sniffles_options instanceof Map ? options.sniffles_options : [:]
+    def snifflesAllowed = ["mosaic", "min_support", "minsvlen"] as Set
+    def unexpectedSniffles = snifflesOptions.keySet().collect { it.toString() }.findAll { !snifflesAllowed.contains(it) }.sort()
+    if (unexpectedSniffles) {
+        throw new IllegalArgumentException("unsupported Sniffles option(s): ${unexpectedSniffles.join(', ')}")
+    }
+    if (snifflesOptions.containsKey("minsvlen") && options.containsKey("min_sv_length")) {
+        throw new IllegalArgumentException("structural variant option 'min_sv_length' and sniffles_options.minsvlen cannot both be set")
+    }
+    return [
+        threads: positiveInt("threads", 4),
+        cluster_merge_pos: nonNegativeInt("cluster_merge_pos", 150),
+        min_sv_length: nonNegativeInt("min_sv_length", 30),
+        min_read_support: readSupport,
+        min_read_support_limit: nonNegativeInt("min_read_support_limit", 2),
+        include_all_ctgs: options.containsKey("include_all_ctgs") ? options.include_all_ctgs as Boolean : false,
+        chromosome_codes: chromosomeCodes.collect { it.toString() },
+        tandem_repeats_bed: (options.tandem_repeats_bed ?: "").toString(),
+        genome_build: (options.genome_build ?: "").toString(),
+        sniffles_options: snifflesOptions,
+    ]
+}
+
 def boundedEntryParams(params, String expectedFamily, String entryName) {
     def task_family = _requiredBoundedParam(params, "task_family")
     if (task_family != expectedFamily) {
@@ -318,15 +397,15 @@ def boundedVariantCallingEntryParams(params) {
     def mode = _choice(
         "variant_mode",
         _requiredBoundedParam(params, "variant_mode"),
-        ["snp", "snp_gvcf"] as Set
+        ["snp", "snp_gvcf", "sv"] as Set
     )
-    def expected_outputs = [
-        "snp_vcf",
-        "snp_vcf_index",
-        "variant_calling_manifest",
-        "variant_calling_provenance",
-        "qc_stats",
-    ] as Set
+    def expected_outputs = ["variant_calling_manifest", "variant_calling_provenance", "qc_stats"] as Set
+    if (mode == "sv") {
+        expected_outputs += ["structural_variant_vcf", "structural_variant_vcf_index", "structural_variant_snf"] as Set
+    }
+    else {
+        expected_outputs += ["snp_vcf", "snp_vcf_index"] as Set
+    }
     if (mode == "snp_gvcf") {
         expected_outputs += ["snp_gvcf", "snp_gvcf_index"] as Set
     }
@@ -341,7 +420,7 @@ def boundedVariantCallingEntryParams(params) {
     if (options.target_bed && options.genotyping_vcf) {
         throw new IllegalArgumentException("variant calling options target_bed and genotyping_vcf are mutually exclusive")
     }
-    return [
+    def entry = [
         entry_schema: "wf-human-variation.bounded_variant_calling.v1",
         entry_name: "variant_calling",
         task_family: _choice(
@@ -360,14 +439,22 @@ def boundedVariantCallingEntryParams(params) {
         reference_fasta: _requiredBoundedParam(params, "reference_fasta"),
         reference_index: _requiredBoundedParam(params, "reference_index"),
         reference_id: _requiredBoundedParam(params, "reference_id"),
-        clair3_model: _requiredBoundedParam(params, "clair3_model"),
-        clair3_model_digest: _requiredBoundedParam(params, "clair3_model_digest"),
         variant_mode: mode,
         variant_config_digest: _requiredBoundedParam(params, "variant_config_digest"),
         container_digest: _requiredBoundedParam(params, "container_digest"),
-        variant_options: options,
         output_paths: output_paths,
     ]
+    if (mode == "sv") {
+        entry.mosdepth_summary = _requiredBoundedParam(params, "mosdepth_summary")
+        entry.target_bed = _requiredBoundedParam(params, "target_bed")
+        entry.structural_variant_options = _structuralVariantOptions(params.structural_variant_options)
+    }
+    else {
+        entry.clair3_model = _requiredBoundedParam(params, "clair3_model")
+        entry.clair3_model_digest = _requiredBoundedParam(params, "clair3_model_digest")
+        entry.variant_options = options
+    }
+    return entry
 }
 
 def boundedEntryContractJson(Map entry) {

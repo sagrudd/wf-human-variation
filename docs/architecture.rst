@@ -171,6 +171,15 @@ products as explicit manifest state. STR and Spectre prerequisites can request
 ``haplotagged_contig_bams`` or ``snp_vcf`` without making SNP a user-requested
 family.
 
+Task 18 extends the same ``variant_calling`` entry with bounded
+structural-variant execution. ``variant_mode=sv`` consumes one aggregate XAM,
+reference, mosdepth summary, and target BED, runs Sniffles2 plus retained
+filter/sort/index commands, and emits ``structural_variant_vcf``,
+``structural_variant_vcf_index``, ``structural_variant_snf``,
+manifest/provenance, and QC JSON. SV benchmarking is deferred to a future
+machine-readable evaluation contract rather than being activated implicitly
+inside variant calling.
+
 Mutable ``params.wf[...]`` updates must not carry runtime state. Run IDs are
 kept as per-sample ``*.runids.txt`` artefacts in the compatibility graph and
 new bounded work must emit manifest/event writes through
