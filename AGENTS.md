@@ -1,0 +1,35 @@
+# Agent Instructions
+
+This repository is the `wf-human-variation` workflow fork. Work here must stay
+focused on understanding, maintaining, testing, and improving this workflow.
+
+## Documentation Contract
+
+- The canonical technical documentation lives in `docs/` and is built with
+  Sphinx for Read the Docs.
+- Do not restore the legacy Markdown fragment documentation that previously
+  lived in `docs/01_*.md` through `docs/12_*.md`.
+- Do not add Poikilognostikon product, runtime, or migration-plan
+  documentation to this repository's `docs/` tree. Keep this documentation
+  specific to `wf-human-variation`.
+- Any workflow behavior change must update the relevant Sphinx documentation in
+  the same change set.
+- Documentation must explain maintenance-relevant behavior, not just user
+  invocation. Include inputs, outputs, task dependencies, hidden coupling,
+  failure modes, tests, and operational caveats.
+- Treat documentation as part of the development contract. A code change that
+  changes behavior but leaves stale technical documentation is incomplete.
+
+## Maintenance Rules
+
+- Preserve useful upstream workflow behavior deliberately; do not carry forward
+  accidental behavior without documenting it.
+- Keep sample identity, aliases, barcodes, and read-group names distinct in
+  explanations and code comments.
+- When changing workflow parameters, update `nextflow_schema.json`,
+  `nextflow.config`, and `docs/parameters.rst` together.
+- When changing outputs, update `output_definition.json` and
+  `docs/outputs.rst` together.
+- When changing workflow structure, update `docs/architecture.rst`,
+  `docs/subworkflows.rst`, and `docs/maintenance.rst` as needed.
+- Prefer small, reviewable changes with focused tests.

@@ -1,1 +1,0 @@
-Human SNV, SV, CNV, genotyping STR and modified base calling.
