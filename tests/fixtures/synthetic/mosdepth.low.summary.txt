@@ -1,0 +1,4 @@
+chrom	length	bases	mean	min	max
+chrSynthetic	32	32	8.0	0	12
+total	32	32	8.0	0	12
+total_region	32	32	8.0	0	12

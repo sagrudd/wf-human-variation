@@ -1,0 +1,3 @@
+barcode,alias,sample_id,type,path
+barcode01,alpha,smp_alpha,test_sample,/synthetic/alpha.bam
+barcode02,beta,smp_beta,test_sample,/synthetic/beta.bam

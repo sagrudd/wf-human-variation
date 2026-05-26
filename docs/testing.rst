@@ -63,6 +63,23 @@ validates the mapping contract, executes only the bounded mapping unit, writes
 the declared outputs, and creates the completion marker used by controller
 skip/reuse checks.
 
+Synthetic Fixtures
+------------------
+
+Phase 2 task 23 adds tiny local fixtures under
+``tests/fixtures/synthetic`` so contract tests do not need downloaded genomic
+datasets. The committed text fixtures cover a synthetic reference, named BED
+targets, VCF headers, mosdepth pass/fail summaries, and sample-sheet ordering
+or duplicate cases.
+
+Binary XAM files are not committed. ``make_xam_fixtures.py`` generates tiny
+mapped/unmapped BAM and mapped CRAM files when ``pysam`` is installed; tests
+skip only that XAM-specific check if the active Python lacks ``pysam``. True
+restart/skip execution remains controller-owned in
+``gnostikon-workflow-control`` and Poikilognostikon. Workflow-local tests assert
+the bounded completion-marker contract and the absence of public HTML report
+outputs.
+
 The Task 16 bounded sample aggregation entry can be dry-run the same way:
 
 .. code-block:: bash
