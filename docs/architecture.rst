@@ -188,6 +188,14 @@ artefacts, manifest/provenance, and QC JSON. It does not activate SNP calling,
 perform hidden CRAM-to-BAM conversion, generate CNV HTML reports, or annotate
 CNV output as a side effect.
 
+Task 20 adds the bounded ``str`` execution unit. It consumes one sample,
+reference, sex state, repeat BED, variant catalogue, and a controller-declared
+haplotagged-contig manifest, then emits STR VCF/index, Straglr TSV, Stranger
+TSV, STR loci TSV, STR content CSV, manifest/provenance, and QC JSON. It does
+not activate SNP or haplotagging. If haplotagged contig products are missing,
+the controller must record a planned or blocked prerequisite against
+``variant_calling`` rather than hiding that dependency inside STR.
+
 Mutable ``params.wf[...]`` updates must not carry runtime state. Run IDs are
 kept as per-sample ``*.runids.txt`` artefacts in the compatibility graph and
 new bounded work must emit manifest/event writes through

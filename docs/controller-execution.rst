@@ -252,6 +252,42 @@ The QDNAseq mode uses the same entry with ``cnv_mode=qdnaseq`` and declared
 ``cnv_options.qdnaseq_options.bin_size`` so CRAM-to-BAM conversion remains a
 visible prerequisite.
 
+Task 20 adds the bounded STR entry:
+
+.. code-block:: text
+
+   gnostikon-workflow-control nextflow-task \
+     --workflow ../wf-human-variation \
+     --entry str \
+     --outdir /analysis/project-001 \
+     --task-family str \
+     --key-field sample_id=smp_001 \
+     --key-field reference_id=ref_001 \
+     --key-field haplotagged_contig_digest=sha256:haplotagged \
+     --key-field str_config_digest=sha256:str-config \
+     --key-field container_digest=sha256:container \
+     --params-json str.params.json \
+     --output str_vcf=str/str.vcf.gz \
+     --output str_vcf_index=str/str.vcf.gz.tbi \
+     --output str_loci_tsv=str/str-loci.tsv \
+     --output straglr_tsv=str/straglr.tsv \
+     --output stranger_tsv=str/stranger.tsv \
+     --output str_content_csv=str/str-content-all.csv \
+     --output str_manifest=metadata/str-manifest.json \
+     --output str_provenance=metadata/str-provenance.json \
+     --output qc_stats=qc/str-qc.json
+
+The params JSON must provide ``sample_id``, ``reference_id``,
+``haplotagged_contig_manifest``, ``haplotagged_contig_digest``,
+``reference_fasta``, ``reference_index``, ``sex``, ``repeat_bed``,
+``variant_catalogue``, ``str_config_digest``, ``container_digest``, and
+structured ``str_options``. The haplotagged-contig manifest must list per-contig
+BAMs using ``contig``/``xam`` or ``sq``/``bam`` fields. Missing haplotagged
+products are a controller prerequisite state, not a reason for STR to launch
+SNP or haplotagging implicitly. The bounded entry emits only machine-readable
+STR products plus manifest/provenance/QC JSON; HTML STR reports are outside the
+``humvar3`` contract.
+
 Workflow Maintenance Rules
 --------------------------
 

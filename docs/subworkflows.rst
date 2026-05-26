@@ -106,6 +106,12 @@ provided, sex inference can be used. Bounded STR entries must declare
 ``haplotagged_contig_bams`` as an explicit prerequisite rather than silently
 activating SNP or haplotagging work.
 
+Task 20 starts replacing this route with ``-entry str``. The bounded STR entry
+consumes a controller-declared haplotagged-contig manifest and writes declared
+STR VCF/index, Straglr/Stranger TSVs, STR loci TSV, STR content CSV,
+manifest/provenance JSON, and QC JSON. It does not call ``output_str`` or
+restore the legacy STR HTML report surface.
+
 Modified-Base Calling
 ---------------------
 

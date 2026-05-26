@@ -143,3 +143,12 @@ must be converted by a visible upstream mapping or adapter task. Both modes
 emit ``cnv_vcf``, ``cnv_vcf_index``, ``cnv_manifest``, ``cnv_provenance``, and
 ``qc_stats``. Spectre additionally emits ``cnv_bed`` and ``cnv_karyotype``;
 QDNAseq additionally emits ``cnv_segments_bed`` and ``cnv_segments_vcf``.
+
+Task 20 adds ``-entry str`` as the bounded STR entry. It consumes a
+controller-declared haplotagged-contig manifest, reference assets, repeat BED,
+variant catalogue, sex state, STR config digest, and container digest for one
+sample/reference. It emits ``str_vcf``, ``str_vcf_index``, ``str_loci_tsv``,
+``straglr_tsv``, ``stranger_tsv``, ``str_content_csv``, ``str_manifest``,
+``str_provenance``, and ``qc_stats``. Missing haplotagged products are handled
+as explicit ``variant_calling`` prerequisites; selecting STR does not silently
+activate SNP, haplotagging, STR publication, or HTML report generation.

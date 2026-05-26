@@ -71,6 +71,9 @@ Known Compatibility Debt
   Sniffles2 VCF/SNF generation plus filter/sort/index only. The CNV bounded
   entry owns Spectre/QDNAseq execution only; hidden SNP activation, hidden CRAM
   conversion, CNV annotation, and CNV HTML reporting must remain outside it.
+  The STR bounded entry owns Straglr/Stranger execution and STR content CSV
+  generation only; hidden SNP/haplotagging activation and STR HTML reporting
+  must remain outside it.
 * QDNAseq format compatibility now belongs to explicit upstream conversion or
   bounded-entry rejection rather than a hidden global branch.
 * Placeholder optional files outside the finite transitional list in

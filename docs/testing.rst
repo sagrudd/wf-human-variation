@@ -191,6 +191,40 @@ QDNAseq dry-runs use ``cnv_mode=qdnaseq`` and declare ``cnv_segments_bed`` and
 The params must also declare ``aggregate_xam_kind=bam`` and may set
 ``cnv_options.qdnaseq_options.bin_size``.
 
+The Task 20 bounded STR entry can be dry-run with a params file that declares
+the reference assets, repeat BED, variant catalogue, sex state, and
+haplotagged-contig manifest:
+
+.. code-block:: bash
+
+   gnostikon-workflow-control nextflow-task \
+     --workflow . \
+     --entry str \
+     --outdir /tmp/humvar-bounded \
+     --task-family str \
+     --key-field sample_id=smp_001 \
+     --key-field reference_id=GRCh38 \
+     --key-field haplotagged_contig_digest=sha256:haplotagged \
+     --key-field str_config_digest=sha256:str-config \
+     --key-field container_digest=sha256:container \
+     --params-json str.params.json \
+     --output str_vcf=str/str.vcf.gz \
+     --output str_vcf_index=str/str.vcf.gz.tbi \
+     --output str_loci_tsv=str/str-loci.tsv \
+     --output straglr_tsv=str/straglr.tsv \
+     --output stranger_tsv=str/stranger.tsv \
+     --output str_content_csv=str/str-content-all.csv \
+     --output str_manifest=metadata/str-manifest.json \
+     --output str_provenance=metadata/str-provenance.json \
+     --output qc_stats=qc/str-qc.json \
+     --dry-run
+
+Where Nextflow, Straglr, Stranger, and the workflow glue scripts are available,
+run the generated params with
+``nextflow run . -entry str -params-file <params-file>``. This executes only
+bounded STR calling for one sample/reference and leaves missing haplotagged
+products as controller prerequisite state rather than implicitly launching SNP.
+
 Broader smoke tests should cover combinations such as:
 
 * two ingressed sample folders with ``--sample_id alias_a=smp_a,alias_b=smp_b``;

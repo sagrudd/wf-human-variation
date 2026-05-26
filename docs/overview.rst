@@ -39,6 +39,10 @@ Primary entry points:
   reference, and ``cnv_mode``. It supports explicit Spectre and QDNAseq modes,
   emitting machine-readable CNV VCF/index, segment/karyotype artefacts,
   manifest/provenance JSON, and CNV QC stats.
+* ``-entry str``: bounded STR entry for one controller-declared sample,
+  reference, sex state, and haplotagged-contig manifest. It emits STR
+  VCF/index, Straglr/Stranger TSVs, STR content CSV, manifest/provenance JSON,
+  and STR QC stats without enabling SNP or HTML reporting.
 * ``nextflow.config``: default parameters and workflow metadata.
 * ``nextflow_schema.json``: parameter schema used by command-line and UI
   surfaces.

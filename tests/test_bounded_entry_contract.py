@@ -37,6 +37,11 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertIn("boundedCnvEntryParams(params)", main)
         self.assertIn("runBoundedSpectreCnvTask(", main)
         self.assertIn("runBoundedQdnaseqCnvTask(", main)
+        self.assertIn("workflow str {", main)
+        self.assertIn("boundedStrEntryParams(params)", main)
+        self.assertIn("runBoundedStrTask(", main)
+        self.assertIn("Channel.fromPath(entry_contract.haplotagged_contig_manifest, checkIfExists: true)", main)
+        self.assertIn("Channel.fromPath(entry_contract.repeat_bed, checkIfExists: true)", main)
         self.assertIn("// Compatibility entrypoint workflow\nworkflow {\n    WorkflowMain.initialise", main)
         self.assertNotIn("// entrypoint workflow\nWorkflowMain.initialise", main)
 
@@ -124,6 +129,27 @@ class BoundedEntryContractTest(unittest.TestCase):
         for token in forbidden:
             with self.subTest(token=token):
                 self.assertNotIn(token, cnv_entry)
+
+    def test_str_entry_does_not_launch_compatibility_graph_or_reports(self):
+        main = read("main.nf")
+        str_entry = main.split("workflow str {", 1)[1].split(
+            "// Compatibility entrypoint workflow", 1
+        )[0]
+
+        forbidden = [
+            "ingress(",
+            "prepare_reference(",
+            "snp(",
+            "str_compat(",
+            "output_str(",
+            "output_snp(",
+            "combine_metrics_json(",
+            "publish_artifact(",
+            "makeReport",
+        ]
+        for token in forbidden:
+            with self.subTest(token=token):
+                self.assertNotIn(token, str_entry)
 
     def test_bounded_entry_requires_controller_owned_task_params(self):
         helper = read("lib/bounded_entry.nf")
@@ -367,6 +393,58 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertIn('"tool": "qdnaseq"', module)
         self.assertIn('"html_report": {"requested": False', module)
         self.assertNotIn("output_cnv", module)
+        self.assertNotIn("makeReport", module)
+
+    def test_str_entry_requires_controller_owned_task_params(self):
+        helper = read("lib/bounded_entry.nf")
+        module = read("modules/local/bounded_str.nf")
+
+        for param in [
+            "task_family",
+            "task_key",
+            "task_dir",
+            "task_cache_dir",
+            "completion_marker_path",
+            "output_paths",
+            "sample_id",
+            "reference_id",
+            "haplotagged_contig_manifest",
+            "haplotagged_contig_digest",
+            "reference_fasta",
+            "reference_index",
+            "sex",
+            "repeat_bed",
+            "variant_catalogue",
+            "str_config_digest",
+            "container_digest",
+            "str_options",
+        ]:
+            with self.subTest(param=param):
+                self.assertIn(param, helper)
+
+        for output in [
+            '"str_vcf"',
+            '"str_vcf_index"',
+            '"str_loci_tsv"',
+            '"straglr_tsv"',
+            '"stranger_tsv"',
+            '"str_content_csv"',
+            '"str_manifest"',
+            '"str_provenance"',
+            '"qc_stats"',
+        ]:
+            with self.subTest(output=output):
+                self.assertIn(output, helper)
+
+        self.assertIn("wf-human-variation.bounded_str.v1", helper)
+        self.assertIn("unsupported STR option(s)", helper)
+        self.assertIn('"marker_schema": "gnostikon.task_completion.v1"', module)
+        self.assertIn("straglr-genotype", module)
+        self.assertIn("stranger -f", module)
+        self.assertIn("workflow-glue generate_str_content", module)
+        self.assertIn('"html_report": {"requested": False', module)
+        self.assertIn("haplotagged contig manifest must contain a non-empty contig list", module)
+        self.assertNotIn("output_str", module)
         self.assertNotIn("makeReport", module)
 
     def test_mapping_entry_declares_supported_input_kinds_and_allowlisted_mapper_options(self):

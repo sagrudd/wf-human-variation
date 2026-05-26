@@ -319,6 +319,32 @@ def _cnvOptions(def raw) {
     ]
 }
 
+def _strOptions(def raw) {
+    def options = raw instanceof Map ? raw : [:]
+    def allowed = [
+        "threads",
+        "min_support",
+        "min_cluster_size",
+    ] as Set
+    def unexpected = options.keySet().collect { it.toString() }.findAll { !allowed.contains(it) }.sort()
+    if (unexpected) {
+        throw new IllegalArgumentException("unsupported STR option(s): ${unexpected.join(', ')}")
+    }
+    def positiveInt = { name, defaultValue ->
+        def value = options.containsKey(name) ? options[name] : defaultValue
+        def number = value as Integer
+        if (number < 1) {
+            throw new IllegalArgumentException("STR option '${name}' must be >= 1")
+        }
+        return number
+    }
+    return [
+        threads: positiveInt("threads", 2),
+        min_support: positiveInt("min_support", 1),
+        min_cluster_size: positiveInt("min_cluster_size", 1),
+    ]
+}
+
 def boundedEntryParams(params, String expectedFamily, String entryName) {
     def task_family = _requiredBoundedParam(params, "task_family")
     if (task_family != expectedFamily) {
@@ -573,6 +599,49 @@ def boundedCnvEntryParams(params) {
         entry.mosdepth_thresholds = _requiredBoundedParam(params, "mosdepth_thresholds")
     }
     return entry
+}
+
+def boundedStrEntryParams(params) {
+    def output_paths = _requireOutputPaths(
+        _boundedOutputPaths(params.output_paths),
+        [
+            "str_vcf",
+            "str_vcf_index",
+            "str_loci_tsv",
+            "straglr_tsv",
+            "stranger_tsv",
+            "str_content_csv",
+            "str_manifest",
+            "str_provenance",
+            "qc_stats",
+        ] as Set
+    )
+    return [
+        entry_schema: "wf-human-variation.bounded_str.v1",
+        entry_name: "str",
+        task_family: _choice(
+            "task_family",
+            _requiredBoundedParam(params, "task_family"),
+            ["str"] as Set
+        ),
+        task_key: _requiredBoundedParam(params, "task_key"),
+        task_dir: _requiredBoundedParam(params, "task_dir"),
+        task_cache_dir: _requiredBoundedParam(params, "task_cache_dir"),
+        completion_marker_path: _requiredBoundedParam(params, "completion_marker_path"),
+        sample_id: _requiredBoundedParam(params, "sample_id"),
+        reference_id: _requiredBoundedParam(params, "reference_id"),
+        haplotagged_contig_manifest: _requiredBoundedParam(params, "haplotagged_contig_manifest"),
+        haplotagged_contig_digest: _requiredBoundedParam(params, "haplotagged_contig_digest"),
+        reference_fasta: _requiredBoundedParam(params, "reference_fasta"),
+        reference_index: _requiredBoundedParam(params, "reference_index"),
+        sex: _choice("sex", _requiredBoundedParam(params, "sex"), ["XX", "XY"] as Set),
+        repeat_bed: _requiredBoundedParam(params, "repeat_bed"),
+        variant_catalogue: _requiredBoundedParam(params, "variant_catalogue"),
+        str_config_digest: _requiredBoundedParam(params, "str_config_digest"),
+        container_digest: _requiredBoundedParam(params, "container_digest"),
+        str_options: _strOptions(params.str_options),
+        output_paths: output_paths,
+    ]
 }
 
 def boundedEntryContractJson(Map entry) {

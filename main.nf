@@ -8,7 +8,7 @@ include { lookup_clair3_model } from './modules/local/wf-human-snp'
 include { bam as sv } from './workflows/wf-human-sv'
 include { output_sv } from './modules/local/wf-human-sv'
 
-include { str } from './workflows/wf-human-str'
+include { str as str_compat } from './workflows/wf-human-str'
 include { output_str } from './modules/local/wf-human-str'
 
 include { cnv as cnv_spectre } from './workflows/wf-human-cnv'
@@ -69,6 +69,7 @@ include {
     boundedSampleAggregationEntryParams;
     boundedVariantCallingEntryParams;
     boundedCnvEntryParams;
+    boundedStrEntryParams;
 } from './lib/bounded_entry.nf'
 
 include {
@@ -90,6 +91,10 @@ include {
     runBoundedSpectreCnvTask;
     runBoundedQdnaseqCnvTask;
 } from './modules/local/bounded_cnv'
+
+include {
+    runBoundedStrTask;
+} from './modules/local/bounded_str'
 
 include {
     detect_basecall_model
@@ -218,6 +223,24 @@ workflow cnv {
             reference_index
         )
     }
+}
+
+workflow str {
+    entry_contract = boundedStrEntryParams(params)
+    haplotagged_contig_manifest = Channel.fromPath(entry_contract.haplotagged_contig_manifest, checkIfExists: true)
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
+    repeat_bed = Channel.fromPath(entry_contract.repeat_bed, checkIfExists: true)
+    variant_catalogue = Channel.fromPath(entry_contract.variant_catalogue, checkIfExists: true)
+    runBoundedStrTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        haplotagged_contig_manifest,
+        reference,
+        reference_index,
+        repeat_bed,
+        variant_catalogue
+    )
 }
 
 // Compatibility entrypoint workflow
@@ -1017,7 +1040,7 @@ workflow {
         // use haplotagged bam from snp() as input to str()
         bam_channel_str = clair_vcf.str_bams
 
-        results_str = str(
+        results_str = str_compat(
           bam_channel_str,
           ref_channel,
           bam_stats,
