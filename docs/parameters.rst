@@ -109,6 +109,18 @@ task key and provenance. Adding a new tool option requires updating
 ``nextflow_schema.json``, ``lib/tool_options.nf``, and the shared
 ``gnostikon-workflow-control`` allowlist together.
 
+Basecaller Model Metadata
+-------------------------
+
+Basecaller-to-Clair3 compatibility is maintained in
+``data/clair3_models.tsv``. User-facing basecaller parameter choices are
+maintained in ``nextflow_schema.json``.
+
+Do not regenerate the schema from container contents. The legacy
+``util/update_models_schema.sh`` helper is deprecated and exits without
+changing files. Model support changes must be reviewed as explicit source edits
+so workflow behavior, schema, and release notes can be checked together.
+
 Container Digests
 -----------------
 

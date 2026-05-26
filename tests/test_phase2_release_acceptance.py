@@ -93,6 +93,29 @@ class Phase2ReleaseAcceptanceTest(unittest.TestCase):
             with self.subTest(command=command):
                 self.assertIn(command, acceptance)
 
+    def test_model_schema_update_script_is_deprecated(self):
+        script = read("util/update_models_schema.sh")
+        maintenance = read("docs/maintenance.rst")
+        parameters = read("docs/parameters.rst")
+
+        self.assertIn("deprecated", script.lower())
+        self.assertIn("intentionally does not mutate", script)
+        self.assertIn("exit 64", script)
+        for forbidden in [
+            "docker run",
+            "singularity exec",
+            "list-models",
+            "nextflow config",
+            "jq",
+            "nextflow_schema.json.new",
+        ]:
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden, script)
+
+        self.assertIn("util/update_models_schema.sh`` is deprecated", maintenance)
+        self.assertIn("Basecaller Model Metadata", parameters)
+        self.assertIn("data/clair3_models.tsv", parameters)
+
 
 if __name__ == "__main__":
     unittest.main()

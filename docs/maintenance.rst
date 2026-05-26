@@ -95,6 +95,10 @@ Known Compatibility Debt
 * Low-coverage behavior: rejected samples must use ``rejected_low_coverage``
   and must not appear as successful workflow completions.
 * Basecaller model detection.
+* ``util/update_models_schema.sh`` is deprecated and must not be used to
+  regenerate parameter schema from container contents. Model support changes
+  must be reviewed as explicit edits to ``data/clair3_models.tsv`` and
+  ``nextflow_schema.json``.
 * Annotation, CNV, STR, and publication genome-build restrictions.
 * Partner export absent-input marker handling.
 * Publication joins over multiple channels.
