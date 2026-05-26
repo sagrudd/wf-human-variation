@@ -21,27 +21,30 @@ Acceptance Checklist
 
    * - Criterion
      - Evidence
-   * - No workflow-generated HTML reports
+   * - No workflow-generated EPI2ME analysis HTML reports
      - ``tests/test_phase2_performance_gates.py`` checks public output
        definitions and runtime files for report HTML reintroduction.
    * - No report-only Python code on the runtime path
      - ``tests/test_phase2_performance_gates.py`` blocks report-only imports
        such as ``ezcharts``, ``dominate``, ``bokeh``, and ``aplanat``.
-   * - No hidden feature activation for STR, Spectre, or phased methylation
+   * - No hidden feature activation for STR, Spectre, or phased methylation in
+       controller-launched bounded entries
      - ``docs/explicit-prerequisites.rst``,
        ``lib/feature_prerequisites.nf``, and bounded-entry tests require
-       explicit prerequisite state.
+       explicit prerequisite state. Inherited ``main.nf`` launch-time coupling
+       is named compatibility debt, not accepted bounded runtime behaviour.
    * - Bounded contracts exist for mapping, aggregation/QC, SNP, SV, CNV, STR,
        and methylation
      - ``docs/bounded-task-families.rst`` and
        ``tests/test_bounded_entry_contract.py`` cover ``-entry mapping``,
        ``sample_aggregation``, ``variant_calling`` SNP/SV modes, ``cnv``,
        ``str``, and ``methylation``.
-   * - Synthetic tests cover multi-sample interleaving and restarts
-     - ``tests/test_phase2_synthetic_contracts.py`` covers local fixtures;
-       Poikilognostikon and ``gnostikon-workflow-control`` cover event-store
-       restart, completion-marker reuse, force-refresh, and interleaved task
-       launch behaviour.
+   * - Synthetic tests cover local fixture and sample identity contracts;
+       controller tests cover multi-sample interleaving and restarts
+     - ``tests/test_phase2_synthetic_contracts.py`` covers local fixtures.
+       Poikilognostikon and ``gnostikon-workflow-control`` release-gate
+       event-store restart, completion-marker reuse, force-refresh, and
+       interleaved task launch behaviour.
    * - Retained outputs are documented accurately
      - ``docs/outputs.rst`` documents machine-readable artefacts, low-coverage
        state, and the absence of HTML report products.
@@ -71,6 +74,11 @@ through the controller-generated ``nextflow.params.json`` files documented in
 ``docs/testing.rst``. Lack of local Nextflow must be recorded with the release
 candidate validation notes.
 
+Nextflow execution metadata files such as ``timeline.html`` and ``report.html``
+are not EPI2ME analysis reports and are not part of the public workflow output
+contract. They must not be confused with the removed per-analysis HTML report
+products.
+
 Finite Compatibility Debt
 -------------------------
 
@@ -98,6 +106,11 @@ The remaining inherited debt is release-visible and must not be expanded:
      - ``lib/ingress.nf`` and compatibility launch paths
      - Keep as bootstrap/import compatibility only; runtime primary ingress is
        event and manifest state.
+   * - Legacy launch-time feature coupling
+     - ``main.nf`` compatibility parameter handling
+     - Keep visible as inherited compatibility behaviour only; bounded entries
+       must use explicit prerequisite state for STR, Spectre, and phased
+       methylation.
    * - Compatibility SNP/SV/CNV/STR/methylation/reporting subworkflows
      - ``workflows/*.nf`` and retained local modules
      - Mine useful tool invocations and retire scheduler responsibilities into
@@ -111,7 +124,8 @@ Release Blocking Regressions
 
 Any of these changes blocks phase-2 release acceptance:
 
-* workflow-generated ``.html`` report outputs or EPI2ME report dependencies;
+* workflow-generated EPI2ME analysis ``.html`` report outputs or EPI2ME report
+  dependencies;
 * report-only Python imports on the runtime path;
 * hidden STR, Spectre, or phased-methylation activation;
 * new global ``.collect()``, broad unkeyed ``.combine()``, ``first()``, or

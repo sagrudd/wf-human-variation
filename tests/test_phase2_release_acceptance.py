@@ -24,11 +24,11 @@ class Phase2ReleaseAcceptanceTest(unittest.TestCase):
     def test_acceptance_checklist_covers_phase_2_minimum_criteria(self):
         acceptance = read("docs/release-acceptance.rst")
         criteria = [
-            "No workflow-generated HTML reports",
+            "No workflow-generated EPI2ME analysis HTML reports",
             "No report-only Python code on the runtime path",
-            "No hidden feature activation for STR, Spectre, or phased methylation",
+            "No hidden feature activation for STR, Spectre, or phased methylation in",
             "Bounded contracts exist for mapping, aggregation/QC, SNP, SV, CNV, STR,",
-            "Synthetic tests cover multi-sample interleaving and restarts",
+            "Synthetic tests cover local fixture and sample identity contracts",
             "Retained outputs are documented accurately",
             "Poikilognostikon can schedule bounded work from manifest state",
             "Performance and resumability gates are active",
@@ -44,6 +44,7 @@ class Phase2ReleaseAcceptanceTest(unittest.TestCase):
             "Broad channel joins and collections",
             "Legacy optional-file boundary helper",
             "Legacy sample-sheet/bootstrap ingress",
+            "Legacy launch-time feature coupling",
             "Compatibility SNP/SV/CNV/STR/methylation/reporting subworkflows",
             "Partner export and publication joins",
         ]
@@ -54,6 +55,8 @@ class Phase2ReleaseAcceptanceTest(unittest.TestCase):
         self.assertIn("``main.nf``", acceptance)
         self.assertIn("``docs/keyed-joins.rst`` Task 22 inventory", acceptance)
         self.assertIn("must not be expanded", acceptance)
+        self.assertIn("timeline.html", acceptance)
+        self.assertIn("not EPI2ME analysis reports", acceptance)
 
     def test_release_blockers_match_active_static_gates(self):
         acceptance = read("docs/release-acceptance.rst")
