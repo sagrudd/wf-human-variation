@@ -225,6 +225,35 @@ run the generated params with
 bounded STR calling for one sample/reference and leaves missing haplotagged
 products as controller prerequisite state rather than implicitly launching SNP.
 
+The Task 21 bounded methylation entry can be dry-run in unphased mode:
+
+.. code-block:: bash
+
+   gnostikon-workflow-control nextflow-task \
+     --workflow . \
+     --entry methylation \
+     --outdir /tmp/humvar-bounded \
+     --task-family methylation \
+     --key-field sample_id=smp_001 \
+     --key-field reference_id=GRCh38 \
+     --key-field methylation_mode=unphased \
+     --key-field aggregate_xam_digest=sha256:aggregate \
+     --key-field methylation_config_digest=sha256:methylation \
+     --key-field container_digest=sha256:container \
+     --params-json methylation.params.json \
+     --output bedmethyl=methylation/methylation.bedmethyl.gz \
+     --output bigwig=methylation/methylation.5mC.bw \
+     --output methylation_manifest=metadata/methylation-manifest.json \
+     --output methylation_provenance=metadata/methylation-provenance.json \
+     --output qc_stats=qc/methylation-qc.json \
+     --dry-run
+
+Phased dry-runs use ``methylation_mode=phased`` and the params JSON must also
+declare ``haplotagged_xam``, ``haplotagged_xam_index``, and
+``haplotagged_xam_digest``. If those artefacts are not ready, the controller
+should either block the phased request or degrade to unphased mode with the
+prerequisite reason recorded in manifest state.
+
 Broader smoke tests should cover combinations such as:
 
 * two ingressed sample folders with ``--sample_id alias_a=smp_a,alias_b=smp_b``;

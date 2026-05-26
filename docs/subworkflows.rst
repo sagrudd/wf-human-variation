@@ -126,6 +126,13 @@ requested.
 Modkit command customisation must use the structured ``--modkit_options``
 object. Free-form ``--modkit_args`` shell fragments are rejected.
 
+Task 21 starts replacing this route with ``-entry methylation``. The bounded
+entry separates ``methylation_mode=unphased`` from ``methylation_mode=phased``:
+unphased mode consumes aggregate XAM, while phased mode requires a
+controller-declared haplotagged XAM. The entry emits bedMethyl, bigWig,
+manifest/provenance JSON, and QC JSON without launching SNP, phasing,
+haplotagging, combined metrics, or report publication.
+
 Annotation, Publication, And Export
 -----------------------------------
 

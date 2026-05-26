@@ -288,6 +288,40 @@ SNP or haplotagging implicitly. The bounded entry emits only machine-readable
 STR products plus manifest/provenance/QC JSON; HTML STR reports are outside the
 ``humvar3`` contract.
 
+Task 21 adds the bounded methylation entry with explicit unphased and phased
+modes:
+
+.. code-block:: text
+
+   gnostikon-workflow-control nextflow-task \
+     --workflow ../wf-human-variation \
+     --entry methylation \
+     --outdir /analysis/project-001 \
+     --task-family methylation \
+     --key-field sample_id=smp_001 \
+     --key-field reference_id=ref_001 \
+     --key-field methylation_mode=unphased \
+     --key-field aggregate_xam_digest=sha256:aggregate \
+     --key-field methylation_config_digest=sha256:methylation \
+     --key-field container_digest=sha256:container \
+     --params-json methylation.params.json \
+     --output bedmethyl=methylation/methylation.bedmethyl.gz \
+     --output bigwig=methylation/methylation.5mC.bw \
+     --output methylation_manifest=metadata/methylation-manifest.json \
+     --output methylation_provenance=metadata/methylation-provenance.json \
+     --output qc_stats=qc/methylation-qc.json
+
+The params JSON must provide ``sample_id``, ``reference_id``,
+``methylation_mode``, aggregate XAM fields, reference fields,
+``methylation_config_digest``, ``container_digest``, and structured
+``methylation_options``. ``methylation_mode=phased`` additionally requires
+``haplotagged_xam``, ``haplotagged_xam_index``, and
+``haplotagged_xam_digest``. If phased output is requested but haplotagged input
+is not ready, the controller may degrade to ``methylation_mode=unphased`` and
+record the reason ``phased_methylation_uses_haplotagged_bam_when_available``.
+The entry itself never launches SNP, phasing, haplotagging, report publication,
+or combined metrics JSON.
+
 Workflow Maintenance Rules
 --------------------------
 

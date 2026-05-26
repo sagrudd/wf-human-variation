@@ -152,3 +152,11 @@ sample/reference. It emits ``str_vcf``, ``str_vcf_index``, ``str_loci_tsv``,
 ``str_provenance``, and ``qc_stats``. Missing haplotagged products are handled
 as explicit ``variant_calling`` prerequisites; selecting STR does not silently
 activate SNP, haplotagging, STR publication, or HTML report generation.
+
+Task 21 adds ``-entry methylation`` as the bounded modified-base entry.
+``methylation_mode=unphased`` consumes the aggregate XAM and produces
+bedMethyl/bigWig plus manifest/provenance/QC. ``methylation_mode=phased``
+requires controller-declared haplotagged XAM and records haplotype-specific
+products as optional phased artefacts. Missing haplotagged input is handled by
+the controller prerequisite policy, either blocking or degrading to unphased;
+the bounded entry does not silently activate SNP, phasing, or haplotagging.

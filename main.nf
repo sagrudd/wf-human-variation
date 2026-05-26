@@ -70,6 +70,7 @@ include {
     boundedVariantCallingEntryParams;
     boundedCnvEntryParams;
     boundedStrEntryParams;
+    boundedMethylationEntryParams;
 } from './lib/bounded_entry.nf'
 
 include {
@@ -95,6 +96,10 @@ include {
 include {
     runBoundedStrTask;
 } from './modules/local/bounded_str'
+
+include {
+    runBoundedMethylationTask;
+} from './modules/local/bounded_methylation'
 
 include {
     detect_basecall_model
@@ -240,6 +245,30 @@ workflow str {
         reference_index,
         repeat_bed,
         variant_catalogue
+    )
+}
+
+workflow methylation {
+    entry_contract = boundedMethylationEntryParams(params)
+    aggregate = Channel.fromPath(entry_contract.aggregate_xam, checkIfExists: true)
+    aggregate_index = Channel.fromPath(entry_contract.aggregate_xam_index, checkIfExists: true)
+    haplotagged = entry_contract.methylation_mode == "phased" ?
+        Channel.fromPath(entry_contract.haplotagged_xam, checkIfExists: true) :
+        Channel.fromPath(entry_contract.aggregate_xam, checkIfExists: true)
+    haplotagged_index = entry_contract.methylation_mode == "phased" ?
+        Channel.fromPath(entry_contract.haplotagged_xam_index, checkIfExists: true) :
+        Channel.fromPath(entry_contract.aggregate_xam_index, checkIfExists: true)
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
+    runBoundedMethylationTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        aggregate,
+        aggregate_index,
+        haplotagged,
+        haplotagged_index,
+        reference,
+        reference_index
     )
 }
 

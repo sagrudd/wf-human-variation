@@ -196,6 +196,14 @@ not activate SNP or haplotagging. If haplotagged contig products are missing,
 the controller must record a planned or blocked prerequisite against
 ``variant_calling`` rather than hiding that dependency inside STR.
 
+Task 21 adds the bounded ``methylation`` execution unit. ``methylation_mode``
+is explicit: ``unphased`` consumes aggregate XAM and does not require
+haplotagging; ``phased`` consumes controller-declared haplotagged XAM and may
+be degraded to unphased by the controller when haplotagged input is not ready.
+The entry emits bedMethyl, bigWig, manifest/provenance, and QC JSON, with
+haplotype-specific products visible as optional phased artefacts. It does not
+activate SNP, phasing, haplotagging, HTML reporting, or publication joins.
+
 Mutable ``params.wf[...]`` updates must not carry runtime state. Run IDs are
 kept as per-sample ``*.runids.txt`` artefacts in the compatibility graph and
 new bounded work must emit manifest/event writes through

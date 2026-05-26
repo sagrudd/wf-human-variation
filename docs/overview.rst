@@ -43,6 +43,10 @@ Primary entry points:
   reference, sex state, and haplotagged-contig manifest. It emits STR
   VCF/index, Straglr/Stranger TSVs, STR content CSV, manifest/provenance JSON,
   and STR QC stats without enabling SNP or HTML reporting.
+* ``-entry methylation``: bounded methylation entry for one
+  controller-declared sample, reference, and ``methylation_mode``. It supports
+  unphased modkit output from aggregate XAM and phased output from explicit
+  haplotagged XAM without launching SNP/haplotagging itself.
 * ``nextflow.config``: default parameters and workflow metadata.
 * ``nextflow_schema.json``: parameter schema used by command-line and UI
   surfaces.

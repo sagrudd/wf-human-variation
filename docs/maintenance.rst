@@ -73,7 +73,10 @@ Known Compatibility Debt
   conversion, CNV annotation, and CNV HTML reporting must remain outside it.
   The STR bounded entry owns Straglr/Stranger execution and STR content CSV
   generation only; hidden SNP/haplotagging activation and STR HTML reporting
-  must remain outside it.
+  must remain outside it. The methylation bounded entry owns modkit validation,
+  sample-probability calculation, pileup, and bigWig conversion only; hidden
+  SNP/phasing/haplotagging activation, combined metrics publication, and HTML
+  reporting must remain outside it.
 * QDNAseq format compatibility now belongs to explicit upstream conversion or
   bounded-entry rejection rather than a hidden global branch.
 * Placeholder optional files outside the finite transitional list in

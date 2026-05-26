@@ -345,6 +345,54 @@ def _strOptions(def raw) {
     ]
 }
 
+def _methylationOptions(def raw) {
+    def options = raw instanceof Map ? raw : [:]
+    def allowed = [
+        "threads",
+        "mod_codes",
+        "combine_strands",
+        "cpg",
+        "preset",
+    ] as Set
+    def unexpected = options.keySet().collect { it.toString() }.findAll { !allowed.contains(it) }.sort()
+    if (unexpected) {
+        throw new IllegalArgumentException("unsupported methylation option(s): ${unexpected.join(', ')}")
+    }
+    def positiveInt = { name, defaultValue ->
+        def value = options.containsKey(name) ? options[name] : defaultValue
+        def number = value as Integer
+        if (number < 1) {
+            throw new IllegalArgumentException("methylation option '${name}' must be >= 1")
+        }
+        return number
+    }
+    def preset = (options.preset ?: "").toString()
+    if (preset && preset != "traditional") {
+        throw new IllegalArgumentException("methylation option 'preset' must be one of: traditional")
+    }
+    def modCodes = options.mod_codes ?: ["m:5mC"]
+    if (modCodes instanceof String) {
+        modCodes = modCodes.split(",").collect { it.trim() }.findAll { it }
+    }
+    if (!(modCodes instanceof Collection) || modCodes.isEmpty()) {
+        throw new IllegalArgumentException("methylation option 'mod_codes' must be a non-empty list or comma-separated string")
+    }
+    def hasDefaultBigWig = modCodes.collect { it.toString() }.any {
+        def parts = it.split(":", 2)
+        (parts.size() == 2 ? parts[1] : parts[0]) == "5mC"
+    }
+    if (!hasDefaultBigWig) {
+        throw new IllegalArgumentException("methylation option 'mod_codes' must include m:5mC so the declared bigwig output can be produced")
+    }
+    return [
+        threads: positiveInt("threads", 2),
+        mod_codes: modCodes.collect { it.toString() },
+        combine_strands: options.containsKey("combine_strands") ? options.combine_strands as Boolean : true,
+        cpg: options.containsKey("cpg") ? options.cpg as Boolean : true,
+        preset: preset,
+    ]
+}
+
 def boundedEntryParams(params, String expectedFamily, String entryName) {
     def task_family = _requiredBoundedParam(params, "task_family")
     if (task_family != expectedFamily) {
@@ -642,6 +690,63 @@ def boundedStrEntryParams(params) {
         str_options: _strOptions(params.str_options),
         output_paths: output_paths,
     ]
+}
+
+def boundedMethylationEntryParams(params) {
+    def mode = _choice(
+        "methylation_mode",
+        _requiredBoundedParam(params, "methylation_mode"),
+        ["unphased", "phased"] as Set
+    )
+    def expected_outputs = [
+        "bedmethyl",
+        "bigwig",
+        "methylation_manifest",
+        "methylation_provenance",
+        "qc_stats",
+    ] as Set
+    def output_paths = _requireOutputPaths(
+        _boundedOutputPaths(params.output_paths),
+        expected_outputs
+    )
+    def entry = [
+        entry_schema: "wf-human-variation.bounded_methylation.v1",
+        entry_name: "methylation",
+        task_family: _choice(
+            "task_family",
+            _requiredBoundedParam(params, "task_family"),
+            ["methylation"] as Set
+        ),
+        task_key: _requiredBoundedParam(params, "task_key"),
+        task_dir: _requiredBoundedParam(params, "task_dir"),
+        task_cache_dir: _requiredBoundedParam(params, "task_cache_dir"),
+        completion_marker_path: _requiredBoundedParam(params, "completion_marker_path"),
+        sample_id: _requiredBoundedParam(params, "sample_id"),
+        reference_id: _requiredBoundedParam(params, "reference_id"),
+        methylation_mode: mode,
+        aggregate_xam: _requiredBoundedParam(params, "aggregate_xam"),
+        aggregate_xam_index: _requiredBoundedParam(params, "aggregate_xam_index"),
+        aggregate_xam_digest: _requiredBoundedParam(params, "aggregate_xam_digest"),
+        reference_fasta: _requiredBoundedParam(params, "reference_fasta"),
+        reference_index: _requiredBoundedParam(params, "reference_index"),
+        methylation_config_digest: _requiredBoundedParam(params, "methylation_config_digest"),
+        container_digest: _requiredBoundedParam(params, "container_digest"),
+        methylation_options: _methylationOptions(params.methylation_options),
+        output_paths: output_paths,
+    ]
+    if (mode == "phased") {
+        entry.haplotagged_xam = _requiredBoundedParam(params, "haplotagged_xam")
+        entry.haplotagged_xam_index = _requiredBoundedParam(params, "haplotagged_xam_index")
+        entry.haplotagged_xam_digest = _requiredBoundedParam(params, "haplotagged_xam_digest")
+        entry.phased_prerequisite_policy = "block_or_controller_degrade_to_unphased"
+    }
+    else {
+        entry.haplotagged_xam = ""
+        entry.haplotagged_xam_index = ""
+        entry.haplotagged_xam_digest = ""
+        entry.phased_prerequisite_policy = "not_required"
+    }
+    return entry
 }
 
 def boundedEntryContractJson(Map entry) {

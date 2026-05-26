@@ -42,6 +42,11 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertIn("runBoundedStrTask(", main)
         self.assertIn("Channel.fromPath(entry_contract.haplotagged_contig_manifest, checkIfExists: true)", main)
         self.assertIn("Channel.fromPath(entry_contract.repeat_bed, checkIfExists: true)", main)
+        self.assertIn("workflow methylation {", main)
+        self.assertIn("boundedMethylationEntryParams(params)", main)
+        self.assertIn("runBoundedMethylationTask(", main)
+        self.assertIn("Channel.fromPath(entry_contract.aggregate_xam, checkIfExists: true)", main)
+        self.assertIn("entry_contract.methylation_mode == \"phased\"", main)
         self.assertIn("// Compatibility entrypoint workflow\nworkflow {\n    WorkflowMain.initialise", main)
         self.assertNotIn("// entrypoint workflow\nWorkflowMain.initialise", main)
 
@@ -150,6 +155,28 @@ class BoundedEntryContractTest(unittest.TestCase):
         for token in forbidden:
             with self.subTest(token=token):
                 self.assertNotIn(token, str_entry)
+
+    def test_methylation_entry_does_not_launch_compatibility_graph_or_reports(self):
+        main = read("main.nf")
+        methylation_entry = main.split("workflow methylation {", 1)[1].split(
+            "// Compatibility entrypoint workflow", 1
+        )[0]
+
+        forbidden = [
+            "ingress(",
+            "prepare_reference(",
+            "validate_modbam(",
+            "sample_probs(",
+            "mod(",
+            "snp(",
+            "output_snp(",
+            "combine_metrics_json(",
+            "publish_artifact(",
+            "makeReport",
+        ]
+        for token in forbidden:
+            with self.subTest(token=token):
+                self.assertNotIn(token, methylation_entry)
 
     def test_bounded_entry_requires_controller_owned_task_params(self):
         helper = read("lib/bounded_entry.nf")
@@ -447,6 +474,67 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertNotIn("output_str", module)
         self.assertNotIn("makeReport", module)
 
+    def test_methylation_entry_requires_controller_owned_task_params(self):
+        helper = read("lib/bounded_entry.nf")
+        module = read("modules/local/bounded_methylation.nf")
+
+        for param in [
+            "task_family",
+            "task_key",
+            "task_dir",
+            "task_cache_dir",
+            "completion_marker_path",
+            "output_paths",
+            "sample_id",
+            "reference_id",
+            "methylation_mode",
+            "aggregate_xam",
+            "aggregate_xam_index",
+            "aggregate_xam_digest",
+            "haplotagged_xam",
+            "haplotagged_xam_index",
+            "haplotagged_xam_digest",
+            "reference_fasta",
+            "reference_index",
+            "methylation_config_digest",
+            "container_digest",
+            "methylation_options",
+        ]:
+            with self.subTest(param=param):
+                self.assertIn(param, helper)
+
+        for output in [
+            '"bedmethyl"',
+            '"bigwig"',
+            '"methylation_manifest"',
+            '"methylation_provenance"',
+            '"qc_stats"',
+        ]:
+            with self.subTest(output=output):
+                self.assertIn(output, helper)
+        for optional_output in [
+            "bedmethyl_hap1",
+            "bedmethyl_hap2",
+            "bigwig_hap1",
+            "bigwig_hap2",
+        ]:
+            with self.subTest(optional_output=optional_output):
+                self.assertIn(optional_output, module)
+
+        self.assertIn("wf-human-variation.bounded_methylation.v1", helper)
+        self.assertIn('"unphased"', helper)
+        self.assertIn('"phased"', helper)
+        self.assertIn("block_or_controller_degrade_to_unphased", helper)
+        self.assertIn("unsupported methylation option(s)", helper)
+        self.assertIn('"marker_schema": "gnostikon.task_completion.v1"', module)
+        self.assertIn("workflow-glue check_valid_modbam", module)
+        self.assertIn("modkit sample-probs", module)
+        self.assertIn("modkit pileup", module)
+        self.assertIn("modkit bm tobigwig", module)
+        self.assertIn('"html_report": {"requested": False', module)
+        self.assertNotIn("makeReport", module)
+        self.assertNotIn("publishDir", module)
+
     def test_mapping_entry_declares_supported_input_kinds_and_allowlisted_mapper_options(self):
         helper = read("lib/bounded_entry.nf")
 
@@ -486,26 +574,31 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertIn("``-entry sample_aggregation``", docs)
         self.assertIn("``-entry variant_calling``", docs)
         self.assertIn("``-entry cnv``", docs)
+        self.assertIn("``-entry methylation``", docs)
         self.assertIn("bounded mapping entry", docs)
         self.assertIn("bounded sample aggregation entry", docs)
         self.assertIn("bounded small-variant entry", docs)
         self.assertIn("bounded structural-variant entry", docs)
         self.assertIn("bounded CNV entry", docs)
+        self.assertIn("bounded methylation entry", docs)
         self.assertIn("Task 15", docs)
         self.assertIn("Task 16", docs)
         self.assertIn("Task 17", docs)
         self.assertIn("Task 18", docs)
         self.assertIn("Task 19", docs)
+        self.assertIn("Task 21", docs)
         self.assertIn("mapped_xam", docs)
         self.assertIn("coverage_state", docs)
         self.assertIn("snp_vcf", docs)
         self.assertIn("structural_variant_vcf", docs)
         self.assertIn("cnv_vcf", docs)
+        self.assertIn("bedmethyl", docs)
         self.assertIn("mapping bounded entry", ledger)
         self.assertIn("sample aggregation bounded entry", ledger)
         self.assertIn("small-variant bounded entry", ledger)
         self.assertIn("structural-variant bounded entry", ledger)
         self.assertIn("CNV bounded entry", ledger)
+        self.assertIn("methylation bounded entry", ledger)
 
 
 if __name__ == "__main__":
