@@ -535,6 +535,58 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertNotIn("makeReport", module)
         self.assertNotIn("publishDir", module)
 
+    def test_bounded_entry_surfaces_do_not_use_global_join_barriers(self):
+        main = read("main.nf")
+        bounded_surface = main.split("// Compatibility entrypoint workflow", 1)[0]
+        bounded_modules = "\n".join(
+            read(path)
+            for path in [
+                "modules/local/bounded_mapping.nf",
+                "modules/local/bounded_sample_aggregation.nf",
+                "modules/local/bounded_variant_calling.nf",
+                "modules/local/bounded_structural_variant_calling.nf",
+                "modules/local/bounded_cnv.nf",
+                "modules/local/bounded_str.nf",
+                "modules/local/bounded_methylation.nf",
+            ]
+        )
+
+        forbidden = [
+            ".collect(",
+            ".combine(",
+            ".first(",
+            "groupTuple(",
+        ]
+        for token in forbidden:
+            with self.subTest(token=token):
+                self.assertNotIn(token, bounded_surface)
+                self.assertNotIn(token, bounded_modules)
+
+    def test_remaining_broad_joins_are_documented_as_compatibility_debt(self):
+        docs = read("docs/keyed-joins.rst")
+
+        self.assertIn("Task 22 Barrier Inventory", docs)
+        self.assertIn("compatibility-only debt", docs)
+        for owner in [
+            "variant_calling",
+            "str",
+            "methylation",
+            "cnv",
+            "reporting",
+        ]:
+            with self.subTest(owner=owner):
+                self.assertIn(owner, docs)
+        for path in [
+            "main.nf",
+            "workflows/wf-human-snp.nf",
+            "workflows/wf-human-str.nf",
+            "workflows/methyl.nf",
+            "workflows/wf-human-cnv.nf",
+            "workflows/partners.nf",
+        ]:
+            with self.subTest(path=path):
+                self.assertIn(f"``{path}``", docs)
+
     def test_mapping_entry_declares_supported_input_kinds_and_allowlisted_mapper_options(self):
         helper = read("lib/bounded_entry.nf")
 
@@ -587,6 +639,7 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertIn("Task 18", docs)
         self.assertIn("Task 19", docs)
         self.assertIn("Task 21", docs)
+        self.assertIn("Task 22", docs)
         self.assertIn("mapped_xam", docs)
         self.assertIn("coverage_state", docs)
         self.assertIn("snp_vcf", docs)

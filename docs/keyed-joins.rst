@@ -46,6 +46,44 @@ controller-led execution:
 * ``reporting`` owns publication/package reductions from manifest-indexed
   outputs.
 
+Task 22 Barrier Inventory
+-------------------------
+
+The remaining broad channel operations are compatibility-only debt. They are
+not allowed in new bounded entries and must be retired by moving the owning
+family to controller-led task execution:
+
+.. list-table::
+   :header-rows: 1
+
+   * - File
+     - Remaining barrier shape
+     - Owner
+   * - ``main.nf``
+     - haplocheck reference collection, SNP/SV refinement collections,
+       SNP annotation joins, and final compatibility publication flattening
+     - ``variant_calling`` or ``reporting``
+   * - ``workflows/wf-human-snp.nf``
+     - chunk/candidate/GVCF collections and per-sample final VCF grouping
+     - ``variant_calling``
+   * - ``workflows/wf-human-str.nf``
+     - STR contig/result merges and TSV/VCF collections
+     - ``str`` compatibility path
+   * - ``workflows/methyl.nf``
+     - reference singleton collection and legacy per-sample bedMethyl grouping
+     - ``methylation`` compatibility path
+   * - ``workflows/wf-human-cnv.nf``
+     - legacy mosdepth collection used by compatibility CNV
+     - ``cnv`` compatibility path
+   * - ``workflows/partners.nf``
+     - partner export grouping
+     - ``reporting``
+
+The named bounded entries for ``mapping``, ``sample_aggregation``,
+``variant_calling``, ``cnv``, ``str``, and ``methylation`` avoid these broad
+joins for readiness. They consume controller-declared input artefacts and use
+the task key, sample id, and reference id as their scheduling boundary.
+
 Review Checklist
 ----------------
 

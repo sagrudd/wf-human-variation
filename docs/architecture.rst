@@ -91,6 +91,12 @@ use the keyed rules in ``docs/keyed-joins.rst``: per-sample joins use
 ``sample_id``, per-reference joins use ``sample_id`` plus ``reference_id``, and
 task readiness uses ``task_key``.
 
+Task 22 records the remaining broad joins as compatibility-only debt in
+``docs/keyed-joins.rst``. Those barriers belong to legacy SNP/SV refinement,
+annotation, STR merging, methylation grouping, CNV compatibility, haplocheck,
+and partner export paths. They must not be used to decide readiness for any
+controller-launched bounded task.
+
 Placeholder Optionality
 -----------------------
 
