@@ -88,6 +88,7 @@ include {
     boundedSomaticPairedSnvMergeEntryParams;
     boundedSomaticPairedSnvHaplotypeFilterEntryParams;
     boundedSomaticTumourOnlySvEntryParams;
+    boundedSomaticPairedSvEntryParams;
     boundedSomaticAnnotationEntryParams;
     boundedSomaticMethylationAggregationEntryParams;
     boundedCnvEntryParams;
@@ -164,6 +165,10 @@ include {
 include {
     runBoundedSomaticTumourOnlySvTask;
 } from './modules/local/bounded_somatic_tumour_only_sv'
+
+include {
+    runBoundedSomaticPairedSvTask;
+} from './modules/local/bounded_somatic_paired_sv'
 
 include {
     runBoundedSomaticAnnotationTask;
@@ -740,6 +745,30 @@ workflow somatic_tumour_only_sv {
         Channel.value(boundedEntryContractJson(entry_contract)),
         aggregate_xam,
         aggregate_xam_index,
+        reference,
+        reference_index,
+        pon_file,
+        trf_bed
+    )
+}
+
+workflow somatic_paired_sv {
+    entry_contract = boundedSomaticPairedSvEntryParams(params)
+    tumour_aggregate_xam = Channel.fromPath(entry_contract.tumour_aggregate_xam, checkIfExists: true)
+    tumour_aggregate_xam_index = Channel.fromPath(entry_contract.tumour_aggregate_xam_index, checkIfExists: true)
+    normal_or_control_aggregate_xam = Channel.fromPath(entry_contract.normal_or_control_aggregate_xam, checkIfExists: true)
+    normal_or_control_aggregate_xam_index = Channel.fromPath(entry_contract.normal_or_control_aggregate_xam_index, checkIfExists: true)
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
+    pon_file = entry_contract.pon_file ? Channel.fromPath(entry_contract.pon_file, checkIfExists: true) : optionalBoundaryChannel()
+    trf_bed = Channel.fromPath(entry_contract.trf_bed, checkIfExists: true)
+    runBoundedSomaticPairedSvTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        tumour_aggregate_xam,
+        tumour_aggregate_xam_index,
+        normal_or_control_aggregate_xam,
+        normal_or_control_aggregate_xam_index,
         reference,
         reference_index,
         pon_file,

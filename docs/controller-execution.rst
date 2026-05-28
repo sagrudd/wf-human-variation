@@ -410,6 +410,46 @@ are explicit contract fields with digests when provided and are staged through
 optional Nextflow boundary channels rather than hidden container defaults. The
 retained data filename is ``<sample_id>.wf-somatic-sv.vcf.gz`` plus ``.tbi``.
 
+Phase 4 task 34 adds bounded paired Severus SV calling:
+
+.. code-block:: text
+
+   gnostikon-workflow-control nextflow-task \
+     --workflow ../wf-human-variation \
+     --entry somatic_paired_sv \
+     --outdir /analysis/project-001 \
+     --task-family somatic_paired_sv \
+     --key-field analysis_intent_id=som_001 \
+     --key-field pair_id=pair_001 \
+     --key-field reference_id=GRCh38 \
+     --key-field role_snapshot_digest=sha256:roles \
+     --key-field relationship_snapshot_digest=sha256:relationship \
+     --key-field tumour_aggregate_xam_digest=sha256:tumour-aggregate \
+     --key-field tumour_aggregate_xam_index_digest=sha256:tumour-index \
+     --key-field normal_or_control_aggregate_xam_digest=sha256:normal-aggregate \
+     --key-field normal_or_control_aggregate_xam_index_digest=sha256:normal-index \
+     --key-field severus_config_digest=sha256:config \
+     --key-field severus_options_digest=sha256:severus-options \
+     --key-field container_digest=sha256:container \
+     --params-json somatic-paired-sv.params.json \
+     --output somatic_sv_vcf=variants/somatic/pair_001.wf-somatic-sv.vcf.gz \
+     --output somatic_sv_vcf_index=variants/somatic/pair_001.wf-somatic-sv.vcf.gz.tbi \
+     --output somatic_sv_raw_directory=variants/somatic/pair_001.severus-output \
+     --output somatic_paired_sv_manifest=metadata/somatic-paired-sv-manifest.json \
+     --output somatic_paired_sv_command_json=metadata/somatic-paired-sv-command.json \
+     --output somatic_provenance=metadata/somatic-provenance.json \
+     --output qc_stats=qc/somatic-paired-sv-qc.json
+
+The params JSON must provide explicit pair state, tumour and normal/control
+sample ids, role and relationship snapshot digests, both aggregate XAM/index
+pairs with digests, reference assets and digests, a required ``trf_bed`` plus
+``trf_bed_digest``, optional ``pon_file`` evidence when a PON is used,
+``severus_config_digest``, ``severus_options_digest``, ``container_digest``,
+and structured ``severus_options``. The retained data filename is
+``<pair_id>.wf-somatic-sv.vcf.gz`` plus ``.tbi``. This entry is separate from
+``somatic_tumour_only_sv`` and does not use inherited missing-normal mode
+selection, hidden Severus asset environment defaults, or EPI2ME report outputs.
+
 Phase 4 task 15 adds bounded somatic SNV/SV annotation:
 
 .. code-block:: text

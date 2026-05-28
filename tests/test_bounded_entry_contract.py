@@ -126,6 +126,10 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertIn("runBoundedSomaticTumourOnlySvTask(", main)
         self.assertIn("Channel.fromPath(entry_contract.aggregate_xam, checkIfExists: true)", main)
         self.assertIn("Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)", main)
+        self.assertIn("workflow somatic_paired_sv {", main)
+        self.assertIn("boundedSomaticPairedSvEntryParams(params)", main)
+        self.assertIn("runBoundedSomaticPairedSvTask(", main)
+        self.assertIn("Channel.fromPath(entry_contract.normal_or_control_aggregate_xam, checkIfExists: true)", main)
         self.assertIn("workflow somatic_annotation {", main)
         self.assertIn("boundedSomaticAnnotationEntryParams(params)", main)
         self.assertIn("runBoundedSomaticAnnotationTask(", main)
@@ -392,6 +396,31 @@ class BoundedEntryContractTest(unittest.TestCase):
     def test_somatic_tumour_only_sv_entry_does_not_launch_compatibility_graph_or_reports(self):
         main = read("main.nf")
         somatic_entry = main.split("workflow somatic_tumour_only_sv {", 1)[1].split(
+            "// Compatibility entrypoint workflow", 1
+        )[0]
+
+        forbidden = [
+            "ingress(",
+            "prepare_reference(",
+            "snp(",
+            "sv(",
+            "cnv_spectre(",
+            "str(",
+            "output_snp(",
+            "combine_metrics_json(",
+            "publish_artifact(",
+            "makeReport",
+            "bam_normal",
+            "bam_tumor",
+            "OPTIONAL_FILE",
+        ]
+        for token in forbidden:
+            with self.subTest(token=token):
+                self.assertNotIn(token, somatic_entry)
+
+    def test_somatic_paired_sv_entry_does_not_launch_compatibility_graph_or_reports(self):
+        main = read("main.nf")
+        somatic_entry = main.split("workflow somatic_paired_sv {", 1)[1].split(
             "// Compatibility entrypoint workflow", 1
         )[0]
 
@@ -1457,6 +1486,92 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertNotIn("OPTIONAL_FILE", module)
         self.assertNotIn("groupTuple", module)
 
+    def test_somatic_paired_sv_entry_requires_controller_owned_task_params(self):
+        helper = read("lib/bounded_entry.nf")
+        module = read("modules/local/bounded_somatic_paired_sv.nf")
+        main = read("main.nf")
+        families = read("lib/task_families.nf")
+
+        for param in [
+            "analysis_intent_id",
+            "pair_id",
+            "tumour_sample_id",
+            "normal_or_control_sample_id",
+            "paired_role",
+            "role_snapshot_digest",
+            "relationship_snapshot_digest",
+            "tumour_aggregate_xam",
+            "tumour_aggregate_xam_index",
+            "tumour_aggregate_xam_kind",
+            "tumour_aggregate_xam_digest",
+            "tumour_aggregate_xam_index_digest",
+            "normal_or_control_aggregate_xam",
+            "normal_or_control_aggregate_xam_index",
+            "normal_or_control_aggregate_xam_kind",
+            "normal_or_control_aggregate_xam_digest",
+            "normal_or_control_aggregate_xam_index_digest",
+            "reference_fasta",
+            "reference_index",
+            "reference_digest",
+            "reference_genome_build",
+            "pon_file",
+            "pon_file_digest",
+            "trf_bed",
+            "trf_bed_digest",
+            "severus_config_digest",
+            "severus_options_digest",
+            "container_digest",
+            "severus_options",
+        ]:
+            with self.subTest(param=param):
+                self.assertIn(param, helper)
+
+        for output in [
+            '"somatic_sv_vcf"',
+            '"somatic_sv_vcf_index"',
+            '"somatic_sv_raw_directory"',
+            '"somatic_paired_sv_manifest"',
+            '"somatic_paired_sv_command_json"',
+            '"somatic_provenance"',
+            '"qc_stats"',
+        ]:
+            with self.subTest(output=output):
+                self.assertIn(output, helper)
+
+        self.assertIn('"somatic_paired_sv"', families)
+        self.assertIn("severus_paired", families)
+        self.assertIn("wf-human-variation.bounded_somatic_paired_sv.v1", helper)
+        self.assertIn("unsupported Severus option(s)", helper)
+        self.assertIn("severus", module)
+        self.assertIn("--target-bam", module)
+        self.assertIn("--control-bam", module)
+        self.assertIn("--out-dir", module)
+        self.assertIn("--PON", module)
+        self.assertIn("--vntr-bed", module)
+        self.assertIn("--single-bp", module)
+        self.assertIn("--resolve-overlaps", module)
+        self.assertIn("--between-junction-ins", module)
+        self.assertIn(".wf-somatic-sv.vcf.gz", module)
+        self.assertIn("somatic_paired_sv_manifest.v1", module)
+        self.assertIn("somatic_paired_sv_command.v1", module)
+        self.assertIn('"severus_options_digest"', module)
+        self.assertIn('"severus_options": contract["severus_options_digest"]', module)
+        self.assertIn('"marker_schema": "gnostikon.task_completion.v1"', module)
+        self.assertIn("workflow somatic_paired_sv {", main)
+        self.assertIn("entry_contract.pon_file ? Channel.fromPath(entry_contract.pon_file", main)
+        self.assertIn("Channel.fromPath(entry_contract.trf_bed, checkIfExists: true)", main)
+        self.assertIn("STAGED_PON_FILE", module)
+        self.assertIn("STAGED_TRF_BED", module)
+        self.assertNotIn("makeReport", module)
+        self.assertNotIn("publishDir", module)
+        self.assertNotIn("text/html", module)
+        self.assertNotIn("bam_normal", module)
+        self.assertNotIn("OPTIONAL_FILE", module)
+        self.assertNotIn("groupTuple", module)
+        self.assertNotIn("WFSV_PON_PATH", module)
+        self.assertNotIn("WFSV_TRBED_PATH", module)
+        self.assertNotIn("severus_args", module)
+
     def test_somatic_paired_snv_candidate_entry_requires_controller_owned_task_params(self):
         helper = read("lib/bounded_entry.nf")
         module = read("modules/local/bounded_somatic_paired_snv.nf")
@@ -1781,6 +1896,16 @@ class BoundedEntryContractTest(unittest.TestCase):
 
     def test_somatic_tumour_only_sv_embedded_python_blocks_compile(self):
         module_path = "modules/local/bounded_somatic_tumour_only_sv.nf"
+        module = read(module_path)
+        blocks = re.findall(r"python3 - <<'PY'\n(.*?)\nPY", module, flags=re.S)
+
+        self.assertEqual(2, len(blocks))
+        for index, block in enumerate(blocks, start=1):
+            with self.subTest(block=index):
+                compile(block, f"{module_path}:python-block-{index}", "exec")
+
+    def test_somatic_paired_sv_embedded_python_blocks_compile(self):
+        module_path = "modules/local/bounded_somatic_paired_sv.nf"
         module = read(module_path)
         blocks = re.findall(r"python3 - <<'PY'\n(.*?)\nPY", module, flags=re.S)
 
@@ -2194,6 +2319,7 @@ class BoundedEntryContractTest(unittest.TestCase):
                 "modules/local/bounded_somatic_paired_snv.nf",
                 "modules/local/bounded_somatic_qc.nf",
                 "modules/local/bounded_somatic_tumour_only_sv.nf",
+                "modules/local/bounded_somatic_paired_sv.nf",
                 "modules/local/bounded_somatic_annotation.nf",
                 "modules/local/bounded_somatic_methylation_aggregation.nf",
                 "modules/local/bounded_cnv.nf",
@@ -2221,6 +2347,7 @@ class BoundedEntryContractTest(unittest.TestCase):
                 "modules/local/bounded_somatic_tumour_only_snv.nf",
                 "modules/local/bounded_somatic_qc.nf",
                 "modules/local/bounded_somatic_tumour_only_sv.nf",
+                "modules/local/bounded_somatic_paired_sv.nf",
                 "modules/local/bounded_somatic_methylation_aggregation.nf",
             ]
         )
@@ -2342,6 +2469,7 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertIn("``-entry somatic_paired_snv_haplotype_filter``", docs)
         self.assertIn("``-entry somatic_qc``", docs)
         self.assertIn("``-entry somatic_tumour_only_sv``", docs)
+        self.assertIn("``-entry somatic_paired_sv``", docs)
         self.assertIn("``-entry somatic_annotation``", docs)
         self.assertIn("``-entry somatic_methylation_aggregation``", docs)
         self.assertIn("bounded mapping entry", docs)
@@ -2368,6 +2496,7 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertIn("Phase 4 task 11", docs)
         self.assertIn("Phase 4 task 15", docs)
         self.assertIn("Phase 4 task 16", docs)
+        self.assertIn("Phase 4 task 34", docs)
         self.assertIn("family_mendelian_assessment", docs)
         self.assertIn("family analysis intent", docs.lower())
         self.assertIn("Dynamic Arrival", docs)
@@ -2400,6 +2529,8 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertIn("somatic_sv_vcf", docs)
         self.assertIn("somatic_tumour_only_snv_command_json", docs)
         self.assertIn("somatic_tumour_only_sv_command_json", docs)
+        self.assertIn("somatic_paired_sv_command_json", docs)
+        self.assertIn("somatic_paired_sv_manifest", docs)
         self.assertIn("optional_not_provided", docs)
         self.assertIn("duplicate aggregate artefacts", docs)
         self.assertIn("completion markers are reused", docs)
@@ -2412,6 +2543,7 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertIn("somatic_tumour_only_snv", ledger)
         self.assertIn("somatic_qc", ledger)
         self.assertIn("somatic_tumour_only_sv", ledger)
+        self.assertIn("somatic_paired_sv", ledger)
 
 
 if __name__ == "__main__":

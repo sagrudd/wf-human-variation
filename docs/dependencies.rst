@@ -54,8 +54,8 @@ concordance evidence for the selected model/database bundle.
 Somatic Severus Runtime
 -----------------------
 
-Future bounded ``somatic_tumour_only_sv`` and ``somatic_paired_sv`` entries
-require an owned Severus runtime image, not the inherited ONT
+Bounded ``somatic_tumour_only_sv`` and ``somatic_paired_sv`` entries require
+an owned Severus runtime image, not the inherited ONT
 ``ontresearch/wf-somatic-sv`` source image. The runtime must expose
 ``severus`` on ``PATH`` and record version probes for Severus, Python, native
 Python dependencies such as ``pysam`` and ``numpy``, and the HTS tools used to

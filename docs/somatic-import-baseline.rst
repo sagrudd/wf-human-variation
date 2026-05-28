@@ -394,3 +394,28 @@ The bounded output contract is machine-readable and restart-safe:
 ``<sample_id>.wf-somatic-sv.vcf.gz`` plus ``.tbi``. Inherited SV HTML reports,
 publication hooks, IGV configuration, annotation side effects, and
 ``bam_normal``-driven mode inference remain excluded.
+
+Bounded Paired Severus
+----------------------
+
+Phase 4 task 34 adds ``-entry somatic_paired_sv`` as the maintained paired
+Severus execution boundary. The entry consumes explicit ``pair_id``,
+``tumour_sample_id``, ``normal_or_control_sample_id``, ``paired_role``,
+``role_snapshot_digest``, and ``relationship_snapshot_digest`` state plus
+tumour and normal/control aggregate alignment/index artefacts from
+``sample_aggregation``. It also requires reference FASTA/index evidence, a
+TRF/VNTR BED and digest, ``severus_config_digest``,
+``severus_options_digest``, structured ``severus_options``, and a runtime
+``container_digest``. PON evidence remains optional but explicit.
+
+The retained paired command shape is
+``severus --target-bam tumor.bam --control-bam normal.bam --out-dir severus-output``.
+The bounded entry writes ``somatic_paired_sv_command_json`` before execution,
+normalises the raw Severus VCF to
+``<pair_id>.wf-somatic-sv.vcf.gz`` plus ``.tbi``, copies the raw
+``severus-output`` directory, and emits ``somatic_paired_sv_manifest``,
+``somatic_provenance``, and ``qc_stats``. Paired SV is separate from
+``somatic_tumour_only_sv``: it does not infer normal/control state from
+``bam_normal``, does not use ``OPTIONAL_FILE``, does not restore
+``WFSV_PON_PATH`` or ``WFSV_TRBED_PATH`` hidden defaults, and does not publish
+SV HTML, IGV, or annotation side-effect outputs.

@@ -93,7 +93,7 @@ unit it was given.
        coverage blocking.
    * - ``somatic_tumour_only_sv``
      - analysis intent, tumour role, reference
-     - Future bounded Severus tumour-only SV calling from role-projected sample
+     - Bounded Severus tumour-only SV calling from role-projected sample
        aggregation artefacts, explicit optional PON/TRF state, genome-build
        validation, and structured Severus options.
    * - ``somatic_paired_snv``
@@ -140,8 +140,9 @@ unit it was given.
        policy without changing tumour state.
    * - ``somatic_paired_sv``
      - analysis intent, tumour-normal/control pair, reference
-     - Future bounded Severus paired SV calling from explicit pair state,
-       shared callable-region state, and controller-declared reference assets.
+     - Bounded Severus paired SV calling from explicit pair state, tumour and
+       normal/control aggregate alignments, shared callable-region state,
+       explicit PON/TRF reference assets, and structured Severus options.
    * - ``somatic_annotation``
      - analysis intent, source somatic VCF, reference
      - Bounded SnpEff/SnpSift annotation of somatic SNV or SV VCFs from
@@ -269,6 +270,20 @@ also requires ``severus_options_digest`` and emits ``somatic_sv_vcf``, ``somatic
 Nextflow boundary channels when present. It does not infer tumour-only mode from
 missing ``bam_normal`` and does not use inherited hidden ``WFSV_PON_PATH`` or
 ``WFSV_TRBED_PATH`` assets.
+
+Phase 4 task 34 adds ``-entry somatic_paired_sv`` as the bounded paired
+Severus SV entry. It consumes explicit ``pair_id`` and
+``relationship_snapshot_digest`` state, tumour and normal/control aggregate
+XAMs and indexes, reference FASTA/index assets, required TRF/VNTR BED evidence,
+optional PON evidence, ``severus_config_digest``, ``severus_options_digest``,
+structured ``severus_options``, and the runtime ``container_digest``. It emits
+``somatic_sv_vcf``, ``somatic_sv_vcf_index``, ``somatic_sv_raw_directory``,
+``somatic_paired_sv_command_json``, ``somatic_paired_sv_manifest``,
+``somatic_provenance``, and ``qc_stats``. Paired SV calling is a distinct task
+family from tumour-only SV calling; it must not infer control state from
+``bam_normal``, inherit hidden ``WFSV_PON_PATH`` or ``WFSV_TRBED_PATH`` assets,
+run segmental-duplication annotation as a side effect, or emit EPI2ME HTML/IGV
+reporting products.
 
 Phase 4 task 14 extends that contract to asset evidence. PON TSV,
 TRF/VNTR BED, and segmental-duplication BED states are versioned reference

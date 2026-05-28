@@ -2394,6 +2394,75 @@ def boundedSomaticTumourOnlySvEntryParams(params) {
     ]
 }
 
+def boundedSomaticPairedSvEntryParams(params) {
+    def output_paths = _requireOutputPaths(
+        _boundedOutputPaths(params.output_paths),
+        [
+            "somatic_sv_vcf",
+            "somatic_sv_vcf_index",
+            "somatic_sv_raw_directory",
+            "somatic_paired_sv_manifest",
+            "somatic_paired_sv_command_json",
+            "somatic_provenance",
+            "qc_stats",
+        ] as Set
+    )
+    def tumour_aggregate_xam_kind = _choice(
+        "tumour_aggregate_xam_kind",
+        _optionalBoundedParam(params, "tumour_aggregate_xam_kind", "bam"),
+        ["bam", "cram"] as Set
+    )
+    def normal_or_control_aggregate_xam_kind = _choice(
+        "normal_or_control_aggregate_xam_kind",
+        _optionalBoundedParam(params, "normal_or_control_aggregate_xam_kind", "bam"),
+        ["bam", "cram"] as Set
+    )
+    return [
+        entry_schema: "wf-human-variation.bounded_somatic_paired_sv.v1",
+        entry_name: "somatic_paired_sv",
+        task_family: _choice(
+            "task_family",
+            _requiredBoundedParam(params, "task_family"),
+            ["somatic_paired_sv"] as Set
+        ),
+        task_key: _requiredBoundedParam(params, "task_key"),
+        task_dir: _requiredBoundedParam(params, "task_dir"),
+        task_cache_dir: _requiredBoundedParam(params, "task_cache_dir"),
+        completion_marker_path: _requiredBoundedParam(params, "completion_marker_path"),
+        analysis_intent_id: _requiredBoundedParam(params, "analysis_intent_id"),
+        pair_id: _requiredBoundedParam(params, "pair_id"),
+        tumour_sample_id: _requiredBoundedParam(params, "tumour_sample_id"),
+        normal_or_control_sample_id: _requiredBoundedParam(params, "normal_or_control_sample_id"),
+        paired_role: _choice("paired_role", _optionalBoundedParam(params, "paired_role", "normal"), ["normal", "control"] as Set),
+        reference_id: _requiredBoundedParam(params, "reference_id"),
+        reference_genome_build: _optionalBoundedParam(params, "reference_genome_build", ""),
+        role_snapshot_digest: _requiredBoundedParam(params, "role_snapshot_digest"),
+        relationship_snapshot_digest: _requiredBoundedParam(params, "relationship_snapshot_digest"),
+        tumour_aggregate_xam: _requiredBoundedParam(params, "tumour_aggregate_xam"),
+        tumour_aggregate_xam_index: _requiredBoundedParam(params, "tumour_aggregate_xam_index"),
+        tumour_aggregate_xam_kind: tumour_aggregate_xam_kind,
+        tumour_aggregate_xam_digest: _requiredBoundedParam(params, "tumour_aggregate_xam_digest"),
+        tumour_aggregate_xam_index_digest: _requiredBoundedParam(params, "tumour_aggregate_xam_index_digest"),
+        normal_or_control_aggregate_xam: _requiredBoundedParam(params, "normal_or_control_aggregate_xam"),
+        normal_or_control_aggregate_xam_index: _requiredBoundedParam(params, "normal_or_control_aggregate_xam_index"),
+        normal_or_control_aggregate_xam_kind: normal_or_control_aggregate_xam_kind,
+        normal_or_control_aggregate_xam_digest: _requiredBoundedParam(params, "normal_or_control_aggregate_xam_digest"),
+        normal_or_control_aggregate_xam_index_digest: _requiredBoundedParam(params, "normal_or_control_aggregate_xam_index_digest"),
+        reference_fasta: _requiredBoundedParam(params, "reference_fasta"),
+        reference_index: _requiredBoundedParam(params, "reference_index"),
+        reference_digest: _requiredBoundedParam(params, "reference_digest"),
+        pon_file: _optionalBoundedParam(params, "pon_file", ""),
+        pon_file_digest: _optionalBoundedParam(params, "pon_file_digest", ""),
+        trf_bed: _requiredBoundedParam(params, "trf_bed"),
+        trf_bed_digest: _requiredBoundedParam(params, "trf_bed_digest"),
+        severus_config_digest: _requiredBoundedParam(params, "severus_config_digest"),
+        severus_options_digest: _requiredBoundedParam(params, "severus_options_digest"),
+        container_digest: _requiredBoundedParam(params, "container_digest"),
+        severus_options: _severusOptions(params.severus_options),
+        output_paths: output_paths,
+    ]
+}
+
 def boundedSomaticAnnotationEntryParams(params) {
     def output_paths = _requireOutputPaths(
         _boundedOutputPaths(params.output_paths),

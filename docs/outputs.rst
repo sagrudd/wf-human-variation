@@ -69,6 +69,13 @@ Somatic outputs:
   ``somatic_tumour_only_sv_manifest``, ``somatic_provenance``, and
   ``qc_stats`` for raw Severus inspection, manifest projection, and restart
   audit.
+* ``somatic_sv_vcf`` and ``somatic_sv_vcf_index`` from bounded
+  ``somatic_paired_sv`` Severus execution, retaining the data filename
+  ``<pair_id>.wf-somatic-sv.vcf.gz`` plus ``.tbi``;
+* ``somatic_sv_raw_directory``, ``somatic_paired_sv_command_json``,
+  ``somatic_paired_sv_manifest``, ``somatic_provenance``, and ``qc_stats`` for
+  paired Severus raw-output inspection, pair-state manifest projection, and
+  restart audit.
 * ``somatic_annotated_vcf`` and ``somatic_annotated_vcf_index`` from bounded
   ``somatic_annotation`` execution over controller-declared somatic SNV or SV
   source VCFs;

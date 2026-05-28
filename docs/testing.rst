@@ -219,6 +219,45 @@ This executes only bounded tumour-only SV calling for one tumour
 role/reference/analysis intent and records optional PON and TRF/VNTR BED state
 in manifest and provenance.
 
+The Phase 4 task 34 bounded Severus paired SV entry can be dry-run without
+genomic data:
+
+.. code-block:: bash
+
+   gnostikon-workflow-control nextflow-task \
+     --workflow . \
+     --entry somatic_paired_sv \
+     --outdir /tmp/humvar-bounded \
+     --task-family somatic_paired_sv \
+     --key-field analysis_intent_id=som_001 \
+     --key-field pair_id=pair_001 \
+     --key-field reference_id=GRCh38 \
+     --key-field role_snapshot_digest=sha256:roles \
+     --key-field relationship_snapshot_digest=sha256:relationship \
+     --key-field tumour_aggregate_xam_digest=sha256:tumour-aggregate \
+     --key-field tumour_aggregate_xam_index_digest=sha256:tumour-index \
+     --key-field normal_or_control_aggregate_xam_digest=sha256:normal-aggregate \
+     --key-field normal_or_control_aggregate_xam_index_digest=sha256:normal-index \
+     --key-field severus_config_digest=sha256:config \
+     --key-field severus_options_digest=sha256:severus-options \
+     --key-field container_digest=sha256:container \
+     --params-json somatic-paired-sv.params.json \
+     --output somatic_sv_vcf=variants/somatic/pair_001.wf-somatic-sv.vcf.gz \
+     --output somatic_sv_vcf_index=variants/somatic/pair_001.wf-somatic-sv.vcf.gz.tbi \
+     --output somatic_sv_raw_directory=variants/somatic/pair_001.severus-output \
+     --output somatic_paired_sv_manifest=metadata/somatic-paired-sv-manifest.json \
+     --output somatic_paired_sv_command_json=metadata/somatic-paired-sv-command.json \
+     --output somatic_provenance=metadata/somatic-provenance.json \
+     --output qc_stats=qc/somatic-paired-sv-qc.json \
+     --dry-run
+
+Where Nextflow and the owned Severus runtime are available, run the generated
+params with
+``nextflow run . -entry somatic_paired_sv -params-file <params-file>``.
+This executes only bounded paired SV calling for one tumour-normal/control pair
+and records required TRF/VNTR BED state, optional PON state, structured
+Severus options, and pair identity in manifest and provenance.
+
 Poikilognostikon Phase 4 task 19 adds local tumour-only synthetic contract
 tests around these bounded entries. The tests do not download large datasets:
 they build a tiny SQLite event store and assert that
