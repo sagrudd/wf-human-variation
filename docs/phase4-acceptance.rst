@@ -1,3 +1,238 @@
+Phase 4 Somatic And Paired Acceptance
+=====================================
+
+This page defines the minimum gate for treating phase-4 tasks 1-40 as the
+somatic and paired tumour-normal integration surface inside the
+Poikilognostikon-maintained ``wf-human-variation`` fork.
+
+Release Decision
+----------------
+
+Phase 4 tasks 1-40 are implementation-complete for local contract review only.
+
+Release status: not release-accepted for customer or production use until
+owned runtime containers, ARM64 image-build evidence, immutable digests,
+executable smoke tests, and scientific validation evidence are supplied.
+
+The accepted ``wf-human-variation`` candidate is the committed fork revision
+pinned by ``workflows/wf-human-variation`` in the Poikilognostikon repository
+after this gate is updated. A dirty submodule worktree, uncommitted bounded
+entry, unpushed fork revision, missing parent submodule pin, or missing
+validation evidence blocks acceptance.
+
+This complete gate supersedes the narrower tasks 1-20 foundation record in
+``phase-4-somatic-acceptance.md`` while retaining its evidence as the
+tumour-only and general somatic foundation.
+
+Required Phase 4 Task Families
+------------------------------
+
+The complete Phase 4 gate requires these controller-visible task families to
+exist, stay removable, and stay separate from monolithic workflow scheduling:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Task family
+     - Required surface for this gate
+   * - ``somatic_qc``
+     - Bounded shared callable-region and pair coverage entry.
+   * - ``somatic_tumour_only_snv``
+     - Bounded tumour-only ClairS-TO entry.
+   * - ``somatic_tumour_only_sv``
+     - Bounded tumour-only Severus entry.
+   * - ``somatic_paired_snv``
+     - Bounded ClairS candidate, pileup, full-alignment, merge, and haplotype
+       filtering entries.
+   * - ``somatic_germline_helper``
+     - Bounded normal/control VCF helper entry.
+   * - ``somatic_phasing``
+     - Bounded role-scoped heterozygous-site selection and phasing entry.
+   * - ``somatic_haplotagging``
+     - Bounded role-scoped haplotagging entry.
+   * - ``somatic_paired_sv``
+     - Bounded paired Severus entry.
+   * - ``somatic_methylation_aggregation``
+     - Bounded role-scoped modkit aggregation entry.
+   * - ``somatic_differential_methylation``
+     - Bounded paired DSS entry.
+   * - ``somatic_annotation``
+     - Bounded annotation entry for controller-declared somatic VCFs.
+   * - ``somatic_export``
+     - Controller/manifest output projection without HTML reports.
+
+The current maintained bounded entries are ``somatic_qc``,
+``somatic_tumour_only_snv``, ``somatic_tumour_only_sv``,
+``somatic_paired_snv_candidate``, ``somatic_paired_snv_pileup``,
+``somatic_paired_snv_full_alignment``, ``somatic_paired_snv_merge``,
+``somatic_paired_snv_haplotype_filter``, ``somatic_germline_helper``,
+``somatic_phasing``, ``somatic_haplotagging``, ``somatic_paired_sv``,
+``somatic_methylation_aggregation``, ``somatic_differential_methylation``, and
+``somatic_annotation``.
+
+Minimum Local Gate For Tasks 1-40
+---------------------------------
+
+Before advancing the Poikilognostikon submodule pin for a complete Phase 4
+candidate, run:
+
+.. code-block:: bash
+
+   python -m unittest discover -s tests -v
+   python -m sphinx -W -b html docs docs/_build/html
+   python -m json.tool nextflow_schema.json >/tmp/wf-human-variation-nextflow-schema.json
+
+The complete gate must include:
+
+* ``tests/test_bounded_entry_contract.py`` for bounded somatic and paired entry
+  shape, retained output contracts, structured options, and provenance markers;
+* ``tests/test_phase2_synthetic_contracts.py`` for tiny synthetic fixture
+  contracts and public HTML report absence;
+* ``tests/test_phase4_paired_performance_gates.py`` for paired performance and
+  barrier gates that reject global channel barriers, report-generation calls,
+  free-form shell option pass-throughs, mutable ``params.wf`` state, and hidden
+  optional-file sentinel semantics;
+* Poikilognostikon tests for somatic analysis intents, sample roles, somatic
+  manifest projection, tumour-only readiness, paired identity, dynamic paired
+  arrival, duplicate aggregate artefacts, imported normal/control VCF state,
+  shared callable regions, low-coverage states, synthetic paired integration,
+  dashboard/API output contracts, scheduling, and completion-marker reuse;
+* ``gnostikon-workflow-control`` tests for somatic task families, reference
+  compatibility, somatic reference assets, tumour-only SNV/SV readiness,
+  paired readiness, germline-helper state, shared-region state, paired coverage
+  state, annotation readiness, methylation readiness, structured tool options,
+  idempotency, and bounded launch planning.
+
+This evidence must include dynamic paired arrival, imported normal/control VCF
+state, shared callable regions, synthetic paired integration, and paired
+performance and barrier gates as named review items.
+The static gate explicitly checks hidden optional-file sentinel semantics so
+sentinel handling cannot leak back into bounded paired helpers.
+
+Required ARM64 And Container Evidence For Tasks 1-40
+----------------------------------------------------
+
+Release acceptance requires owned-image evidence for the complete Phase 4
+runtime surface:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Image family
+     - Required evidence
+   * - ``poikilognostikon-somatic-hts``
+     - HTS/QC tool versions, shared-region or coverage helper evidence,
+       immutable digest, and smoke-test output.
+   * - ``poikilognostikon-somatic-clairs-to``
+     - ClairS-TO version/source commit, AFF/NEG model checksums, model table
+       checksum, database bundle checksum, immutable digest, and smoke-test
+       output.
+   * - ``poikilognostikon-somatic-clairs``
+     - ClairS version/source commit, paired model checksums, ClairS reference
+       bundle checksums, immutable digest, and paired smoke-test output.
+   * - ``poikilognostikon-somatic-clair3-helper``
+     - Clair3 helper version/source commit, model checksums, normal/control
+       VCF smoke-test output, and immutable digest.
+   * - ``poikilognostikon-somatic-severus``
+     - Severus version/source commit, Python/native dependency probes,
+       PON/TRF/segmental-duplication asset checks, immutable digest, and
+       tumour-only plus paired smoke-test output.
+   * - ``poikilognostikon-somatic-modkit``
+     - Modkit version, HTS helper versions, bedMethyl/BigWig smoke-test output,
+       immutable digest, and provenance capture.
+   * - ``poikilognostikon-somatic-dss``
+     - R/Bioconductor lock digest, DSS package versions, paired DML/DMR
+       smoke-test output, and immutable digest.
+   * - ``poikilognostikon-somatic-phasing``
+     - WhatsHap and helper versions, phasing/haplotagging smoke-test output,
+       and immutable digest.
+   * - ``poikilognostikon-somatic-annotation``
+     - SnpEff/SnpSift and OpenJDK versions, SnpEff database and ClinVar/SIFT
+       asset checksums, immutable digest, and annotation smoke-test output.
+   * - ``poikilognostikon-somatic-helpers``
+     - Retained helper versions or source checksums, import/version probes,
+       immutable digest, and deletion boundary evidence.
+
+Every accepted runtime image must have ``linux/amd64`` and ``linux/arm64``
+build records where the method is intended to run on both platforms, immutable
+image digests, version probe output, executable smoke-test output, and a
+committed image manifest or bill of materials. The owning image plan is
+``phase-4-somatic-container-plan.md`` in the Poikilognostikon repository. The
+method compatibility register is ``wf-human-variation-method-compatibilities.md``.
+
+Scientific Validation Items For Tasks 1-40
+------------------------------------------
+
+The following items are release blockers even when local contract tests pass:
+
+* ClairS-TO tumour-only SNV/indel calling must be concordance-tested against
+  reviewed ``wf-somatic-variation`` behaviour and selected truth cases.
+* Paired ClairS candidate extraction, pileup, full-alignment, merge, and
+  haplotype-filter output must be concordance-tested against reviewed truth or
+  benchmark cases.
+* ``somatic_germline_helper`` normal/control VCF output and imported
+  normal/control VCF equivalence must be validated.
+* WhatsHap phasing and haplotagging correctness must be validated for tumour
+  and normal/control roles.
+* Severus tumour-only and paired SV calling must be concordance-tested with
+  explicit PON, no-PON, TRF/VNTR, and segmental-duplication asset states.
+* Modkit role aggregation must be checked against known modified-base fixtures
+  for bedMethyl, BigWig, summary, and DSS-input TSV shape.
+* DSS differential methylation must be checked for DML/DMR output shape, R
+  package versions, and known paired methylation fixtures.
+* SnpEff/SnpSift annotation must be checked against known somatic SNV/SV VCFs
+  and expected ClinVar/SIFT output shape.
+* Reference/genome-build validation must be checked for accepted, missing,
+  incompatible, and cross-build assets.
+* ``tumour_rejected_low_coverage``, ``normal_rejected_low_coverage``, and
+  ``somatic_pair_blocked_low_coverage`` must be validated as blocked analysis
+  states, not successful empty results.
+
+Release Blocking Regressions For Tasks 1-40
+-------------------------------------------
+
+Any of these changes blocks complete Phase 4 acceptance:
+
+* somatic or paired scheduling from filenames, aliases, ``bam_normal`` absence,
+  or missing-normal inference rather than ``analysis_intent_id``, ``sample_id``,
+  ``pair_id``, role snapshots, ``relationship_snapshot_digest``, reference ids,
+  and manifest readiness records;
+* treating ``somatic_small_variant``, ``somatic_structural_variant``, or broad
+  paired capability labels as executable task families;
+* duplicate somatic ingress, basecalling, mapping, or sample aggregation graphs;
+* collapsing tumour-only, paired tumour-normal, phasing, methylation,
+  annotation, or export responsibilities back into a monolithic ``main.nf``
+  DAG;
+* hidden normal/control requirements in tumour-only SNV, SV, methylation,
+  annotation, or export paths;
+* inherited ONT runtime containers, sha-like tags, hidden PON/TRF/segmental
+  duplication defaults, hidden ClairS bundles, or container-local database
+  assets as release pins;
+* free-form ``severus_args``, ``modkit_args``, ``clairs_args``, ClairS shell
+  fragments, DSS/R fragments, or phasing-tool ``*_args``;
+* HTML reports, IGV surfaces, EPI2ME Desktop metadata, telemetry, or
+  report-only Python on the maintained runtime path;
+* ``OPTIONAL_FILE`` sentinel leakage into controller contracts or bounded task
+  helpers;
+* global ``collect()``, broad or unkeyed ``combine()``, ``first()``, or
+  ``groupTuple()`` readiness barriers in bounded somatic or paired entries;
+* missing container digest, model checksum, asset checksum, option digest,
+  command argument, input checksum, output artefact, task status, or
+  completion-marker provenance;
+* customer or production claims before owned images and scientific validation
+  evidence are attached to the release record.
+
+Deferred Release Work
+---------------------
+
+Local Phase 4 acceptance does not release the workflow for customer or
+production use. Release still requires owned multi-architecture runtime images,
+immutable digest and asset checksum manifests, executable smoke tests for every
+bounded task family on supported hardware, tumour-only and paired scientific
+concordance validation, separate GB10/NVIDIA and Apple Silicon deployment
+evidence where methods claim support, and dashboard/API views over manifest
+state without workflow-owned presentation reports.
+
 Phase 4 Somatic Foundation Acceptance
 =====================================
 
@@ -5,26 +240,18 @@ This page defines the minimum gate for treating phase-4 tasks 1-20 as the
 tumour-only and general somatic foundation inside the
 Poikilognostikon-maintained ``wf-human-variation`` fork.
 
-Release Decision
-----------------
+Foundation Release Decision
+---------------------------
 
 Phase 4 tasks 1-20 are implementation-complete for local contract review only.
 
 Release status: not release-accepted for customer or production use until owned
 ARM64 image-build evidence and scientific validation evidence are supplied.
 
-The current dirty-worktree ``wf-human-variation`` fork candidate is:
-
-.. code-block:: text
-
-   b1a5a78ec9c02de276f01dc8608096db93a87e91
-
-This is not an accepted fork pin while phase-4 files remain uncommitted. The
-accepted ``wf-human-variation`` fork commit is the future committed phase-4
-revision that passes this gate. Poikilognostikon must pin
-``workflows/wf-human-variation`` to that exact commit. A dirty submodule
-worktree, uncommitted bounded entry, or missing validation evidence blocks
-acceptance.
+The accepted ``wf-human-variation`` fork commit is the committed phase-4
+revision pinned by Poikilognostikon at ``workflows/wf-human-variation``. A dirty
+submodule worktree, uncommitted bounded entry, or missing validation evidence
+blocks acceptance.
 
 This gate covers only tasks 1-20. Paired tumour-normal task families remain
 phase 4 tasks 21-40 and are not accepted by this page.
