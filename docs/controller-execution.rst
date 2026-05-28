@@ -289,12 +289,17 @@ Phase 4 task 24 adds bounded somatic QC:
      --outdir /analysis/project-001 \
      --task-family somatic_qc \
      --analysis-intent-id ait_somatic_001 \
+     --pair-id pair_tn_001 \
+     --relationship-snapshot-digest sha256:pair \
      --tumour-sample-id smp_tumour \
-     --normal-or-control-sample-id smp_normal
+     --normal-or-control-sample-id smp_normal \
+     --role-snapshot-digest sha256:roles
 
 The controller supplies tumour and normal/control ``mosdepth_regions`` artefacts
-and optional target BED state. The entry emits shared callable regions,
-rejected-region summary, metrics, provenance, and a completion marker only.
+and optional target BED state. Pair identity, relationship snapshot digest, and
+role snapshot digest are required key material. The entry emits shared callable
+regions, rejected-region summary, metrics, provenance, and a completion marker
+only.
 
 Task 17 adds the bounded small-variant entry:
 

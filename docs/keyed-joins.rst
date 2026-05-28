@@ -122,6 +122,39 @@ legacy ``OPTIONAL_FILE`` sentinel or inherited absent-file placeholder. They
 must not run old ``wf-trio`` or EPI2ME HTML report commands; Mendelian and QC
 outputs remain machine-readable manifest artefacts, not HTML report products.
 
+Phase 4 Paired Barrier Gate
+---------------------------
+
+The paired tumour-normal bounded entries have no accepted channel-barrier debt.
+They are controller-scheduled units, not a replacement monolithic somatic DAG:
+
+* ``somatic_paired_snv_candidate``
+* ``somatic_paired_snv_pileup``
+* ``somatic_paired_snv_full_alignment``
+* ``somatic_paired_snv_merge``
+* ``somatic_paired_snv_haplotype_filter``
+* ``somatic_qc``
+* ``somatic_paired_sv``
+* ``somatic_differential_methylation``
+
+The controller must decide when these tasks are ready by joining manifest state
+on ``analysis_intent_id``, ``pair_id``, ``reference_id``,
+``role_snapshot_digest``, ``relationship_snapshot_digest``, role sample ids,
+input checksums, option digests, and the deterministic ``task_key``. Nextflow
+entry workflows may stage only the controller-declared files for one bounded
+unit.
+
+Paired entries must not introduce global ``collect()``, broad ``combine()``,
+``first()``, or ``groupTuple()`` readiness barriers. They must not mutate
+``params.wf``. They must not consume ``OPTIONAL_FILE`` or the inherited absent
+input marker; optional values remain typed controller state and may only become
+explicit boundary channels at the entry workflow. They must not add
+report-generation commands, ``publishDir`` report outputs, or free-form shell option
+pass-throughs such as ``severus_args``, ``modkit_args``, ``dss_args``,
+``clairs_args``, ``task.ext.args``, or ``ext.args``. Tool configuration must
+continue to enter as structured allowlisted option objects with matching option
+digests.
+
 Review Checklist
 ----------------
 

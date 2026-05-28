@@ -2359,7 +2359,7 @@ def boundedSomaticQcEntryParams(params) {
         task_cache_dir: _requiredBoundedParam(params, "task_cache_dir"),
         completion_marker_path: _requiredBoundedParam(params, "completion_marker_path"),
         analysis_intent_id: _requiredBoundedParam(params, "analysis_intent_id"),
-        pair_id: _optionalBoundedParam(params, "pair_id", ""),
+        pair_id: _requiredBoundedParam(params, "pair_id"),
         tumour_sample_id: _requiredBoundedParam(params, "tumour_sample_id"),
         normal_or_control_sample_id: _requiredBoundedParam(params, "normal_or_control_sample_id"),
         normal_or_control_role: _choice(
@@ -2370,7 +2370,7 @@ def boundedSomaticQcEntryParams(params) {
         reference_id: _requiredBoundedParam(params, "reference_id"),
         reference_genome_build: _optionalBoundedParam(params, "reference_genome_build", ""),
         role_snapshot_digest: _requiredBoundedParam(params, "role_snapshot_digest"),
-        relationship_snapshot_digest: _optionalBoundedParam(params, "relationship_snapshot_digest", ""),
+        relationship_snapshot_digest: _requiredBoundedParam(params, "relationship_snapshot_digest"),
         tumour_mosdepth_regions: _requiredBoundedParam(params, "tumour_mosdepth_regions"),
         tumour_mosdepth_regions_digest: _requiredBoundedParam(params, "tumour_mosdepth_regions_digest"),
         normal_or_control_mosdepth_regions: _requiredBoundedParam(params, "normal_or_control_mosdepth_regions"),

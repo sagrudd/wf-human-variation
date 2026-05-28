@@ -407,6 +407,13 @@ completion-marker reuse, and replay successful paired SNV provenance into
 bounded entry parameters and output kinds consumed by those tests without
 requiring large external datasets.
 
+Phase 4 task 39 adds paired performance and barrier gates. The static tests
+reject global channel barriers, report-generation commands, free-form shell
+option pass-throughs, ``params.wf`` mutation, and hidden optional-file sentinel
+consumption in the paired bounded surfaces. Paired ``somatic_qc`` now requires
+``pair_id`` and ``relationship_snapshot_digest`` as controller-owned key
+material.
+
 The Task 18 bounded structural-variant entry can be dry-run through the same
 entry point:
 

@@ -48,16 +48,11 @@ import subprocess
 from pathlib import Path
 
 
-ABSENT_PREFIX = "__wf_human_variation_absent_input__"
-
-
 def optional_path(contract, name, staged_env):
     value = contract.get(name) or ""
     if not value:
         return ""
     staged = Path(os.environ[staged_env])
-    if staged.name == ABSENT_PREFIX or staged.name.startswith(f"{ABSENT_PREFIX}."):
-        raise FileNotFoundError(f"{name} was declared but was not staged at the Nextflow boundary")
     if not staged.exists():
         raise FileNotFoundError(f"{name} was declared but does not exist in the work directory: {staged}")
     return str(staged)
