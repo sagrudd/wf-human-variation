@@ -29,6 +29,7 @@ def boundedTaskFamilies() {
         "somatic_tumour_only_sv",
         "somatic_paired_sv",
         "somatic_methylation_aggregation",
+        "somatic_differential_methylation",
         "somatic_annotation",
     ]
 }
@@ -61,6 +62,7 @@ def taskFamilyOwners() {
         "somatic_tumour_only_sv": ["severus_tumour_only", "somatic_sv_asset_validation"],
         "somatic_paired_sv": ["severus_paired", "somatic_sv_asset_validation"],
         "somatic_methylation_aggregation": ["modkit_role_aggregation", "bedmethyl_split", "dss_input_projection"],
+        "somatic_differential_methylation": ["dss_dml", "dss_dmr", "paired_methylation_comparison"],
         "somatic_annotation": ["snpeff", "snpsift", "somatic_annotation_projection"],
     ]
 }

@@ -530,6 +530,47 @@ digests, reference FASTA/index, ``modkit_config_digest``, ``container_digest``,
 aggregation only; it does not run DSS, infer tumour-only mode from a missing
 normal, or publish MOD HTML reports.
 
+Phase 4 task 35 adds bounded paired DSS differential methylation:
+
+.. code-block:: text
+
+   gnostikon-workflow-control nextflow-task \
+     --workflow ../wf-human-variation \
+     --entry somatic_differential_methylation \
+     --outdir /analysis/project-001 \
+     --task-family somatic_differential_methylation \
+     --key-field analysis_intent_id=som_001 \
+     --key-field pair_id=pair_001 \
+     --key-field tumour_sample_id=smp_tumour \
+     --key-field normal_or_control_sample_id=smp_normal \
+     --key-field reference_id=GRCh38 \
+     --key-field role_snapshot_digest=sha256:roles \
+     --key-field relationship_snapshot_digest=sha256:relationship \
+     --key-field modification_code=5mC \
+     --key-field tumour_dss_input_tsv_digest=sha256:tumour-dss \
+     --key-field normal_or_control_dss_input_tsv_digest=sha256:normal-dss \
+     --key-field dss_config_digest=sha256:dss-config \
+     --key-field dss_options_digest=sha256:dss-options \
+     --key-field r_bioconductor_lock_digest=sha256:r-lock \
+     --key-field container_digest=sha256:container \
+     --params-json somatic-differential-methylation.params.json \
+     --output somatic_dml_tsv=methylation/pair_001.5mC.dml.tsv \
+     --output somatic_dmr_tsv=methylation/pair_001.5mC.dmr.tsv \
+     --output somatic_differential_methylation_manifest=metadata/somatic-differential-methylation-manifest.json \
+     --output somatic_differential_methylation_command_json=metadata/somatic-differential-methylation-command.json \
+     --output somatic_differential_methylation_log=logs/somatic-dss.log \
+     --output somatic_r_versions=metadata/somatic-r-versions.tsv \
+     --output somatic_provenance=metadata/somatic-provenance.json \
+     --output qc_stats=qc/somatic-differential-methylation-qc.json
+
+The params JSON must provide explicit pair identity, tumour and normal/control
+sample ids, role and relationship snapshot digests, reference id/build,
+``modification_code``, both role-specific ``somatic_dss_input_tsv`` paths plus
+digests, ``dss_config_digest``, ``dss_options_digest``, structured
+``dss_options``, ``r_bioconductor_lock_digest``, and ``container_digest``. This
+entry is not valid for tumour-only intents; the controller schedules it only
+after both role-specific aggregation entries have produced DSS input TSVs.
+
 Task 13 adds bounded trio candidate selection:
 
 .. code-block:: text

@@ -116,6 +116,14 @@ Somatic outputs:
   ``somatic_methylation_aggregation_command_json``,
   ``somatic_methylation_aggregation_log``, ``somatic_provenance``, and
   ``qc_stats`` for role-level modkit audit and downstream paired DSS input.
+* ``somatic_dml_tsv`` and ``somatic_dmr_tsv`` from bounded
+  ``somatic_differential_methylation`` DSS execution for one pair and one
+  modification code;
+* ``somatic_differential_methylation_manifest``,
+  ``somatic_differential_methylation_command_json``,
+  ``somatic_differential_methylation_log``, ``somatic_r_versions``,
+  ``somatic_provenance``, and ``qc_stats`` for paired DSS audit and R package
+  version capture.
 
 Modified-base outputs:
 

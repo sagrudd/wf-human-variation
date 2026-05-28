@@ -120,13 +120,16 @@ objects instead:
 * ``--severus_options``: allowlisted Severus keys such as ``threads``,
   ``min_sv_length``, ``min_support``, ``vaf_threshold``, ``single_bp``,
   ``resolve_overlaps``, and ``between_junction_ins``.
+* ``--dss_options``: allowlisted DSS keys such as ``threads``,
+  ``equal_disp``, ``smoothing``, ``smoothing_span``, ``delta``,
+  ``p_threshold``, ``minlen``, ``min_cg``, ``dis_merge``, and ``pct_sig``.
 
 For controller-launched somatic entries, the structured option object also has
 a controller-owned digest. ``clairs_to_options_digest``,
 ``clairs_options_digest``, ``severus_options_digest``, and
-``somatic_methylation_options_digest`` are part of the bounded task key,
-manifest, and provenance so option changes cannot reuse stale completion
-markers.
+``somatic_methylation_options_digest`` and ``dss_options_digest`` are part of
+the bounded task key, manifest, and provenance so option changes cannot reuse
+stale completion markers.
 
 Every option that changes a tool command must be represented in the bounded
 task key and provenance. Adding a new tool option requires updating

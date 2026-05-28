@@ -154,8 +154,9 @@ unit it was given.
        without requiring paired DSS execution.
    * - ``somatic_differential_methylation``
      - analysis intent, tumour-normal/control pair, modification
-     - Future bounded paired DSS comparison from role-scoped methylation
-       outputs and explicit ``relationship_snapshot_digest``.
+     - Bounded paired DSS comparison from role-scoped methylation DSS input
+       TSVs, explicit ``relationship_snapshot_digest``, structured DSS
+       options, and R/Bioconductor package-lock evidence.
 
 Dependency Shape
 ----------------
@@ -319,6 +320,22 @@ snapshot, and container digest. It emits
 ``qc_stats``. Tumour-only aggregation can run without normal/control roles and
 without DSS; paired DSS comparison remains owned by
 ``somatic_differential_methylation``.
+
+Phase 4 task 35 adds ``-entry somatic_differential_methylation`` as the
+bounded paired DSS comparison entry. It consumes explicit ``pair_id``,
+``relationship_snapshot_digest``, tumour and normal/control
+``somatic_dss_input_tsv`` artefacts from completed role-specific aggregation,
+input digests, ``modification_code``, ``dss_config_digest``,
+``dss_options_digest``, structured ``dss_options``,
+``r_bioconductor_lock_digest``, and the runtime ``container_digest``. It emits
+``somatic_dml_tsv``, ``somatic_dmr_tsv``,
+``somatic_differential_methylation_manifest``,
+``somatic_differential_methylation_command_json``,
+``somatic_differential_methylation_log``, ``somatic_r_versions``,
+``somatic_provenance``, and ``qc_stats``. DSS is scheduled only when both
+role-specific DSS input TSVs exist; tumour-only methylation remains complete at
+``somatic_methylation_aggregation`` and does not create empty differential
+outputs.
 
 Phase 4 task 17 makes structured somatic tool option digests part of bounded
 task identity. ``clairs_to_options_digest``, ``severus_options_digest``, and

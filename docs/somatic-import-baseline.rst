@@ -419,3 +419,29 @@ normalises the raw Severus VCF to
 ``bam_normal``, does not use ``OPTIONAL_FILE``, does not restore
 ``WFSV_PON_PATH`` or ``WFSV_TRBED_PATH`` hidden defaults, and does not publish
 SV HTML, IGV, or annotation side-effect outputs.
+
+Bounded Differential Methylation
+--------------------------------
+
+Phase 4 task 35 adds ``-entry somatic_differential_methylation`` as the
+maintained paired DSS execution boundary. The entry consumes explicit
+``pair_id``, tumour and normal/control sample ids, role and relationship
+snapshot digests, reference id/build, one ``modification_code``, the tumour and
+normal/control ``somatic_dss_input_tsv`` outputs from completed role-specific
+``somatic_methylation_aggregation`` tasks, input digests,
+``dss_config_digest``, ``dss_options_digest``, structured ``dss_options``,
+``r_bioconductor_lock_digest``, and container digest.
+
+The bounded entry preserves the useful inherited DSS method shape:
+``makeBSseqData`` over tumour and normal DSS inputs, ``DMLtest``, ``callDML``,
+and ``callDMR``. It changes the operational contract: DSS failures are not
+reported as successful empty analyses, tumour-only methylation does not schedule
+DSS, and paired DSS is launched only when both role-specific input TSVs exist.
+Outputs are ``somatic_dml_tsv``, ``somatic_dmr_tsv``,
+``somatic_differential_methylation_manifest``,
+``somatic_differential_methylation_command_json``,
+``somatic_differential_methylation_log``, ``somatic_r_versions``,
+``somatic_provenance``, and ``qc_stats``. Inherited MOD HTML reports,
+``workflow-glue report_mod``, ``diff_mod`` global branching,
+``params.dss_threads``, and free-form DSS/R argument fragments remain outside
+the maintained contract.

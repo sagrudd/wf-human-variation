@@ -345,6 +345,48 @@ params with
 This executes only role-specific modified-base aggregation; DSS and paired
 comparison remain separate.
 
+The Phase 4 task 35 bounded paired DSS entry can be dry-run without genomic
+data:
+
+.. code-block:: bash
+
+   gnostikon-workflow-control nextflow-task \
+     --workflow . \
+     --entry somatic_differential_methylation \
+     --outdir /tmp/humvar-bounded \
+     --task-family somatic_differential_methylation \
+     --key-field analysis_intent_id=som_001 \
+     --key-field pair_id=pair_001 \
+     --key-field tumour_sample_id=smp_tumour \
+     --key-field normal_or_control_sample_id=smp_normal \
+     --key-field reference_id=GRCh38 \
+     --key-field role_snapshot_digest=sha256:roles \
+     --key-field relationship_snapshot_digest=sha256:relationship \
+     --key-field modification_code=5mC \
+     --key-field tumour_dss_input_tsv_digest=sha256:tumour-dss \
+     --key-field normal_or_control_dss_input_tsv_digest=sha256:normal-dss \
+     --key-field dss_config_digest=sha256:dss-config \
+     --key-field dss_options_digest=sha256:dss-options \
+     --key-field r_bioconductor_lock_digest=sha256:r-lock \
+     --key-field container_digest=sha256:container \
+     --params-json somatic-differential-methylation.params.json \
+     --output somatic_dml_tsv=methylation/pair_001.5mC.dml.tsv \
+     --output somatic_dmr_tsv=methylation/pair_001.5mC.dmr.tsv \
+     --output somatic_differential_methylation_manifest=metadata/somatic-differential-methylation-manifest.json \
+     --output somatic_differential_methylation_command_json=metadata/somatic-differential-methylation-command.json \
+     --output somatic_differential_methylation_log=logs/somatic-dss.log \
+     --output somatic_r_versions=metadata/somatic-r-versions.tsv \
+     --output somatic_provenance=metadata/somatic-provenance.json \
+     --output qc_stats=qc/somatic-differential-methylation-qc.json \
+     --dry-run
+
+Where Nextflow and the owned DSS/R runtime are available, run the generated
+params with
+``nextflow run . -entry somatic_differential_methylation -params-file <params-file>``.
+This executes only paired DSS comparison for one modification code and records
+DSS options, R package versions, input digests, and pair identity in manifest
+and provenance.
+
 The Task 18 bounded structural-variant entry can be dry-run through the same
 entry point:
 

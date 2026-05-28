@@ -139,6 +139,10 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertIn("boundedSomaticMethylationAggregationEntryParams(params)", main)
         self.assertIn("runBoundedSomaticMethylationAggregationTask(", main)
         self.assertIn("Channel.fromPath(entry_contract.role_aggregate_xam, checkIfExists: true)", main)
+        self.assertIn("workflow somatic_differential_methylation {", main)
+        self.assertIn("boundedSomaticDifferentialMethylationEntryParams(params)", main)
+        self.assertIn("runBoundedSomaticDifferentialMethylationTask(", main)
+        self.assertIn("Channel.fromPath(entry_contract.normal_or_control_dss_input_tsv, checkIfExists: true)", main)
         self.assertIn("workflow cnv {", main)
         self.assertIn("boundedCnvEntryParams(params)", main)
         self.assertIn("runBoundedSpectreCnvTask(", main)
@@ -2084,6 +2088,84 @@ class BoundedEntryContractTest(unittest.TestCase):
             with self.subTest(block=index):
                 compile(block, f"{module_path}:python-block-{index}", "exec")
 
+    def test_somatic_differential_methylation_entry_requires_controller_owned_task_params(self):
+        helper = read("lib/bounded_entry.nf")
+        module = read("modules/local/bounded_somatic_differential_methylation.nf")
+        main = read("main.nf")
+        families = read("lib/task_families.nf")
+
+        for param in [
+            "analysis_intent_id",
+            "pair_id",
+            "tumour_sample_id",
+            "normal_or_control_sample_id",
+            "paired_role",
+            "role_snapshot_digest",
+            "relationship_snapshot_digest",
+            "reference_id",
+            "reference_genome_build",
+            "modification_code",
+            "tumour_dss_input_tsv",
+            "tumour_dss_input_tsv_digest",
+            "normal_or_control_dss_input_tsv",
+            "normal_or_control_dss_input_tsv_digest",
+            "dss_config_digest",
+            "dss_options_digest",
+            "r_bioconductor_lock_digest",
+            "container_digest",
+            "dss_options",
+        ]:
+            with self.subTest(param=param):
+                self.assertIn(param, helper)
+
+        for output in [
+            '"somatic_dml_tsv"',
+            '"somatic_dmr_tsv"',
+            '"somatic_differential_methylation_manifest"',
+            '"somatic_differential_methylation_command_json"',
+            '"somatic_differential_methylation_log"',
+            '"somatic_r_versions"',
+            '"somatic_provenance"',
+            '"qc_stats"',
+        ]:
+            with self.subTest(output=output):
+                self.assertIn(output, helper)
+
+        self.assertIn('"somatic_differential_methylation"', families)
+        self.assertIn("paired_methylation_comparison", families)
+        self.assertIn("wf-human-variation.bounded_somatic_differential_methylation.v1", helper)
+        self.assertIn("unsupported DSS option(s)", helper)
+        self.assertIn("workflow somatic_differential_methylation {", main)
+        self.assertIn("DMLtest", module)
+        self.assertIn("callDML", module)
+        self.assertIn("callDMR", module)
+        self.assertIn("library(DSS)", module)
+        self.assertIn("packageVersion(package)", module)
+        self.assertIn("somatic_differential_methylation_manifest.v1", module)
+        self.assertIn("somatic_differential_methylation_command.v1", module)
+        self.assertIn('"dss_options_digest"', module)
+        self.assertIn('"dss_options": contract["dss_options_digest"]', module)
+        self.assertIn('"marker_schema": "gnostikon.task_completion.v1"', module)
+        self.assertIn("normal_or_control_dss_input_tsv", module)
+        self.assertNotIn("makeModReport", module)
+        self.assertNotIn("workflow-glue report_mod", module)
+        self.assertNotIn("publishDir", module)
+        self.assertNotIn("OPTIONAL_FILE", module)
+        self.assertNotIn("params.dss_threads", module)
+        self.assertNotIn("params.diff_mod", module)
+        self.assertNotIn("dss_args", module)
+        self.assertNotIn("text/html", module)
+
+    def test_somatic_differential_methylation_embedded_python_blocks_compile(self):
+        module_path = "modules/local/bounded_somatic_differential_methylation.nf"
+        module = read(module_path)
+        blocks = re.findall(r"python3 - <<'PY'\n(.*?)\nPY", module, flags=re.S)
+
+        self.assertEqual(2, len(blocks))
+        for index, block in enumerate(blocks, start=1):
+            with self.subTest(block=index):
+                compile(block, f"{module_path}:python-block-{index}", "exec")
+
     def test_structural_variant_entry_requires_controller_owned_task_params(self):
         helper = read("lib/bounded_entry.nf")
         module = read("modules/local/bounded_structural_variant_calling.nf")
@@ -2322,6 +2404,7 @@ class BoundedEntryContractTest(unittest.TestCase):
                 "modules/local/bounded_somatic_paired_sv.nf",
                 "modules/local/bounded_somatic_annotation.nf",
                 "modules/local/bounded_somatic_methylation_aggregation.nf",
+                "modules/local/bounded_somatic_differential_methylation.nf",
                 "modules/local/bounded_cnv.nf",
                 "modules/local/bounded_str.nf",
                 "modules/local/bounded_methylation.nf",
@@ -2472,6 +2555,7 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertIn("``-entry somatic_paired_sv``", docs)
         self.assertIn("``-entry somatic_annotation``", docs)
         self.assertIn("``-entry somatic_methylation_aggregation``", docs)
+        self.assertIn("``-entry somatic_differential_methylation``", docs)
         self.assertIn("bounded mapping entry", docs)
         self.assertIn("bounded sample aggregation entry", docs)
         self.assertIn("bounded small-variant entry", docs)
@@ -2483,6 +2567,7 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertIn("bounded Severus", docs)
         self.assertIn("bounded SnpEff/SnpSift", docs)
         self.assertIn("role-specific modkit aggregation", docs)
+        self.assertIn("bounded paired DSS", docs)
         self.assertIn("Task 15", docs)
         self.assertIn("Task 16", docs)
         self.assertIn("Task 17", docs)
@@ -2531,6 +2616,8 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertIn("somatic_tumour_only_sv_command_json", docs)
         self.assertIn("somatic_paired_sv_command_json", docs)
         self.assertIn("somatic_paired_sv_manifest", docs)
+        self.assertIn("somatic_differential_methylation_command_json", docs)
+        self.assertIn("somatic_r_versions", docs)
         self.assertIn("optional_not_provided", docs)
         self.assertIn("duplicate aggregate artefacts", docs)
         self.assertIn("completion markers are reused", docs)
@@ -2544,6 +2631,7 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertIn("somatic_qc", ledger)
         self.assertIn("somatic_tumour_only_sv", ledger)
         self.assertIn("somatic_paired_sv", ledger)
+        self.assertIn("somatic_differential_methylation", ledger)
 
 
 if __name__ == "__main__":

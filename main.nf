@@ -91,6 +91,7 @@ include {
     boundedSomaticPairedSvEntryParams;
     boundedSomaticAnnotationEntryParams;
     boundedSomaticMethylationAggregationEntryParams;
+    boundedSomaticDifferentialMethylationEntryParams;
     boundedCnvEntryParams;
     boundedStrEntryParams;
     boundedMethylationEntryParams;
@@ -177,6 +178,10 @@ include {
 include {
     runBoundedSomaticMethylationAggregationTask;
 } from './modules/local/bounded_somatic_methylation_aggregation'
+
+include {
+    runBoundedSomaticDifferentialMethylationTask;
+} from './modules/local/bounded_somatic_differential_methylation'
 
 include {
     runBoundedSpectreCnvTask;
@@ -809,6 +814,18 @@ workflow somatic_methylation_aggregation {
         role_aggregate_xam_index,
         reference,
         reference_index
+    )
+}
+
+workflow somatic_differential_methylation {
+    entry_contract = boundedSomaticDifferentialMethylationEntryParams(params)
+    tumour_dss_input_tsv = Channel.fromPath(entry_contract.tumour_dss_input_tsv, checkIfExists: true)
+    normal_or_control_dss_input_tsv = Channel.fromPath(entry_contract.normal_or_control_dss_input_tsv, checkIfExists: true)
+    runBoundedSomaticDifferentialMethylationTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        tumour_dss_input_tsv,
+        normal_or_control_dss_input_tsv
     )
 }
 

@@ -69,6 +69,23 @@ evidence. Missing optional assets must be recorded as
 ``WFSV_PON_PATH`` or ``WFSV_TRBED_PATH``, and hardcoded ``hg38.segdups`` /
 ``SEG_DUP`` annotation fallbacks, are not release evidence.
 
+Somatic DSS Runtime
+-------------------
+
+Bounded ``somatic_differential_methylation`` requires an owned DSS/R runtime
+image, not inherited report-era containers. The runtime must expose
+``Rscript`` and the R packages ``DSS``, ``bsseq``, and ``data.table``. The
+controller must provide ``dss_config_digest``, ``dss_options_digest``,
+``r_bioconductor_lock_digest``, and immutable container digest evidence for
+each launch. The bounded entry records ``somatic_r_versions`` at runtime so
+operator review can compare the executed R package set with the declared lock
+digest.
+
+Do not claim ARM64 support for paired DSS until the owned image has
+``linux/arm64`` build evidence and paired differential methylation concordance
+evidence. DSS remains memory-intensive; resource changes must be captured as
+structured ``dss_options`` and not as free-form R or shell arguments.
+
 Container References
 --------------------
 

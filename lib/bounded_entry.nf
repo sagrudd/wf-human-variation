@@ -847,6 +847,54 @@ def _methylationOptions(def raw) {
     ]
 }
 
+def _dssOptions(def raw) {
+    def options = raw instanceof Map ? raw : [:]
+    def allowed = [
+        "threads",
+        "equal_disp",
+        "smoothing",
+        "smoothing_span",
+        "delta",
+        "p_threshold",
+        "minlen",
+        "min_cg",
+        "dis_merge",
+        "pct_sig",
+    ] as Set
+    def unexpected = options.keySet().collect { it.toString() }.findAll { !allowed.contains(it) }.sort()
+    if (unexpected) {
+        throw new IllegalArgumentException("unsupported DSS option(s): ${unexpected.join(', ')}")
+    }
+    def positiveInt = { name, defaultValue ->
+        def value = options.containsKey(name) ? options[name] : defaultValue
+        def number = value as Integer
+        if (number < 1) {
+            throw new IllegalArgumentException("DSS option '${name}' must be >= 1")
+        }
+        return number
+    }
+    def positiveNumber = { name, defaultValue ->
+        def value = options.containsKey(name) ? options[name] : defaultValue
+        def number = value as BigDecimal
+        if (number <= 0) {
+            throw new IllegalArgumentException("DSS option '${name}' must be > 0")
+        }
+        return number
+    }
+    return [
+        threads: positiveInt("threads", 1),
+        equal_disp: options.containsKey("equal_disp") ? options.equal_disp as Boolean : false,
+        smoothing: options.containsKey("smoothing") ? options.smoothing as Boolean : true,
+        smoothing_span: positiveInt("smoothing_span", 500),
+        delta: positiveNumber("delta", 0.25),
+        p_threshold: positiveNumber("p_threshold", 0.001),
+        minlen: positiveInt("minlen", 100),
+        min_cg: positiveInt("min_cg", 5),
+        dis_merge: positiveInt("dis_merge", 1500),
+        pct_sig: positiveNumber("pct_sig", 0.5),
+    ]
+}
+
 def boundedEntryParams(params, String expectedFamily, String entryName) {
     def task_family = _requiredBoundedParam(params, "task_family")
     if (task_family != expectedFamily) {
@@ -2564,6 +2612,55 @@ def boundedSomaticMethylationAggregationEntryParams(params) {
         somatic_methylation_options_digest: _requiredBoundedParam(params, "somatic_methylation_options_digest"),
         container_digest: _requiredBoundedParam(params, "container_digest"),
         somatic_methylation_options: _methylationOptions(params.somatic_methylation_options),
+        output_paths: output_paths,
+    ]
+}
+
+def boundedSomaticDifferentialMethylationEntryParams(params) {
+    def output_paths = _requireOutputPaths(
+        _boundedOutputPaths(params.output_paths),
+        [
+            "somatic_dml_tsv",
+            "somatic_dmr_tsv",
+            "somatic_differential_methylation_manifest",
+            "somatic_differential_methylation_command_json",
+            "somatic_differential_methylation_log",
+            "somatic_r_versions",
+            "somatic_provenance",
+            "qc_stats",
+        ] as Set
+    )
+    return [
+        entry_schema: "wf-human-variation.bounded_somatic_differential_methylation.v1",
+        entry_name: "somatic_differential_methylation",
+        task_family: _choice(
+            "task_family",
+            _requiredBoundedParam(params, "task_family"),
+            ["somatic_differential_methylation"] as Set
+        ),
+        task_key: _requiredBoundedParam(params, "task_key"),
+        task_dir: _requiredBoundedParam(params, "task_dir"),
+        task_cache_dir: _requiredBoundedParam(params, "task_cache_dir"),
+        completion_marker_path: _requiredBoundedParam(params, "completion_marker_path"),
+        analysis_intent_id: _requiredBoundedParam(params, "analysis_intent_id"),
+        pair_id: _requiredBoundedParam(params, "pair_id"),
+        tumour_sample_id: _requiredBoundedParam(params, "tumour_sample_id"),
+        normal_or_control_sample_id: _requiredBoundedParam(params, "normal_or_control_sample_id"),
+        paired_role: _choice("paired_role", _optionalBoundedParam(params, "paired_role", "normal"), ["normal", "control"] as Set),
+        role_snapshot_digest: _requiredBoundedParam(params, "role_snapshot_digest"),
+        relationship_snapshot_digest: _requiredBoundedParam(params, "relationship_snapshot_digest"),
+        reference_id: _requiredBoundedParam(params, "reference_id"),
+        reference_genome_build: _requiredBoundedParam(params, "reference_genome_build"),
+        modification_code: _requiredBoundedParam(params, "modification_code"),
+        tumour_dss_input_tsv: _requiredBoundedParam(params, "tumour_dss_input_tsv"),
+        tumour_dss_input_tsv_digest: _requiredBoundedParam(params, "tumour_dss_input_tsv_digest"),
+        normal_or_control_dss_input_tsv: _requiredBoundedParam(params, "normal_or_control_dss_input_tsv"),
+        normal_or_control_dss_input_tsv_digest: _requiredBoundedParam(params, "normal_or_control_dss_input_tsv_digest"),
+        dss_config_digest: _requiredBoundedParam(params, "dss_config_digest"),
+        dss_options_digest: _requiredBoundedParam(params, "dss_options_digest"),
+        r_bioconductor_lock_digest: _requiredBoundedParam(params, "r_bioconductor_lock_digest"),
+        container_digest: _requiredBoundedParam(params, "container_digest"),
+        dss_options: _dssOptions(params.dss_options),
         output_paths: output_paths,
     ]
 }
