@@ -387,6 +387,17 @@ This executes only paired DSS comparison for one modification code and records
 DSS options, R package versions, input digests, and pair identity in manifest
 and provenance.
 
+Phase 4 task 37 adds Poikilognostikon-side dynamic pair arrival tests for the
+bounded somatic contracts. Those tests build a tiny SQLite event store and
+prove deterministic scheduling when tumour arrives before normal, when
+normal arrives before tumour, an imported normal VCF exists without a normal
+BAM, pair membership is superseded, duplicate role artefacts are present, and a
+failed paired SNV task is retried until a succeeding task attempt records
+completion.
+The workflow must preserve the output names, entry contracts, and manifest
+fields consumed by those tests; it must not replace them with report HTML,
+presentation paths, or directory scanning.
+
 The Task 18 bounded structural-variant entry can be dry-run through the same
 entry point:
 
