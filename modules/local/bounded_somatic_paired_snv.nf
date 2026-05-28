@@ -1071,3 +1071,307 @@ tmp.replace(marker_path)
 PY
     """
 }
+
+
+process runBoundedSomaticPairedSnvHaplotypeFilterTask {
+    label "somatic_clairs"
+    tag "${entry.analysis_intent_id}:${entry.pair_id}:${entry.contig}:${entry.variant_type}:${entry.task_key}"
+
+    cpus { entry.haplotype_filter_options.threads }
+    memory { (2.GB * task.cpus) + 3.GB }
+    maxRetries 1
+    errorStrategy { task.exitStatus in [137, 140] ? 'retry' : 'finish' }
+
+    input:
+        val entry
+        val contract_json
+        path somatic_snv_vcf
+        path somatic_snv_vcf_index
+        path somatic_pileup_vcf
+        path somatic_full_alignment_vcf
+        path tumour_haplotagged_xam
+        path tumour_haplotagged_xam_index
+        path germline_vcf
+        path germline_vcf_index
+        path reference
+        path reference_index
+
+    output:
+        path "somatic_haplotype_filtered.vcf.gz", emit: somatic_haplotype_filtered_vcf
+        path "somatic_haplotype_filtered.vcf.gz.tbi", emit: somatic_haplotype_filtered_vcf_index
+        path "somatic_haplotype_filter_manifest.json", emit: somatic_haplotype_filter_manifest
+        path "somatic_haplotype_filter_command.json", emit: somatic_haplotype_filter_command_json
+        path "somatic_haplotype_filter_state.json", emit: somatic_haplotype_filter_state
+        path "somatic_haplotype_filter.log", emit: somatic_haplotype_filter_logs
+        path "somatic_provenance.json", emit: somatic_provenance
+        path "qc_stats.json", emit: qc_stats
+
+    script:
+    """
+    set -euo pipefail
+
+    cat > bounded-somatic-paired-snv-haplotype-filter-contract.json <<'JSON'
+${contract_json}
+JSON
+
+    export SOMATIC_SNV_VCF="${somatic_snv_vcf}"
+    export SOMATIC_SNV_VCF_INDEX="${somatic_snv_vcf_index}"
+    export SOMATIC_PILEUP_VCF="${somatic_pileup_vcf}"
+    export SOMATIC_FULL_ALIGNMENT_VCF="${somatic_full_alignment_vcf}"
+    export TUMOUR_HAPLOTAGGED_XAM="${tumour_haplotagged_xam}"
+    export TUMOUR_HAPLOTAGGED_XAM_INDEX="${tumour_haplotagged_xam_index}"
+    export GERMLINE_VCF="${germline_vcf}"
+    export GERMLINE_VCF_INDEX="${germline_vcf_index}"
+    export REFERENCE_FASTA="${reference}"
+    python3 - <<'PY'
+import datetime
+import json
+import os
+import shlex
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+
+def copy_output(source, target):
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source, target)
+
+
+def optional_stage(contract_key, env_name):
+    declared = contract.get(contract_key) or ""
+    staged = os.environ.get(env_name, "")
+    if not declared:
+        return ""
+    if not staged or not Path(staged).exists():
+        raise FileNotFoundError(f"{contract_key} was declared but was not staged: {declared}")
+    return staged
+
+
+def run_command(command, log):
+    log.write(" ".join(shlex.quote(part) for part in command) + "\\n")
+    log.flush()
+    return subprocess.run(command, check=False, stdout=log, stderr=subprocess.STDOUT)
+
+
+def utc_now():
+    return datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+contract = json.loads(Path("bounded-somatic-paired-snv-haplotype-filter-contract.json").read_text())
+options = contract["haplotype_filter_options"]
+clairs_options = contract["clairs_options"]
+output_paths = {key: Path(value) for key, value in contract["output_paths"].items()}
+state = "completed"
+failure = None
+commands = []
+variant_type = str(contract["variant_type"])
+contig = str(contract["contig"])
+sample_name = str(contract["tumour_sample_id"])
+filtered_pileup = Path("vcf_output") / ("indel_pileup_filter.vcf" if variant_type == "indel" else "pileup_filter.vcf")
+filtered_full = Path("vcf_output") / ("indel_full_alignment_filter.vcf" if variant_type == "indel" else "full_alignment_filter.vcf")
+merged_vcf = Path("somatic_haplotype_filtered.vcf")
+merged_gz = Path("somatic_haplotype_filtered.vcf.gz")
+merged_tbi = Path("somatic_haplotype_filtered.vcf.gz.tbi")
+Path("vcf_output").mkdir(exist_ok=True)
+
+with Path("somatic_haplotype_filter.log").open("w") as log:
+    if not options["enabled"]:
+        state = "skipped_disabled"
+        shutil.copy2(os.environ["SOMATIC_SNV_VCF"], merged_gz)
+        shutil.copy2(os.environ["SOMATIC_SNV_VCF_INDEX"], merged_tbi)
+    else:
+        clairs_path = os.environ.get("CLAIRS_PATH", "").strip()
+        if not clairs_path:
+            state = "failed"
+            failure = {"stage": "environment", "reason": "CLAIRS_PATH must be set by the ClairS runtime container"}
+        else:
+            germline_vcf = optional_stage("germline_vcf", "GERMLINE_VCF")
+            haplotype_filter = [
+                "pypy3",
+                str(Path(clairs_path) / "clairs.py"),
+                "haplotype_filtering",
+                "--tumor_bam_fn", os.environ["TUMOUR_HAPLOTAGGED_XAM"],
+                "--ref_fn", os.environ["REFERENCE_FASTA"],
+                "--pileup_vcf_fn", os.environ["SOMATIC_PILEUP_VCF"],
+                "--full_alignment_vcf_fn", os.environ["SOMATIC_FULL_ALIGNMENT_VCF"],
+                "--output_dir", "vcf_output/",
+                "--samtools", "samtools",
+                "--threads", str(options["threads"]),
+                "--ctg_name", contig,
+            ]
+            if germline_vcf:
+                haplotype_filter.extend(["--germline_vcf_fn", germline_vcf])
+            if options["show_ref"] or clairs_options["show_ref"]:
+                haplotype_filter.append("--show_ref")
+            if options["is_indel"] or variant_type == "indel":
+                haplotype_filter.append("--is_indel")
+            if options["debug"]:
+                haplotype_filter.append("--debug")
+            merge_vcf = [
+                "pypy3",
+                str(Path(clairs_path) / "clairs.py"),
+                "merge_vcf",
+                "--ref_fn", os.environ["REFERENCE_FASTA"],
+                "--pileup_vcf_fn", str(filtered_pileup),
+                "--full_alignment_vcf_fn", str(filtered_full),
+                "--output_fn", str(merged_vcf),
+                "--platform", clairs_options["platform"],
+                "--qual", str(clairs_options["qual"]),
+                "--sample_name", sample_name,
+            ]
+            if variant_type == "indel":
+                merge_vcf.extend(["--enable_indel_calling", "True", "--indel_calling"])
+            bgzip_vcf = ["bgzip", "-f", str(merged_vcf)]
+            tabix_vcf = ["tabix", "-f", "-p", "vcf", str(merged_gz)]
+            commands = [haplotype_filter, merge_vcf, bgzip_vcf, tabix_vcf]
+            for command in commands[:2]:
+                result = run_command(command, log)
+                if result.returncode != 0:
+                    state = "failed"
+                    failure = {"stage": command[2] if len(command) > 2 else command[0], "exit_code": result.returncode}
+                    break
+            if state != "failed":
+                if not merged_gz.exists():
+                    result = run_command(bgzip_vcf, log)
+                    if result.returncode != 0:
+                        state = "failed"
+                        failure = {"stage": "bgzip", "exit_code": result.returncode}
+                if state != "failed" and not merged_tbi.exists():
+                    result = run_command(tabix_vcf, log)
+                    if result.returncode != 0:
+                        state = "failed"
+                        failure = {"stage": "tabix", "exit_code": result.returncode}
+
+command_metadata = {
+    "schema": "wf-human-variation.somatic_haplotype_filter_command.v1",
+    "task_key": contract["task_key"],
+    "tool": "clairs",
+    "stage": "paired_haplotype_filtering",
+    "state": state,
+    "commands": commands,
+    "structured_options": options,
+    "clairs_options": clairs_options,
+    "inputs": {
+        "somatic_snv_vcf": contract["somatic_snv_vcf"],
+        "somatic_pileup_vcf": contract["somatic_pileup_vcf"],
+        "somatic_full_alignment_vcf": contract["somatic_full_alignment_vcf"],
+        "tumour_haplotagged_xam": contract["tumour_haplotagged_xam"],
+        "germline_vcf": contract["germline_vcf"] or None,
+    },
+}
+Path("somatic_haplotype_filter_command.json").write_text(json.dumps(command_metadata, indent=2, sort_keys=True) + "\\n")
+
+state_payload = {
+    "schema": "wf-human-variation.somatic_haplotype_filter_state.v1",
+    "task_family": contract["task_family"],
+    "task_key": contract["task_key"],
+    "analysis_intent_id": contract["analysis_intent_id"],
+    "pair_id": contract["pair_id"],
+    "state": state,
+    "failure": failure,
+    "policy": {"enabled": options["enabled"], "variant_type": variant_type, "contig": contig},
+}
+Path("somatic_haplotype_filter_state.json").write_text(json.dumps(state_payload, indent=2, sort_keys=True) + "\\n")
+
+manifest = {
+    "schema": "wf-human-variation.somatic_haplotype_filter_manifest.v1",
+    "task_family": contract["task_family"],
+    "task_key": contract["task_key"],
+    "analysis_intent_id": contract["analysis_intent_id"],
+    "pair_id": contract["pair_id"],
+    "paired_role": contract["paired_role"],
+    "tumour_sample_id": contract["tumour_sample_id"],
+    "normal_or_control_sample_id": contract["normal_or_control_sample_id"],
+    "reference_id": contract["reference_id"],
+    "role_snapshot_digest": contract["role_snapshot_digest"],
+    "relationship_snapshot_digest": contract["relationship_snapshot_digest"],
+    "variant_type": variant_type,
+    "contig": contig,
+    "state": state,
+    "clairs_config_digest": contract["clairs_config_digest"],
+    "clairs_options_digest": contract["clairs_options_digest"],
+    "haplotype_filter_config_digest": contract["haplotype_filter_config_digest"],
+    "haplotype_filter_options_digest": contract["haplotype_filter_options_digest"],
+    "container_digest": contract["container_digest"],
+    "outputs": {key: str(value) for key, value in output_paths.items()},
+}
+Path("somatic_haplotype_filter_manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\\n")
+
+provenance = {
+    "schema": "wf-human-variation.somatic_provenance.v1",
+    "task_family": contract["task_family"],
+    "task_stage": "paired_haplotype_filtering",
+    "task_key": contract["task_key"],
+    "tool": "clairs",
+    "container_digest": contract["container_digest"],
+    "command_arguments": command_metadata,
+    "input_checksums": {
+        "somatic_snv_vcf": contract["somatic_snv_vcf_digest"],
+        "somatic_snv_vcf_index": contract["somatic_snv_vcf_index_digest"],
+        "somatic_pileup_vcf": contract["somatic_pileup_vcf_digest"],
+        "somatic_full_alignment_vcf": contract["somatic_full_alignment_vcf_digest"],
+        "tumour_haplotagged_xam": contract["tumour_haplotagged_xam_digest"],
+        "tumour_haplotagged_xam_index": contract["tumour_haplotagged_xam_index_digest"],
+        "reference": contract["reference_digest"],
+        "germline_vcf": contract["germline_vcf_digest"] or None,
+        "haplotype_filter_config": contract["haplotype_filter_config_digest"],
+        "haplotype_filter_options": contract["haplotype_filter_options_digest"],
+    },
+    "role_snapshot_digest": contract["role_snapshot_digest"],
+    "relationship_snapshot_digest": contract["relationship_snapshot_digest"],
+}
+Path("somatic_provenance.json").write_text(json.dumps(provenance, indent=2, sort_keys=True) + "\\n")
+
+qc = {
+    "schema": "wf-human-variation.somatic_haplotype_filter_qc.v1",
+    "analysis_intent_id": contract["analysis_intent_id"],
+    "pair_id": contract["pair_id"],
+    "variant_type": variant_type,
+    "contig": contig,
+    "state": state,
+}
+Path("qc_stats.json").write_text(json.dumps(qc, indent=2, sort_keys=True) + "\\n")
+
+if state != "failed":
+    copy_output(merged_gz, output_paths["somatic_haplotype_filtered_vcf"])
+    copy_output(merged_tbi, output_paths["somatic_haplotype_filtered_vcf_index"])
+for kind, source in {
+    "somatic_haplotype_filter_manifest": Path("somatic_haplotype_filter_manifest.json"),
+    "somatic_haplotype_filter_command_json": Path("somatic_haplotype_filter_command.json"),
+    "somatic_haplotype_filter_state": Path("somatic_haplotype_filter_state.json"),
+    "somatic_haplotype_filter_logs": Path("somatic_haplotype_filter.log"),
+    "somatic_provenance": Path("somatic_provenance.json"),
+    "qc_stats": Path("qc_stats.json"),
+}.items():
+    copy_output(source, output_paths[kind])
+
+if state == "failed":
+    sys.exit(1)
+
+marker_path = Path(contract["completion_marker_path"])
+marker_path.parent.mkdir(parents=True, exist_ok=True)
+marker = {
+    "marker_schema": "gnostikon.task_completion.v1",
+    "task_key": contract["task_key"],
+    "task_family": contract["task_family"],
+    "status": "succeeded",
+    "completed_at_utc": utc_now(),
+    "outputs": [{"kind": kind, "path": str(output_paths[kind]), "required": True} for kind in sorted(output_paths)],
+    "metadata": {
+        "bounded_entry": contract["entry_name"],
+        "entry_schema": contract["entry_schema"],
+        "analysis_intent_id": contract["analysis_intent_id"],
+        "pair_id": contract["pair_id"],
+        "variant_type": variant_type,
+        "contig": contig,
+        "state": state,
+    },
+}
+tmp = marker_path.with_suffix(marker_path.suffix + ".tmp")
+tmp.write_text(json.dumps(marker, indent=2, sort_keys=True) + "\\n")
+tmp.replace(marker_path)
+PY
+    """
+}

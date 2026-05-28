@@ -112,6 +112,10 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertIn("boundedSomaticPairedSnvMergeEntryParams(params)", main)
         self.assertIn("runBoundedSomaticPairedSnvMergeTask(", main)
         self.assertIn("Channel.fromPath(entry_contract.pileup_prediction_fragments, type: \"dir\", checkIfExists: true)", main)
+        self.assertIn("workflow somatic_paired_snv_haplotype_filter {", main)
+        self.assertIn("boundedSomaticPairedSnvHaplotypeFilterEntryParams(params)", main)
+        self.assertIn("runBoundedSomaticPairedSnvHaplotypeFilterTask(", main)
+        self.assertIn("Channel.fromPath(entry_contract.tumour_haplotagged_xam, checkIfExists: true)", main)
         self.assertIn("workflow somatic_qc {", main)
         self.assertIn("boundedSomaticQcEntryParams(params)", main)
         self.assertIn("runBoundedSomaticQcTask(", main)
@@ -1651,12 +1655,63 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertNotIn("makeReport", module)
         self.assertNotIn("publishDir", module)
 
+    def test_somatic_paired_snv_haplotype_filter_entry_produces_explicit_state(self):
+        helper = read("lib/bounded_entry.nf")
+        module = read("modules/local/bounded_somatic_paired_snv.nf")
+        main = read("main.nf")
+        families = read("lib/task_families.nf")
+
+        for param in [
+            "contig",
+            "variant_type",
+            "somatic_snv_vcf",
+            "somatic_snv_vcf_digest",
+            "somatic_pileup_vcf",
+            "somatic_pileup_vcf_digest",
+            "somatic_full_alignment_vcf",
+            "somatic_full_alignment_vcf_digest",
+            "tumour_haplotagged_xam",
+            "tumour_haplotagged_xam_digest",
+            "haplotype_filter_config_digest",
+            "haplotype_filter_options_digest",
+            "haplotype_filter_options",
+        ]:
+            with self.subTest(param=param):
+                self.assertIn(param, helper)
+
+        for output in [
+            '"somatic_haplotype_filtered_vcf"',
+            '"somatic_haplotype_filtered_vcf_index"',
+            '"somatic_haplotype_filter_manifest"',
+            '"somatic_haplotype_filter_command_json"',
+            '"somatic_haplotype_filter_state"',
+            '"somatic_haplotype_filter_logs"',
+            '"somatic_provenance"',
+            '"qc_stats"',
+        ]:
+            with self.subTest(output=output):
+                self.assertIn(output, helper)
+
+        self.assertIn("paired_haplotype_filtering", families)
+        self.assertIn("wf-human-variation.bounded_somatic_paired_snv_haplotype_filter.v1", helper)
+        self.assertIn("unsupported somatic haplotype filter option(s)", helper)
+        self.assertIn("haplotype_filtering", module)
+        self.assertIn("--tumor_bam_fn", module)
+        self.assertIn("--pileup_vcf_fn", module)
+        self.assertIn("--full_alignment_vcf_fn", module)
+        self.assertIn("somatic_haplotype_filter_state.v1", module)
+        self.assertIn('"state": state', module)
+        self.assertIn('"skipped_disabled"', module)
+        self.assertIn("workflow somatic_paired_snv_haplotype_filter {", main)
+        self.assertNotIn("skip_haplotype_filter", module)
+        self.assertNotIn("publishDir", module)
+
     def test_somatic_paired_snv_embedded_python_blocks_compile(self):
         module_path = "modules/local/bounded_somatic_paired_snv.nf"
         module = read(module_path)
         blocks = re.findall(r"python3 - <<'PY'\n(.*?)\nPY", module, flags=re.S)
 
-        self.assertEqual(8, len(blocks))
+        self.assertEqual(9, len(blocks))
         for index, block in enumerate(blocks, start=1):
             with self.subTest(block=index):
                 compile(block, f"{module_path}:python-block-{index}", "exec")
@@ -2284,6 +2339,7 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertIn("``-entry somatic_tumour_only_snv``", docs)
         self.assertIn("``-entry somatic_paired_snv_full_alignment``", docs)
         self.assertIn("``-entry somatic_paired_snv_merge``", docs)
+        self.assertIn("``-entry somatic_paired_snv_haplotype_filter``", docs)
         self.assertIn("``-entry somatic_qc``", docs)
         self.assertIn("``-entry somatic_tumour_only_sv``", docs)
         self.assertIn("``-entry somatic_annotation``", docs)
@@ -2308,6 +2364,7 @@ class BoundedEntryContractTest(unittest.TestCase):
         self.assertIn("Task 22", docs)
         self.assertIn("Task 29", docs)
         self.assertIn("Task 30", docs)
+        self.assertIn("Task 33", docs)
         self.assertIn("Phase 4 task 11", docs)
         self.assertIn("Phase 4 task 15", docs)
         self.assertIn("Phase 4 task 16", docs)

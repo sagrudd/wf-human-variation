@@ -1937,6 +1937,36 @@ def _clairsOptions(def raw) {
     ]
 }
 
+def _somaticHaplotypeFilterOptions(def raw) {
+    def options = raw instanceof Map ? raw : [:]
+    def allowed = [
+        "enabled",
+        "debug",
+        "is_indel",
+        "show_ref",
+        "threads",
+    ] as Set
+    def unexpected = options.keySet().collect { it.toString() }.findAll { !allowed.contains(it) }.sort()
+    if (unexpected) {
+        throw new IllegalArgumentException("unsupported somatic haplotype filter option(s): ${unexpected.join(', ')}")
+    }
+    def positiveInt = { name, defaultValue ->
+        def value = options.containsKey(name) ? options[name] : defaultValue
+        def number = value as Integer
+        if (number < 1) {
+            throw new IllegalArgumentException("somatic haplotype filter option '${name}' must be >= 1")
+        }
+        return number
+    }
+    return [
+        enabled: options.containsKey("enabled") ? options.enabled as Boolean : true,
+        debug: options.containsKey("debug") ? options.debug as Boolean : false,
+        is_indel: options.containsKey("is_indel") ? options.is_indel as Boolean : false,
+        show_ref: options.containsKey("show_ref") ? options.show_ref as Boolean : false,
+        threads: positiveInt("threads", 4),
+    ]
+}
+
 def boundedSomaticPairedSnvCandidateEntryParams(params) {
     def output_paths = _requireOutputPaths(
         _boundedOutputPaths(params.output_paths),
@@ -2184,6 +2214,75 @@ def boundedSomaticPairedSnvMergeEntryParams(params) {
         clairs_options_digest: _requiredBoundedParam(params, "clairs_options_digest"),
         container_digest: _requiredBoundedParam(params, "container_digest"),
         clairs_options: _clairsOptions(params.clairs_options),
+        output_paths: output_paths,
+    ]
+}
+
+def boundedSomaticPairedSnvHaplotypeFilterEntryParams(params) {
+    def output_paths = _requireOutputPaths(
+        _boundedOutputPaths(params.output_paths),
+        [
+            "somatic_haplotype_filtered_vcf",
+            "somatic_haplotype_filtered_vcf_index",
+            "somatic_haplotype_filter_manifest",
+            "somatic_haplotype_filter_command_json",
+            "somatic_haplotype_filter_state",
+            "somatic_haplotype_filter_logs",
+            "somatic_provenance",
+            "qc_stats",
+        ] as Set
+    )
+    return [
+        entry_schema: "wf-human-variation.bounded_somatic_paired_snv_haplotype_filter.v1",
+        entry_name: "somatic_paired_snv_haplotype_filter",
+        task_family: _choice(
+            "task_family",
+            _requiredBoundedParam(params, "task_family"),
+            ["somatic_paired_snv"] as Set
+        ),
+        task_key: _requiredBoundedParam(params, "task_key"),
+        task_dir: _requiredBoundedParam(params, "task_dir"),
+        task_cache_dir: _requiredBoundedParam(params, "task_cache_dir"),
+        completion_marker_path: _requiredBoundedParam(params, "completion_marker_path"),
+        analysis_intent_id: _requiredBoundedParam(params, "analysis_intent_id"),
+        pair_id: _requiredBoundedParam(params, "pair_id"),
+        contig: _requiredBoundedParam(params, "contig"),
+        variant_type: _choice("variant_type", _optionalBoundedParam(params, "variant_type", "snv"), ["snv", "indel"] as Set),
+        tumour_sample_id: _requiredBoundedParam(params, "tumour_sample_id"),
+        normal_or_control_sample_id: _requiredBoundedParam(params, "normal_or_control_sample_id"),
+        paired_role: _choice("paired_role", _optionalBoundedParam(params, "paired_role", "normal"), ["normal", "control"] as Set),
+        reference_id: _requiredBoundedParam(params, "reference_id"),
+        role_snapshot_digest: _requiredBoundedParam(params, "role_snapshot_digest"),
+        relationship_snapshot_digest: _requiredBoundedParam(params, "relationship_snapshot_digest"),
+        somatic_snv_vcf: _requiredBoundedParam(params, "somatic_snv_vcf"),
+        somatic_snv_vcf_index: _requiredBoundedParam(params, "somatic_snv_vcf_index"),
+        somatic_snv_vcf_digest: _requiredBoundedParam(params, "somatic_snv_vcf_digest"),
+        somatic_snv_vcf_index_digest: _requiredBoundedParam(params, "somatic_snv_vcf_index_digest"),
+        somatic_pileup_vcf: _requiredBoundedParam(params, "somatic_pileup_vcf"),
+        somatic_pileup_vcf_digest: _requiredBoundedParam(params, "somatic_pileup_vcf_digest"),
+        somatic_full_alignment_vcf: _requiredBoundedParam(params, "somatic_full_alignment_vcf"),
+        somatic_full_alignment_vcf_digest: _requiredBoundedParam(params, "somatic_full_alignment_vcf_digest"),
+        tumour_haplotagged_xam: _requiredBoundedParam(params, "tumour_haplotagged_xam"),
+        tumour_haplotagged_xam_index: _requiredBoundedParam(params, "tumour_haplotagged_xam_index"),
+        tumour_haplotagged_xam_digest: _requiredBoundedParam(params, "tumour_haplotagged_xam_digest"),
+        tumour_haplotagged_xam_index_digest: _requiredBoundedParam(params, "tumour_haplotagged_xam_index_digest"),
+        normal_or_control_haplotagged_xam: _optionalBoundedParam(params, "normal_or_control_haplotagged_xam", ""),
+        normal_or_control_haplotagged_xam_index: _optionalBoundedParam(params, "normal_or_control_haplotagged_xam_index", ""),
+        normal_or_control_haplotagged_xam_digest: _optionalBoundedParam(params, "normal_or_control_haplotagged_xam_digest", ""),
+        normal_or_control_haplotagged_xam_index_digest: _optionalBoundedParam(params, "normal_or_control_haplotagged_xam_index_digest", ""),
+        germline_vcf: _optionalBoundedParam(params, "germline_vcf", ""),
+        germline_vcf_index: _optionalBoundedParam(params, "germline_vcf_index", ""),
+        germline_vcf_digest: _optionalBoundedParam(params, "germline_vcf_digest", ""),
+        reference_fasta: _requiredBoundedParam(params, "reference_fasta"),
+        reference_index: _requiredBoundedParam(params, "reference_index"),
+        reference_digest: _requiredBoundedParam(params, "reference_digest"),
+        clairs_config_digest: _requiredBoundedParam(params, "clairs_config_digest"),
+        clairs_options_digest: _requiredBoundedParam(params, "clairs_options_digest"),
+        haplotype_filter_config_digest: _requiredBoundedParam(params, "haplotype_filter_config_digest"),
+        haplotype_filter_options_digest: _requiredBoundedParam(params, "haplotype_filter_options_digest"),
+        container_digest: _requiredBoundedParam(params, "container_digest"),
+        clairs_options: _clairsOptions(params.clairs_options),
+        haplotype_filter_options: _somaticHaplotypeFilterOptions(params.haplotype_filter_options),
         output_paths: output_paths,
     ]
 }

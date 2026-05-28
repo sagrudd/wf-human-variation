@@ -262,6 +262,18 @@ and emits ``somatic_snv_vcf``, ``somatic_snv_vcf_index``,
 ``somatic_provenance``, and ``qc_stats``. A zero-variant VCF remains a
 manifested output state rather than being relabelled as an execution failure.
 
+Task 33 adds ``-entry somatic_paired_snv_haplotype_filter`` as the bounded
+post-merge ClairS haplotype-filter unit. It consumes the unfiltered paired VCF,
+the pileup and full-alignment VCFs selected by the controller, the tumour
+haplotagged alignment, reference assets, and structured
+``haplotype_filter_options`` with a canonical digest. When disabled it copies
+the unfiltered VCF/index and records ``skipped_disabled``. When enabled it runs
+ClairS ``haplotype_filtering`` followed by ``merge_vcf`` and emits
+``somatic_haplotype_filtered_vcf``, index, command JSON, manifest, state,
+provenance, QC, log, and completion-marker records. Failures are represented as
+``somatic_haplotype_filter_state.state == "failed"`` rather than being hidden
+inside a global ``skip_haplotype_filter`` parameter.
+
 Phase 4 task 25 projects ``paired_coverage_state`` as ``pair_ready``,
 ``tumour_failed``, ``normal_failed``, ``both_failed``, or
 ``shared_region_empty``. Those states block only the affected pair and do not

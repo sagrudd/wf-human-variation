@@ -114,7 +114,11 @@ unit it was given.
        controller-selected phased or unphased alignments. The final
        ``somatic_paired_snv_merge`` entry sorts pileup/full-alignment fragments
        and runs ClairS ``merge_vcf`` to produce the deterministic compressed
-       VCF/index pair.
+       VCF/index pair. ``somatic_paired_snv_haplotype_filter`` is the separate
+       post-merge haplotype-filter boundary: it consumes the unfiltered VCF,
+       pileup/full-alignment VCFs, tumour haplotagged alignment, reference, and
+       structured filter options, then records ``completed``,
+       ``skipped_disabled``, or ``failed`` state explicitly.
    * - ``somatic_germline_helper``
      - analysis intent, helper role, reference
      - Bounded Clair3 helper execution for tumour, normal, or control role

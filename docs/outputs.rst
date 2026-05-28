@@ -94,6 +94,14 @@ Somatic outputs:
 * ``somatic_haplotagging_manifest``, ``somatic_haplotagging_command_json``,
   ``somatic_haplotagging_state``, ``somatic_provenance``, and ``qc_stats`` for
   haplotagging policy audit and haplotype-filter prerequisites.
+* ``somatic_haplotype_filtered_vcf`` and
+  ``somatic_haplotype_filtered_vcf_index`` from bounded paired ClairS
+  haplotype filtering;
+* ``somatic_haplotype_filter_manifest``,
+  ``somatic_haplotype_filter_command_json``,
+  ``somatic_haplotype_filter_state``, ``somatic_haplotype_filter_logs``,
+  ``somatic_provenance``, and ``qc_stats`` for enabled, skipped, or failed
+  haplotype-filter state.
 * ``somatic_bedmethyl``, ``somatic_bedmethyl_index``, ``somatic_bigwig``,
   ``somatic_mod_summary``, and ``somatic_dss_input_tsv`` from bounded
   role-specific ``somatic_methylation_aggregation`` execution;

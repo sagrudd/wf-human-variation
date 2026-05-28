@@ -86,6 +86,7 @@ include {
     boundedSomaticPairedSnvPileupEntryParams;
     boundedSomaticPairedSnvFullAlignmentEntryParams;
     boundedSomaticPairedSnvMergeEntryParams;
+    boundedSomaticPairedSnvHaplotypeFilterEntryParams;
     boundedSomaticTumourOnlySvEntryParams;
     boundedSomaticAnnotationEntryParams;
     boundedSomaticMethylationAggregationEntryParams;
@@ -157,6 +158,7 @@ include {
     runBoundedSomaticPairedSnvPileupTask;
     runBoundedSomaticPairedSnvFullAlignmentTask;
     runBoundedSomaticPairedSnvMergeTask;
+    runBoundedSomaticPairedSnvHaplotypeFilterTask;
 } from './modules/local/bounded_somatic_paired_snv'
 
 include {
@@ -676,6 +678,34 @@ workflow somatic_paired_snv_merge {
         pileup_prediction_fragments,
         full_alignment_prediction_fragments,
         contigs_file,
+        reference,
+        reference_index
+    )
+}
+
+workflow somatic_paired_snv_haplotype_filter {
+    entry_contract = boundedSomaticPairedSnvHaplotypeFilterEntryParams(params)
+    somatic_snv_vcf = Channel.fromPath(entry_contract.somatic_snv_vcf, checkIfExists: true)
+    somatic_snv_vcf_index = Channel.fromPath(entry_contract.somatic_snv_vcf_index, checkIfExists: true)
+    somatic_pileup_vcf = Channel.fromPath(entry_contract.somatic_pileup_vcf, checkIfExists: true)
+    somatic_full_alignment_vcf = Channel.fromPath(entry_contract.somatic_full_alignment_vcf, checkIfExists: true)
+    tumour_haplotagged_xam = Channel.fromPath(entry_contract.tumour_haplotagged_xam, checkIfExists: true)
+    tumour_haplotagged_xam_index = Channel.fromPath(entry_contract.tumour_haplotagged_xam_index, checkIfExists: true)
+    germline_vcf = entry_contract.germline_vcf ? Channel.fromPath(entry_contract.germline_vcf, checkIfExists: true) : optionalBoundaryChannel()
+    germline_vcf_index = entry_contract.germline_vcf_index ? Channel.fromPath(entry_contract.germline_vcf_index, checkIfExists: true) : optionalBoundaryChannel()
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
+    runBoundedSomaticPairedSnvHaplotypeFilterTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        somatic_snv_vcf,
+        somatic_snv_vcf_index,
+        somatic_pileup_vcf,
+        somatic_full_alignment_vcf,
+        tumour_haplotagged_xam,
+        tumour_haplotagged_xam_index,
+        germline_vcf,
+        germline_vcf_index,
         reference,
         reference_index
     )

@@ -153,7 +153,18 @@ manifested pileup and full-alignment fragments plus a contig-order file, sorts
 each fragment family with ClairS ``sort_vcf``, merges them with ClairS
 ``merge_vcf``, and emits a compressed/indexed paired somatic VCF with command,
 manifest, provenance, QC, and completion-marker records. Haplotype filtering is
-still a separate later capability and must not be hidden inside the merge.
+now a separate bounded capability and must not be hidden inside the merge.
+
+Phase 4 task 33 adds ``somatic_paired_snv_haplotype_filter``. The entry
+consumes controller-declared pileup/full-alignment VCFs, the unfiltered final
+paired VCF, tumour haplotagged alignment, reference assets, and structured
+``haplotype_filter_options``. It emits a filtered VCF/index plus command,
+manifest, state, provenance, QC, log, and completion-marker records. The state
+is explicit: ``completed`` when ClairS filtering and final merge succeed,
+``skipped_disabled`` when policy disables filtering, and ``failed`` when the
+filter command or final compression/indexing fails. The primary filtered
+outputs are ``somatic_haplotype_filtered_vcf`` and
+``somatic_haplotype_filtered_vcf_index``.
 
 ``shared_region_state`` is the only supported representation of paired shared
 callable regions. Phase 4 task 24 adds ``-entry somatic_qc`` as the bounded
