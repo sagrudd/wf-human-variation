@@ -52,6 +52,10 @@ this workflow:
   state rather than as a marker filename;
 * structured allowlisted tool options for Sniffles, modkit, and Spectre instead
   of free-form shell parameter pass-throughs.
+* family analysis intent state, including ``family_id``,
+  ``analysis_intent_id``, role snapshots, relationship snapshots, and
+  manifest-visible blocked/planned/ready states for late-arriving family
+  members.
 
 Current Workflow Boundary
 -------------------------

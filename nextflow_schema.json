@@ -653,6 +653,71 @@
                     },
                     "help_text": "Structured replacement for the removed free-form --modkit_args shell pass-through. Only the documented keys are accepted."
                 },
+                "clairs_options": {
+                    "title": "ClairS structured options",
+                    "type": "object",
+                    "description": "Allowlisted options for bounded paired ClairS somatic SNV candidate extraction, pileup prediction, full-alignment prediction, and final VCF merge.",
+                    "default": {},
+                    "additionalProperties": false,
+                    "properties": {
+                        "threads": {"type": "integer", "minimum": 0},
+                        "chunk_num": {"type": "integer", "minimum": 0},
+                        "chunk_size": {"type": "integer", "minimum": 0},
+                        "ctg_name": {"type": "string"},
+                        "enable_phasing": {"type": "boolean"},
+                        "include_all_ctgs": {"type": "boolean"},
+                        "indel_min_af": {"type": "number", "minimum": 0},
+                        "min_bq": {"type": "integer", "minimum": 0},
+                        "min_af": {"type": "number", "minimum": 0},
+                        "min_coverage": {"type": "integer", "minimum": 0},
+                        "platform": {"type": "string", "enum": ["ont"]},
+                        "qual": {"type": "integer", "minimum": 0},
+                        "show_germline": {"type": "boolean"},
+                        "show_ref": {"type": "boolean"}
+                    },
+                    "help_text": "Structured replacement for inherited ClairS parameter pass-through. The controller must also provide clairs_options_digest for bounded execution."
+                },
+                "clairs_to_options": {
+                    "title": "ClairS-TO structured options",
+                    "type": "object",
+                    "description": "Allowlisted options for bounded ClairS-TO tumour-only somatic SNV calling.",
+                    "default": {},
+                    "additionalProperties": false,
+                    "properties": {
+                        "threads": {"type": "integer", "minimum": 0},
+                        "chunk_num": {"type": "integer", "minimum": 0},
+                        "chunk_size": {"type": "integer", "minimum": 0},
+                        "ctg_name": {"type": "string"},
+                        "include_all_ctgs": {"type": "boolean"},
+                        "include_germline": {"type": "boolean"},
+                        "indel_min_af": {"type": "number", "minimum": 0},
+                        "min_bq": {"type": "integer", "minimum": 0},
+                        "min_af": {"type": "number", "minimum": 0},
+                        "min_coverage": {"type": "integer", "minimum": 0},
+                        "platform": {"type": "string", "enum": ["ont"]},
+                        "qual": {"type": "integer", "minimum": 0},
+                        "show_ref": {"type": "boolean"},
+                        "debug": {"type": "boolean"}
+                    },
+                    "help_text": "Structured replacement for inherited ClairS-TO parameter pass-through. The controller must also provide clairs_to_options_digest for bounded execution."
+                },
+                "severus_options": {
+                    "title": "Severus structured options",
+                    "type": "object",
+                    "description": "Allowlisted options for bounded Severus somatic SV calling.",
+                    "default": {},
+                    "additionalProperties": false,
+                    "properties": {
+                        "threads": {"type": "integer", "minimum": 0},
+                        "min_sv_length": {"type": "integer", "minimum": 0},
+                        "min_support": {"type": "integer", "minimum": 0},
+                        "vaf_threshold": {"type": "number", "minimum": 0},
+                        "single_bp": {"type": "boolean"},
+                        "resolve_overlaps": {"type": "boolean"},
+                        "between_junction_ins": {"type": "boolean"}
+                    },
+                    "help_text": "Structured replacement for the removed free-form --severus_args shell pass-through. The controller must also provide severus_options_digest for bounded execution."
+                },
                 "sniffles_options": {
                     "title": "Sniffles structured options",
                     "type": "object",

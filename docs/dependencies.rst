@@ -28,6 +28,47 @@ These dependencies support validation or machine-readable artefacts. They must
 not be treated as report dependencies merely because the old report generators
 also used tabular metrics.
 
+Somatic ClairS-TO Runtime
+-------------------------
+
+The bounded ``somatic_tumour_only_snv`` entry requires an owned ClairS-TO
+runtime image, not the inherited ONT ``ontresearch/clairs-to`` source image.
+The runtime must expose ``run_clairs_to`` on ``PATH`` and record version probes
+for ClairS-TO, Python, PyPy, GNU parallel, and the HTS tools used to compress
+and index final VCFs.
+
+The controller must provide:
+
+* ``clairs_to_model`` as the versioned model directory staged into the task;
+* ``clairs_to_model_name`` when the model directory basename is not the
+  ClairS-TO ``--platform`` value;
+* ``clairs_to_database_bundle`` as the explicit replacement for inherited
+  container-local ``CLAIR_DBS_PATH`` assets;
+* SHA-256 digests for the model, model table, database bundle, configuration,
+  reference, aggregate XAM/index, and runtime container.
+
+Do not claim ARM64 support for this entry until the owned image has
+``linux/arm64`` build evidence, immutable digest launches, and method-level
+concordance evidence for the selected model/database bundle.
+
+Somatic Severus Runtime
+-----------------------
+
+Future bounded ``somatic_tumour_only_sv`` and ``somatic_paired_sv`` entries
+require an owned Severus runtime image, not the inherited ONT
+``ontresearch/wf-somatic-sv`` source image. The runtime must expose
+``severus`` on ``PATH`` and record version probes for Severus, Python, native
+Python dependencies such as ``pysam`` and ``numpy``, and the HTS tools used to
+compress, sort, and index final VCFs.
+
+The controller must provide explicit reference-compatible state for optional
+PON, TRF/VNTR BED, and segmental-duplication BED assets. Ready asset states
+must include asset kind, path, SHA-256 checksum, genome build, and source
+evidence. Missing optional assets must be recorded as
+``optional_not_provided``. Hidden inherited container defaults under
+``WFSV_PON_PATH`` or ``WFSV_TRBED_PATH``, and hardcoded ``hg38.segdups`` /
+``SEG_DUP`` annotation fallbacks, are not release evidence.
+
 Container References
 --------------------
 

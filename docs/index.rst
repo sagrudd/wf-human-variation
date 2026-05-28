@@ -35,6 +35,7 @@ Contents
    ingress
    workflow-control
    bounded-task-families
+   family-analysis
    controller-execution
    idempotency
    keyed-joins
@@ -45,6 +46,9 @@ Contents
    outputs
    testing
    release-acceptance
+   phase3-acceptance
+   somatic-import-baseline
+   phase4-acceptance
    maintenance
    troubleshooting
    documentation

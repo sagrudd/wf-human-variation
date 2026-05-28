@@ -16,6 +16,18 @@ def boundedTaskFamilies() {
         "cnv",
         "str",
         "reporting",
+        "family_germline_snp",
+        "family_joint_genotyping",
+        "family_pedigree_phasing",
+        "family_haplotagging",
+        "family_sv_calling",
+        "family_sv_merging",
+        "family_mendelian_assessment",
+        "somatic_qc",
+        "somatic_tumour_only_snv",
+        "somatic_tumour_only_sv",
+        "somatic_methylation_aggregation",
+        "somatic_annotation",
     ]
 }
 
@@ -29,6 +41,24 @@ def taskFamilyOwners() {
         "cnv": ["spectre", "qdnaseq"],
         "str": ["straglr", "sex_prerequisite"],
         "reporting": ["qc_metrics", "manifest_projection", "partner_export", "publication"],
+        "family_germline_snp": [
+            "clair3_nova_candidate_selection",
+            "clair3_nova_denovo_calling",
+            "clair3_nova_merge_sort",
+            "family_small_variant_inputs",
+        ],
+        "family_joint_genotyping": ["glnexus", "joint_small_variant_genotyping"],
+        "family_pedigree_phasing": ["whatshap_phase", "pedigree_consistency_filter"],
+        "family_haplotagging": ["whatshap_haplotag", "family_haplotagged_alignment_outputs"],
+        "family_sv_calling": ["sniffles_per_member_snf", "family_sv_inputs"],
+        "family_sv_merging": ["sniffles_joint_sv_merge"],
+        "family_mendelian_assessment": ["rtg_mendelian", "family_inheritance_metrics"],
+        "somatic_qc": ["somatic_role_coverage_qc", "somatic_shared_region_projection"],
+        "somatic_tumour_only_snv": ["clairs_to", "tumour_only_small_variant_calling", "non_somatic_database_filtering"],
+        "somatic_paired_snv": ["clairs", "paired_candidate_extraction", "paired_pileup_tensor_prediction", "paired_full_alignment_tensor_prediction", "paired_final_vcf_merge"],
+        "somatic_tumour_only_sv": ["severus_tumour_only", "somatic_sv_asset_validation"],
+        "somatic_methylation_aggregation": ["modkit_role_aggregation", "bedmethyl_split", "dss_input_projection"],
+        "somatic_annotation": ["snpeff", "snpsift", "somatic_annotation_projection"],
     ]
 }
 

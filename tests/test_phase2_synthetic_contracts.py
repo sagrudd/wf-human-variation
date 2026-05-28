@@ -24,6 +24,12 @@ class Phase2SyntheticFixtureTest(unittest.TestCase):
         vcf = FIXTURES / "empty.vcf"
         low_summary = FIXTURES / "mosdepth.low.summary.txt"
         pass_summary = FIXTURES / "mosdepth.pass.summary.txt"
+        ped = FIXTURES / "family.ped"
+        family_gvcfs = (
+            FIXTURES / "smp_child.g.vcf",
+            FIXTURES / "smp_father.g.vcf",
+            FIXTURES / "smp_mother.g.vcf",
+        )
 
         self.assertEqual(reference.read_text().splitlines(), [">chrSynthetic", "ACGTACGTACGTACGTACGTACGTACGTACGT"])
         self.assertEqual(
@@ -33,9 +39,22 @@ class Phase2SyntheticFixtureTest(unittest.TestCase):
         vcf_rows = [line.split("\t") for line in vcf.read_text().splitlines() if not line.startswith("##")]
         self.assertEqual(vcf_rows[0][:5], ["#CHROM", "POS", "ID", "REF", "ALT"])
         self.assertEqual(vcf_rows[0][-1], "smp_fixture")
+        self.assertEqual(
+            [line.split("\t") for line in ped.read_text().splitlines()],
+            [
+                ["FAM001", "smp_child", "smp_father", "smp_mother", "0", "2"],
+                ["FAM001", "smp_father", "0", "0", "1", "1"],
+                ["FAM001", "smp_mother", "0", "0", "2", "1"],
+            ],
+        )
+        for gvcf in family_gvcfs:
+            rows = [line.split("\t") for line in gvcf.read_text().splitlines() if not line.startswith("##")]
+            self.assertEqual(rows[0][:5], ["#CHROM", "POS", "ID", "REF", "ALT"])
+            self.assertEqual(rows[0][-1], gvcf.name.removesuffix(".g.vcf"))
+            self.assertEqual(rows[1][:5], ["chrSynthetic", "5", ".", "A", "C"])
         self.assertEqual(self._coverage_state(low_summary, 20), "rejected_low_coverage")
         self.assertEqual(self._coverage_state(pass_summary, 20), "coverage_passed")
-        for path in (reference, bed, vcf, low_summary, pass_summary):
+        for path in (reference, bed, vcf, low_summary, pass_summary, ped, *family_gvcfs):
             self.assertLess(path.stat().st_size, 1024)
 
     def test_sample_sheet_fixture_order_does_not_change_sample_identity(self):

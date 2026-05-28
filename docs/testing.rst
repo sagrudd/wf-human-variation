@@ -146,6 +146,166 @@ executes only bounded SNP calling for one sample/reference/mode and records
 deferred phasing, haplotagging, SV refinement, and annotation as explicit
 manifest state.
 
+The Phase 4 task 11 bounded ClairS-TO tumour-only SNV entry can be dry-run
+without genomic data:
+
+.. code-block:: bash
+
+   gnostikon-workflow-control nextflow-task \
+     --workflow . \
+     --entry somatic_tumour_only_snv \
+     --outdir /tmp/humvar-bounded \
+     --task-family somatic_tumour_only_snv \
+     --key-field analysis_intent_id=som_001 \
+     --key-field sample_id=smp_tumour \
+     --key-field reference_id=GRCh38 \
+     --key-field role_snapshot_digest=sha256:roles \
+     --key-field aggregate_xam_digest=sha256:aggregate \
+     --key-field aggregate_xam_index_digest=sha256:aggregate-index \
+     --key-field clairs_to_model_digest=sha256:model \
+     --key-field clairs_to_model_table_digest=sha256:model-table \
+     --key-field clairs_to_database_bundle_digest=sha256:database \
+     --key-field clairs_to_config_digest=sha256:config \
+     --key-field container_digest=sha256:container \
+     --params-json somatic-tumour-only-snv.params.json \
+     --output somatic_snv_vcf=variants/somatic/smp_tumour.wf-somatic-snv.vcf.gz \
+     --output somatic_snv_vcf_index=variants/somatic/smp_tumour.wf-somatic-snv.vcf.gz.tbi \
+     --output somatic_tumour_only_snv_manifest=metadata/somatic-tumour-only-snv-manifest.json \
+     --output somatic_tumour_only_snv_command_json=metadata/somatic-tumour-only-snv-command.json \
+     --output somatic_tumour_only_snv_logs=logs/somatic-tumour-only-snv.log \
+     --output somatic_provenance=metadata/somatic-provenance.json \
+     --output qc_stats=qc/somatic-tumour-only-snv-qc.json \
+     --dry-run
+
+Where Nextflow and the owned ClairS-TO runtime are available, run the generated
+params with
+``nextflow run . -entry somatic_tumour_only_snv -params-file <params-file>``.
+This executes only the bounded tumour-only caller for one tumour
+role/reference/analysis intent and records optional BED, hybrid candidate VCF,
+and genotyping VCF state in manifest and provenance.
+
+The Phase 4 task 13 bounded Severus tumour-only SV entry can be dry-run without
+genomic data:
+
+.. code-block:: bash
+
+   gnostikon-workflow-control nextflow-task \
+     --workflow . \
+     --entry somatic_tumour_only_sv \
+     --outdir /tmp/humvar-bounded \
+     --task-family somatic_tumour_only_sv \
+     --key-field analysis_intent_id=som_001 \
+     --key-field sample_id=smp_tumour \
+     --key-field reference_id=GRCh38 \
+     --key-field role_snapshot_digest=sha256:roles \
+     --key-field aggregate_xam_digest=sha256:aggregate \
+     --key-field aggregate_xam_index_digest=sha256:aggregate-index \
+     --key-field severus_config_digest=sha256:config \
+     --key-field container_digest=sha256:container \
+     --params-json somatic-tumour-only-sv.params.json \
+     --output somatic_sv_vcf=variants/somatic/smp_tumour.wf-somatic-sv.vcf.gz \
+     --output somatic_sv_vcf_index=variants/somatic/smp_tumour.wf-somatic-sv.vcf.gz.tbi \
+     --output somatic_sv_raw_directory=variants/somatic/severus-output \
+     --output somatic_tumour_only_sv_manifest=metadata/somatic-tumour-only-sv-manifest.json \
+     --output somatic_tumour_only_sv_command_json=metadata/somatic-tumour-only-sv-command.json \
+     --output somatic_provenance=metadata/somatic-provenance.json \
+     --output qc_stats=qc/somatic-tumour-only-sv-qc.json \
+     --dry-run
+
+Where Nextflow and the owned Severus runtime are available, run the generated
+params with
+``nextflow run . -entry somatic_tumour_only_sv -params-file <params-file>``.
+This executes only bounded tumour-only SV calling for one tumour
+role/reference/analysis intent and records optional PON and TRF/VNTR BED state
+in manifest and provenance.
+
+Poikilognostikon Phase 4 task 19 adds local tumour-only synthetic contract
+tests around these bounded entries. The tests do not download large datasets:
+they build a tiny SQLite event store and assert that
+``somatic_tumour_only_snv`` and ``somatic_tumour_only_sv`` can be scheduled
+from ready manifest state, duplicate aggregate artefacts do not create duplicate
+scheduled tasks, completion markers are reused on restart, missing PON remains
+the explicit ``optional_not_provided`` fallback, and
+``tumour_rejected_low_coverage`` blocks the tumour-only callers honestly. These
+tests live in Poikilognostikon because the controller owns scheduling; this
+workflow must preserve the bounded entry contracts and deterministic output
+names consumed by those tests.
+
+The Phase 4 task 15 bounded somatic annotation entry can be dry-run without
+genomic data:
+
+.. code-block:: bash
+
+   gnostikon-workflow-control nextflow-task \
+     --workflow . \
+     --entry somatic_annotation \
+     --outdir /tmp/humvar-bounded \
+     --task-family somatic_annotation \
+     --key-field analysis_intent_id=som_001 \
+     --key-field source_output_artefact_id=out_somatic_snv \
+     --key-field annotation_mode=snv \
+     --key-field reference_id=GRCh38 \
+     --key-field role_snapshot_digest=sha256:roles \
+     --key-field source_vcf_digest=sha256:source-vcf \
+     --key-field source_vcf_index_digest=sha256:source-index \
+     --key-field snpeff_database_digest=sha256:snpeff-db \
+     --key-field annotation_config_digest=sha256:annotation-config \
+     --key-field container_digest=sha256:container \
+     --params-json somatic-annotation.params.json \
+     --output somatic_annotated_vcf=variants/somatic/annotated.vcf.gz \
+     --output somatic_annotated_vcf_index=variants/somatic/annotated.vcf.gz.tbi \
+     --output somatic_clinvar_vcf=variants/somatic/clinvar.vcf.gz \
+     --output somatic_clinvar_vcf_index=variants/somatic/clinvar.vcf.gz.tbi \
+     --output somatic_annotation_manifest=metadata/somatic-annotation-manifest.json \
+     --output somatic_annotation_command_json=metadata/somatic-annotation-command.json \
+     --output somatic_provenance=metadata/somatic-provenance.json \
+     --output qc_stats=qc/somatic-annotation-qc.json \
+     --dry-run
+
+Where Nextflow and the owned SnpEff/SnpSift runtime are available, run the
+generated params with
+``nextflow run . -entry somatic_annotation -params-file <params-file>``. This
+executes only bounded annotation for one source VCF and records ClinVar/SIFT
+asset state in manifest and provenance.
+
+The Phase 4 task 16 bounded somatic methylation aggregation entry can be
+dry-run without genomic data:
+
+.. code-block:: bash
+
+   gnostikon-workflow-control nextflow-task \
+     --workflow . \
+     --entry somatic_methylation_aggregation \
+     --outdir /tmp/humvar-bounded \
+     --task-family somatic_methylation_aggregation \
+     --key-field analysis_intent_id=som_001 \
+     --key-field sample_id=smp_tumour \
+     --key-field sample_role=tumour \
+     --key-field reference_id=GRCh38 \
+     --key-field role_snapshot_digest=sha256:roles \
+     --key-field role_aggregate_xam_digest=sha256:aggregate \
+     --key-field role_aggregate_xam_index_digest=sha256:aggregate-index \
+     --key-field modkit_config_digest=sha256:modkit-config \
+     --key-field container_digest=sha256:container \
+     --params-json somatic-methylation-aggregation.params.json \
+     --output somatic_bedmethyl=methylation/somatic.tumour.bedmethyl.gz \
+     --output somatic_bedmethyl_index=methylation/somatic.tumour.bedmethyl.gz.tbi \
+     --output somatic_bigwig=methylation/somatic.tumour.5mC.bw \
+     --output somatic_mod_summary=qc/somatic.tumour.mod-summary.tsv \
+     --output somatic_dss_input_tsv=methylation/somatic.tumour.dss.tsv \
+     --output somatic_methylation_aggregation_manifest=metadata/somatic-methylation-aggregation-manifest.json \
+     --output somatic_methylation_aggregation_command_json=metadata/somatic-methylation-aggregation-command.json \
+     --output somatic_methylation_aggregation_log=logs/somatic-methylation-aggregation.log \
+     --output somatic_provenance=metadata/somatic-provenance.json \
+     --output qc_stats=qc/somatic-methylation-aggregation-qc.json \
+     --dry-run
+
+Where Nextflow and the owned modkit runtime are available, run the generated
+params with
+``nextflow run . -entry somatic_methylation_aggregation -params-file <params-file>``.
+This executes only role-specific modified-base aggregation; DSS and paired
+comparison remain separate.
+
 The Task 18 bounded structural-variant entry can be dry-run through the same
 entry point:
 

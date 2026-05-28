@@ -68,6 +68,27 @@ include {
     boundedMappingEntryParams;
     boundedSampleAggregationEntryParams;
     boundedVariantCallingEntryParams;
+    boundedSomaticGermlineHelperEntryParams;
+    boundedSomaticPhasingEntryParams;
+    boundedSomaticHaplotaggingEntryParams;
+    boundedFamilyGermlineSnpEntryParams;
+    boundedFamilyGermlineSnpDenovoEntryParams;
+    boundedFamilyGermlineSnpMergeEntryParams;
+    boundedFamilyJointGenotypingEntryParams;
+    boundedFamilyPedigreePhasingEntryParams;
+    boundedFamilyHaplotaggingEntryParams;
+    boundedFamilySvCallingEntryParams;
+    boundedFamilySvMergingEntryParams;
+    boundedFamilyMendelianAssessmentEntryParams;
+    boundedSomaticQcEntryParams;
+    boundedSomaticTumourOnlySnvEntryParams;
+    boundedSomaticPairedSnvCandidateEntryParams;
+    boundedSomaticPairedSnvPileupEntryParams;
+    boundedSomaticPairedSnvFullAlignmentEntryParams;
+    boundedSomaticPairedSnvMergeEntryParams;
+    boundedSomaticTumourOnlySvEntryParams;
+    boundedSomaticAnnotationEntryParams;
+    boundedSomaticMethylationAggregationEntryParams;
     boundedCnvEntryParams;
     boundedStrEntryParams;
     boundedMethylationEntryParams;
@@ -85,8 +106,70 @@ include {
     runBoundedSmallVariantTask;
 } from './modules/local/bounded_variant_calling'
 include {
+    runBoundedSomaticGermlineHelperTask;
+} from './modules/local/bounded_somatic_germline_helper'
+include {
+    runBoundedSomaticPhasingTask;
+    runBoundedSomaticHaplotaggingTask;
+} from './modules/local/bounded_somatic_phasing'
+include {
     runBoundedStructuralVariantTask;
 } from './modules/local/bounded_structural_variant_calling'
+
+include {
+    runBoundedTrioCandidateSelectionTask;
+} from './modules/local/bounded_trio_candidate_selection'
+include {
+    runBoundedTrioDenovoCallingTask;
+} from './modules/local/bounded_trio_denovo_calling'
+include {
+    runBoundedTrioMergeSortTask;
+} from './modules/local/bounded_trio_merge_sort'
+include {
+    runBoundedFamilyJointGenotypingTask;
+} from './modules/local/bounded_family_joint_genotyping'
+include {
+    runBoundedFamilyPedigreePhasingTask;
+} from './modules/local/bounded_family_pedigree_phasing'
+include {
+    runBoundedFamilyHaplotaggingTask;
+} from './modules/local/bounded_family_haplotagging'
+include {
+    runBoundedFamilySvCallingTask;
+} from './modules/local/bounded_family_sv_calling'
+include {
+    runBoundedFamilySvMergingTask;
+} from './modules/local/bounded_family_sv_merging'
+include {
+    runBoundedFamilyMendelianAssessmentTask;
+} from './modules/local/bounded_family_mendelian_assessment'
+
+include {
+    runBoundedSomaticQcTask;
+} from './modules/local/bounded_somatic_qc'
+
+include {
+    runBoundedSomaticTumourOnlySnvTask;
+} from './modules/local/bounded_somatic_tumour_only_snv'
+
+include {
+    runBoundedSomaticPairedSnvCandidateTask;
+    runBoundedSomaticPairedSnvPileupTask;
+    runBoundedSomaticPairedSnvFullAlignmentTask;
+    runBoundedSomaticPairedSnvMergeTask;
+} from './modules/local/bounded_somatic_paired_snv'
+
+include {
+    runBoundedSomaticTumourOnlySvTask;
+} from './modules/local/bounded_somatic_tumour_only_sv'
+
+include {
+    runBoundedSomaticAnnotationTask;
+} from './modules/local/bounded_somatic_annotation'
+
+include {
+    runBoundedSomaticMethylationAggregationTask;
+} from './modules/local/bounded_somatic_methylation_aggregation'
 
 include {
     runBoundedSpectreCnvTask;
@@ -188,6 +271,486 @@ workflow variant_calling {
             clair3_model
         )
     }
+}
+
+workflow somatic_germline_helper {
+    entry_contract = boundedSomaticGermlineHelperEntryParams(params)
+    helper_aggregate_xam = Channel.fromPath(entry_contract.helper_aggregate_xam, checkIfExists: true)
+    helper_aggregate_xam_index = Channel.fromPath(entry_contract.helper_aggregate_xam_index, checkIfExists: true)
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
+    clair3_model = Channel.fromPath(entry_contract.clair3_model, type: "dir", checkIfExists: true)
+    runBoundedSomaticGermlineHelperTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        helper_aggregate_xam,
+        helper_aggregate_xam_index,
+        reference,
+        reference_index,
+        clair3_model
+    )
+}
+
+workflow somatic_phasing {
+    entry_contract = boundedSomaticPhasingEntryParams(params)
+    input_vcf = Channel.fromPath(entry_contract.input_vcf, checkIfExists: true)
+    input_vcf_index = Channel.fromPath(entry_contract.input_vcf_index, checkIfExists: true)
+    role_aggregate_xam = Channel.fromPath(entry_contract.role_aggregate_xam, checkIfExists: true)
+    role_aggregate_xam_index = Channel.fromPath(entry_contract.role_aggregate_xam_index, checkIfExists: true)
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
+    runBoundedSomaticPhasingTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        input_vcf,
+        input_vcf_index,
+        role_aggregate_xam,
+        role_aggregate_xam_index,
+        reference,
+        reference_index
+    )
+}
+
+workflow somatic_haplotagging {
+    entry_contract = boundedSomaticHaplotaggingEntryParams(params)
+    somatic_phased_vcf = Channel.fromPath(entry_contract.somatic_phased_vcf, checkIfExists: true)
+    somatic_phased_vcf_index = Channel.fromPath(entry_contract.somatic_phased_vcf_index, checkIfExists: true)
+    role_aggregate_xam = Channel.fromPath(entry_contract.role_aggregate_xam, checkIfExists: true)
+    role_aggregate_xam_index = Channel.fromPath(entry_contract.role_aggregate_xam_index, checkIfExists: true)
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
+    runBoundedSomaticHaplotaggingTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        somatic_phased_vcf,
+        somatic_phased_vcf_index,
+        role_aggregate_xam,
+        role_aggregate_xam_index,
+        reference,
+        reference_index
+    )
+}
+
+workflow family_germline_snp {
+    entry_contract = boundedFamilyGermlineSnpEntryParams(params)
+    proband_snp_vcf = Channel.fromPath(entry_contract.proband_snp_vcf, checkIfExists: true)
+    proband_snp_vcf_index = Channel.fromPath(entry_contract.proband_snp_vcf_index, checkIfExists: true)
+    father_snp_vcf = Channel.fromPath(entry_contract.father_snp_vcf, checkIfExists: true)
+    father_snp_vcf_index = Channel.fromPath(entry_contract.father_snp_vcf_index, checkIfExists: true)
+    mother_snp_vcf = Channel.fromPath(entry_contract.mother_snp_vcf, checkIfExists: true)
+    mother_snp_vcf_index = Channel.fromPath(entry_contract.mother_snp_vcf_index, checkIfExists: true)
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
+    clair3_nova_model = Channel.fromPath(entry_contract.clair3_nova_model, type: "dir", checkIfExists: true)
+    runBoundedTrioCandidateSelectionTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        proband_snp_vcf,
+        proband_snp_vcf_index,
+        father_snp_vcf,
+        father_snp_vcf_index,
+        mother_snp_vcf,
+        mother_snp_vcf_index,
+        reference,
+        reference_index,
+        clair3_nova_model
+    )
+}
+
+workflow family_germline_snp_denovo {
+    entry_contract = boundedFamilyGermlineSnpDenovoEntryParams(params)
+    trio_candidate_beds = Channel.fromPath(entry_contract.trio_candidate_beds, type: "dir", checkIfExists: true)
+    proband_bam = Channel.fromPath(entry_contract.proband_bam, checkIfExists: true)
+    proband_bam_index = Channel.fromPath(entry_contract.proband_bam_index, checkIfExists: true)
+    father_bam = Channel.fromPath(entry_contract.father_bam, checkIfExists: true)
+    father_bam_index = Channel.fromPath(entry_contract.father_bam_index, checkIfExists: true)
+    mother_bam = Channel.fromPath(entry_contract.mother_bam, checkIfExists: true)
+    mother_bam_index = Channel.fromPath(entry_contract.mother_bam_index, checkIfExists: true)
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
+    clair3_nova_model = Channel.fromPath(entry_contract.clair3_nova_model, type: "dir", checkIfExists: true)
+    runBoundedTrioDenovoCallingTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        trio_candidate_beds,
+        proband_bam,
+        proband_bam_index,
+        father_bam,
+        father_bam_index,
+        mother_bam,
+        mother_bam_index,
+        reference,
+        reference_index,
+        clair3_nova_model
+    )
+}
+
+workflow family_germline_snp_merge {
+    entry_contract = boundedFamilyGermlineSnpMergeEntryParams(params)
+    trio_denovo_vcf_fragments = Channel.fromPath(entry_contract.trio_denovo_vcf_fragments, type: "dir", checkIfExists: true)
+    trio_candidate_beds = Channel.fromPath(entry_contract.trio_candidate_beds, type: "dir", checkIfExists: true)
+    snp_vcf = Channel.fromPath(entry_contract.snp_vcf, checkIfExists: true)
+    snp_vcf_index = Channel.fromPath(entry_contract.snp_vcf_index, checkIfExists: true)
+    snp_gvcf = Channel.fromPath(entry_contract.snp_gvcf, checkIfExists: true)
+    snp_gvcf_index = Channel.fromPath(entry_contract.snp_gvcf_index, checkIfExists: true)
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
+    runBoundedTrioMergeSortTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        trio_denovo_vcf_fragments,
+        trio_candidate_beds,
+        snp_vcf,
+        snp_vcf_index,
+        snp_gvcf,
+        snp_gvcf_index,
+        reference,
+        reference_index
+    )
+}
+
+workflow family_joint_genotyping {
+    entry_contract = boundedFamilyJointGenotypingEntryParams(params)
+    proband_snp_gvcf = Channel.fromPath(entry_contract.proband_snp_gvcf, checkIfExists: true)
+    proband_snp_gvcf_index = Channel.fromPath(entry_contract.proband_snp_gvcf_index, checkIfExists: true)
+    father_snp_gvcf = Channel.fromPath(entry_contract.father_snp_gvcf, checkIfExists: true)
+    father_snp_gvcf_index = Channel.fromPath(entry_contract.father_snp_gvcf_index, checkIfExists: true)
+    mother_snp_gvcf = Channel.fromPath(entry_contract.mother_snp_gvcf, checkIfExists: true)
+    mother_snp_gvcf_index = Channel.fromPath(entry_contract.mother_snp_gvcf_index, checkIfExists: true)
+    glnexus_config = Channel.fromPath(entry_contract.glnexus_config, checkIfExists: true)
+    pedigree_snapshot = Channel.fromPath(entry_contract.pedigree_snapshot, checkIfExists: true)
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
+    runBoundedFamilyJointGenotypingTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        proband_snp_gvcf,
+        proband_snp_gvcf_index,
+        father_snp_gvcf,
+        father_snp_gvcf_index,
+        mother_snp_gvcf,
+        mother_snp_gvcf_index,
+        glnexus_config,
+        pedigree_snapshot,
+        reference,
+        reference_index
+    )
+}
+
+workflow family_pedigree_phasing {
+    entry_contract = boundedFamilyPedigreePhasingEntryParams(params)
+    family_joint_vcf = Channel.fromPath(entry_contract.family_joint_vcf, checkIfExists: true)
+    family_joint_vcf_index = Channel.fromPath(entry_contract.family_joint_vcf_index, checkIfExists: true)
+    pedigree_snapshot = Channel.fromPath(entry_contract.pedigree_snapshot, checkIfExists: true)
+    proband_bam = Channel.fromPath(entry_contract.proband_bam, checkIfExists: true)
+    proband_bam_index = Channel.fromPath(entry_contract.proband_bam_index, checkIfExists: true)
+    father_bam = Channel.fromPath(entry_contract.father_bam, checkIfExists: true)
+    father_bam_index = Channel.fromPath(entry_contract.father_bam_index, checkIfExists: true)
+    mother_bam = Channel.fromPath(entry_contract.mother_bam, checkIfExists: true)
+    mother_bam_index = Channel.fromPath(entry_contract.mother_bam_index, checkIfExists: true)
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
+    runBoundedFamilyPedigreePhasingTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        family_joint_vcf,
+        family_joint_vcf_index,
+        pedigree_snapshot,
+        proband_bam,
+        proband_bam_index,
+        father_bam,
+        father_bam_index,
+        mother_bam,
+        mother_bam_index,
+        reference,
+        reference_index
+    )
+}
+
+workflow family_haplotagging {
+    entry_contract = boundedFamilyHaplotaggingEntryParams(params)
+    pedigree_filtered_vcf = Channel.fromPath(entry_contract.pedigree_filtered_vcf, checkIfExists: true)
+    pedigree_filtered_vcf_index = Channel.fromPath(entry_contract.pedigree_filtered_vcf_index, checkIfExists: true)
+    proband_xam = Channel.fromPath(entry_contract.proband_xam, checkIfExists: true)
+    proband_xam_index = Channel.fromPath(entry_contract.proband_xam_index, checkIfExists: true)
+    father_xam = Channel.fromPath(entry_contract.father_xam, checkIfExists: true)
+    father_xam_index = Channel.fromPath(entry_contract.father_xam_index, checkIfExists: true)
+    mother_xam = Channel.fromPath(entry_contract.mother_xam, checkIfExists: true)
+    mother_xam_index = Channel.fromPath(entry_contract.mother_xam_index, checkIfExists: true)
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
+    runBoundedFamilyHaplotaggingTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        pedigree_filtered_vcf,
+        pedigree_filtered_vcf_index,
+        proband_xam,
+        proband_xam_index,
+        father_xam,
+        father_xam_index,
+        mother_xam,
+        mother_xam_index,
+        reference,
+        reference_index
+    )
+}
+
+workflow family_sv_calling {
+    entry_contract = boundedFamilySvCallingEntryParams(params)
+    aggregate_xam = Channel.fromPath(entry_contract.aggregate_xam, checkIfExists: true)
+    aggregate_xam_index = Channel.fromPath(entry_contract.aggregate_xam_index, checkIfExists: true)
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
+    mosdepth_summary = Channel.fromPath(entry_contract.mosdepth_summary, checkIfExists: true)
+    target_bed = Channel.fromPath(entry_contract.target_bed, checkIfExists: true)
+    runBoundedFamilySvCallingTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        aggregate_xam,
+        aggregate_xam_index,
+        reference,
+        reference_index,
+        mosdepth_summary,
+        target_bed
+    )
+}
+
+workflow family_sv_merging {
+    entry_contract = boundedFamilySvMergingEntryParams(params)
+    proband_snf = entry_contract.proband_snf ? Channel.fromPath(entry_contract.proband_snf, checkIfExists: true) : optionalBoundaryChannel()
+    father_snf = entry_contract.father_snf ? Channel.fromPath(entry_contract.father_snf, checkIfExists: true) : optionalBoundaryChannel()
+    mother_snf = entry_contract.mother_snf ? Channel.fromPath(entry_contract.mother_snf, checkIfExists: true) : optionalBoundaryChannel()
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
+    target_bed = Channel.fromPath(entry_contract.target_bed, checkIfExists: true)
+    runBoundedFamilySvMergingTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        proband_snf,
+        father_snf,
+        mother_snf,
+        reference,
+        reference_index,
+        target_bed
+    )
+}
+
+workflow family_mendelian_assessment {
+    entry_contract = boundedFamilyMendelianAssessmentEntryParams(params)
+    family_joint_vcf = entry_contract.family_joint_vcf ? Channel.fromPath(entry_contract.family_joint_vcf, checkIfExists: true) : optionalBoundaryChannel()
+    family_joint_vcf_index = entry_contract.family_joint_vcf_index ? Channel.fromPath(entry_contract.family_joint_vcf_index, checkIfExists: true) : optionalBoundaryChannel()
+    family_sv_vcf = entry_contract.family_sv_vcf ? Channel.fromPath(entry_contract.family_sv_vcf, checkIfExists: true) : optionalBoundaryChannel()
+    family_sv_vcf_index = entry_contract.family_sv_vcf_index ? Channel.fromPath(entry_contract.family_sv_vcf_index, checkIfExists: true) : optionalBoundaryChannel()
+    reference_sdf = Channel.fromPath(entry_contract.reference_sdf, type: "dir", checkIfExists: true)
+    pedigree_snapshot = Channel.fromPath(entry_contract.pedigree_snapshot, checkIfExists: true)
+    runBoundedFamilyMendelianAssessmentTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        family_joint_vcf,
+        family_joint_vcf_index,
+        family_sv_vcf,
+        family_sv_vcf_index,
+        reference_sdf,
+        pedigree_snapshot
+    )
+}
+
+workflow somatic_tumour_only_snv {
+    entry_contract = boundedSomaticTumourOnlySnvEntryParams(params)
+    aggregate_xam = Channel.fromPath(entry_contract.aggregate_xam, checkIfExists: true)
+    aggregate_xam_index = Channel.fromPath(entry_contract.aggregate_xam_index, checkIfExists: true)
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
+    clairs_to_model = Channel.fromPath(entry_contract.clairs_to_model, type: "dir", checkIfExists: true)
+    clairs_to_database_bundle = Channel.fromPath(entry_contract.clairs_to_database_bundle, type: "dir", checkIfExists: true)
+    runBoundedSomaticTumourOnlySnvTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        aggregate_xam,
+        aggregate_xam_index,
+        reference,
+        reference_index,
+        clairs_to_model,
+        clairs_to_database_bundle
+    )
+}
+
+workflow somatic_paired_snv_candidate {
+    entry_contract = boundedSomaticPairedSnvCandidateEntryParams(params)
+    tumour_aggregate_xam = Channel.fromPath(entry_contract.tumour_aggregate_xam, checkIfExists: true)
+    tumour_aggregate_xam_index = Channel.fromPath(entry_contract.tumour_aggregate_xam_index, checkIfExists: true)
+    normal_or_control_aggregate_xam = Channel.fromPath(entry_contract.normal_or_control_aggregate_xam, checkIfExists: true)
+    normal_or_control_aggregate_xam_index = Channel.fromPath(entry_contract.normal_or_control_aggregate_xam_index, checkIfExists: true)
+    normal_vcf = Channel.fromPath(entry_contract.normal_vcf, checkIfExists: true)
+    normal_vcf_index = Channel.fromPath(entry_contract.normal_vcf_index, checkIfExists: true)
+    shared_region_bed = Channel.fromPath(entry_contract.shared_region_bed, checkIfExists: true)
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
+    clairs_model = Channel.fromPath(entry_contract.clairs_model, type: "dir", checkIfExists: true)
+    clairs_reference_bundle = Channel.fromPath(entry_contract.clairs_reference_bundle, type: "dir", checkIfExists: true)
+    target_bed = entry_contract.target_bed ? Channel.fromPath(entry_contract.target_bed, checkIfExists: true) : optionalBoundaryChannel()
+    genotyping_vcf = entry_contract.genotyping_vcf ? Channel.fromPath(entry_contract.genotyping_vcf, checkIfExists: true) : optionalBoundaryChannel()
+    genotyping_vcf_index = entry_contract.genotyping_vcf_index ? Channel.fromPath(entry_contract.genotyping_vcf_index, checkIfExists: true) : optionalBoundaryChannel()
+    runBoundedSomaticPairedSnvCandidateTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        tumour_aggregate_xam,
+        tumour_aggregate_xam_index,
+        normal_or_control_aggregate_xam,
+        normal_or_control_aggregate_xam_index,
+        normal_vcf,
+        normal_vcf_index,
+        shared_region_bed,
+        reference,
+        reference_index,
+        clairs_model,
+        clairs_reference_bundle,
+        target_bed,
+        genotyping_vcf,
+        genotyping_vcf_index
+    )
+}
+
+workflow somatic_paired_snv_pileup {
+    entry_contract = boundedSomaticPairedSnvPileupEntryParams(params)
+    tumour_aggregate_xam = Channel.fromPath(entry_contract.tumour_aggregate_xam, checkIfExists: true)
+    tumour_aggregate_xam_index = Channel.fromPath(entry_contract.tumour_aggregate_xam_index, checkIfExists: true)
+    normal_or_control_aggregate_xam = Channel.fromPath(entry_contract.normal_or_control_aggregate_xam, checkIfExists: true)
+    normal_or_control_aggregate_xam_index = Channel.fromPath(entry_contract.normal_or_control_aggregate_xam_index, checkIfExists: true)
+    candidate_bed = Channel.fromPath(entry_contract.candidate_bed, checkIfExists: true)
+    candidate_variants = Channel.fromPath(entry_contract.candidate_variants, checkIfExists: true)
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
+    clairs_model = Channel.fromPath(entry_contract.clairs_model, type: "dir", checkIfExists: true)
+    runBoundedSomaticPairedSnvPileupTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        tumour_aggregate_xam,
+        tumour_aggregate_xam_index,
+        normal_or_control_aggregate_xam,
+        normal_or_control_aggregate_xam_index,
+        candidate_bed,
+        candidate_variants,
+        reference,
+        reference_index,
+        clairs_model
+    )
+}
+
+workflow somatic_paired_snv_full_alignment {
+    entry_contract = boundedSomaticPairedSnvFullAlignmentEntryParams(params)
+    tumour_alignment_xam = Channel.fromPath(entry_contract.tumour_alignment_xam, checkIfExists: true)
+    tumour_alignment_xam_index = Channel.fromPath(entry_contract.tumour_alignment_xam_index, checkIfExists: true)
+    normal_or_control_alignment_xam = Channel.fromPath(entry_contract.normal_or_control_alignment_xam, checkIfExists: true)
+    normal_or_control_alignment_xam_index = Channel.fromPath(entry_contract.normal_or_control_alignment_xam_index, checkIfExists: true)
+    candidate_bed = Channel.fromPath(entry_contract.candidate_bed, checkIfExists: true)
+    candidate_variants = Channel.fromPath(entry_contract.candidate_variants, checkIfExists: true)
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
+    clairs_model = Channel.fromPath(entry_contract.clairs_model, type: "dir", checkIfExists: true)
+    runBoundedSomaticPairedSnvFullAlignmentTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        tumour_alignment_xam,
+        tumour_alignment_xam_index,
+        normal_or_control_alignment_xam,
+        normal_or_control_alignment_xam_index,
+        candidate_bed,
+        candidate_variants,
+        reference,
+        reference_index,
+        clairs_model
+    )
+}
+
+workflow somatic_paired_snv_merge {
+    entry_contract = boundedSomaticPairedSnvMergeEntryParams(params)
+    pileup_prediction_fragments = Channel.fromPath(entry_contract.pileup_prediction_fragments, type: "dir", checkIfExists: true)
+    full_alignment_prediction_fragments = Channel.fromPath(entry_contract.full_alignment_prediction_fragments, type: "dir", checkIfExists: true)
+    contigs_file = Channel.fromPath(entry_contract.contigs_file, checkIfExists: true)
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
+    runBoundedSomaticPairedSnvMergeTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        pileup_prediction_fragments,
+        full_alignment_prediction_fragments,
+        contigs_file,
+        reference,
+        reference_index
+    )
+}
+
+workflow somatic_qc {
+    entry_contract = boundedSomaticQcEntryParams(params)
+    tumour_regions = Channel.fromPath(entry_contract.tumour_mosdepth_regions, checkIfExists: true)
+    normal_or_control_regions = Channel.fromPath(entry_contract.normal_or_control_mosdepth_regions, checkIfExists: true)
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    target_bed = entry_contract.target_bed ? Channel.fromPath(entry_contract.target_bed, checkIfExists: true) : optionalBoundaryChannel()
+    runBoundedSomaticQcTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        tumour_regions,
+        normal_or_control_regions,
+        reference,
+        target_bed
+    )
+}
+
+workflow somatic_tumour_only_sv {
+    entry_contract = boundedSomaticTumourOnlySvEntryParams(params)
+    aggregate_xam = Channel.fromPath(entry_contract.aggregate_xam, checkIfExists: true)
+    aggregate_xam_index = Channel.fromPath(entry_contract.aggregate_xam_index, checkIfExists: true)
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
+    pon_file = entry_contract.pon_file ? Channel.fromPath(entry_contract.pon_file, checkIfExists: true) : optionalBoundaryChannel()
+    trf_bed = entry_contract.trf_bed ? Channel.fromPath(entry_contract.trf_bed, checkIfExists: true) : optionalBoundaryChannel()
+    runBoundedSomaticTumourOnlySvTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        aggregate_xam,
+        aggregate_xam_index,
+        reference,
+        reference_index,
+        pon_file,
+        trf_bed
+    )
+}
+
+workflow somatic_annotation {
+    entry_contract = boundedSomaticAnnotationEntryParams(params)
+    source_vcf = Channel.fromPath(entry_contract.source_vcf, checkIfExists: true)
+    source_vcf_index = Channel.fromPath(entry_contract.source_vcf_index, checkIfExists: true)
+    snpeff_database = Channel.fromPath(entry_contract.snpeff_database, type: "dir", checkIfExists: true)
+    clinvar_vcf = entry_contract.clinvar_vcf ? Channel.fromPath(entry_contract.clinvar_vcf, checkIfExists: true) : optionalBoundaryChannel()
+    clinvar_vcf_index = entry_contract.clinvar_vcf_index ? Channel.fromPath(entry_contract.clinvar_vcf_index, checkIfExists: true) : optionalBoundaryChannel()
+    sift_annotation = entry_contract.sift_annotation ? Channel.fromPath(entry_contract.sift_annotation, checkIfExists: true) : optionalBoundaryChannel()
+    runBoundedSomaticAnnotationTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        source_vcf,
+        source_vcf_index,
+        snpeff_database,
+        clinvar_vcf,
+        clinvar_vcf_index,
+        sift_annotation
+    )
+}
+
+workflow somatic_methylation_aggregation {
+    entry_contract = boundedSomaticMethylationAggregationEntryParams(params)
+    role_aggregate_xam = Channel.fromPath(entry_contract.role_aggregate_xam, checkIfExists: true)
+    role_aggregate_xam_index = Channel.fromPath(entry_contract.role_aggregate_xam_index, checkIfExists: true)
+    reference = Channel.fromPath(entry_contract.reference_fasta, checkIfExists: true)
+    reference_index = Channel.fromPath(entry_contract.reference_index, checkIfExists: true)
+    runBoundedSomaticMethylationAggregationTask(
+        Channel.value(entry_contract),
+        Channel.value(boundedEntryContractJson(entry_contract)),
+        role_aggregate_xam,
+        role_aggregate_xam_index,
+        reference,
+        reference_index
+    )
 }
 
 workflow cnv {

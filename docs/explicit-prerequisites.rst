@@ -34,6 +34,21 @@ The explicit contract is:
 * Reporting/publication declares a ``task_family_subset`` prerequisite requiring
   at least one completed upstream analysis family. Publication over partial
   results is allowed only when that partial state is visible.
+* Family joint genotyping declares role-keyed ``snp_gvcf`` and
+  ``snp_gvcf_index`` prerequisites for the selected family roles.
+* Family SV merging declares role-keyed ``structural_variant_snf``
+  prerequisites for the selected family roles.
+* Family haplotagging declares ``pedigree_filtered_vcf`` plus role-keyed
+  alignment prerequisites.
+* Family Mendelian assessment declares at least one completed family VCF subset:
+  ``family_joint_vcf`` or ``family_sv_vcf``.
+* Somatic QC declares role-scoped ``sample_aggregation`` prerequisites for
+  ``aggregate_xam``, ``aggregate_xam_index``, ``mosdepth_summary``, and
+  ``coverage_state``.
+* Somatic SNV, SV, and methylation aggregation declare role-scoped
+  ``sample_aggregation`` prerequisites for ``aggregate_xam`` and
+  ``aggregate_xam_index``; they must not declare controller-facing
+  ``bam_tumor`` or ``bam_normal`` ingress inputs.
 
 The controller may plan the prerequisite task, block the requesting task until
 the prerequisite output exists, degrade explicitly, skip explicitly, or fail
@@ -68,6 +83,9 @@ prerequisite map for bounded entries:
   prerequisite.
 * ``explicitTaskPrerequisites("reporting")`` returns a partial-publication
   prerequisite over completed upstream family state.
+* Somatic prerequisites are owned by ``gnostikon-workflow-control`` and are
+  projected through Poikilognostikon ``shared_role_artefacts`` until bounded
+  somatic Nextflow entries are added.
 
 Use this helper only to emit or validate visible task-planning state. Do not
 use it to rebuild a global ``run_snp``-style scheduler.

@@ -77,6 +77,12 @@ Known Compatibility Debt
   sample-probability calculation, pileup, and bigWig conversion only; hidden
   SNP/phasing/haplotagging activation, combined metrics publication, and HTML
   reporting must remain outside it.
+* Phase 4 bounded somatic QC owns ``somatic_qc`` shared callable-region
+  projection only. It consumes controller-declared tumour and normal/control
+  mosdepth-region BEDs plus optional target BED state and emits machine-readable
+  shared-region, rejected-summary, manifest, metrics, provenance, and marker
+  outputs. It must not grow caller execution, HTML reporting, or inherited
+  pairwise BED side effects.
 * QDNAseq format compatibility now belongs to explicit upstream conversion or
   bounded-entry rejection rather than a hidden global branch.
 * Placeholder optional files outside the finite transitional list in

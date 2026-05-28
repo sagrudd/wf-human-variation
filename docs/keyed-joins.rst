@@ -84,6 +84,44 @@ The named bounded entries for ``mapping``, ``sample_aggregation``,
 joins for readiness. They consume controller-declared input artefacts and use
 the task key, sample id, and reference id as their scheduling boundary.
 
+Phase 3 Family Barrier Gate
+---------------------------
+
+The phase-3 family bounded entries have no accepted channel-barrier debt. They
+must remain controller-scheduled units with explicit input paths rather than
+Nextflow-side family discovery or grouping:
+
+* ``family_germline_snp``
+* ``family_germline_snp_denovo``
+* ``family_germline_snp_merge``
+* ``family_joint_genotyping``
+* ``family_pedigree_phasing``
+* ``family_haplotagging``
+* ``family_sv_calling``
+* ``family_sv_merging``
+* ``family_mendelian_assessment``
+
+Family-level joins belong in the controller and manifest indexes. The required
+join keys are ``family_id``, ``analysis_intent_id``, ``reference_id``,
+``role_snapshot_digest``, ``relationship_snapshot_digest``, and the
+deterministic ``task_key``. Per-member family tasks additionally require
+``role`` and ``sample_id`` so one family member can run or be reused without
+waiting for unrelated samples.
+
+Somatic joins follow the same bounded pattern with role state rather than
+family relationships. The controller joins ``analysis_intent_id``,
+``reference_id``, ``role_snapshot_digest``, ``role``, and ``sample_id`` to
+existing ``mapping``/``sample_aggregation`` outputs. Somatic tasks consume
+role-keyed ``aggregate_xam``, ``aggregate_xam_index``, ``mosdepth_summary``,
+and ``coverage_state`` rather than collecting tumour/normal BAMs through a new
+Nextflow graph.
+
+These entries must not introduce global ``collect()``, broad ``combine()``,
+``first()``, or ``groupTuple()`` readiness barriers. They must not consume the
+legacy ``OPTIONAL_FILE`` sentinel or inherited absent-file placeholder. They
+must not run old ``wf-trio`` or EPI2ME HTML report commands; Mendelian and QC
+outputs remain machine-readable manifest artefacts, not HTML report products.
+
 Review Checklist
 ----------------
 

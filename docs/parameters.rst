@@ -80,6 +80,12 @@ Inputs below ``--bam_min_coverage`` are represented as
 ``rejected_low_coverage``. The workflow status remains non-zero for the
 rejected sample.
 
+Poikilognostikon maps this sample state into somatic role states before
+scheduling bounded somatic work: ``tumour_rejected_low_coverage``,
+``normal_rejected_low_coverage``, and paired
+``somatic_pair_blocked_low_coverage``. These are controller states rather than
+workflow report products.
+
 HTML Reporting
 --------------
 
@@ -102,7 +108,25 @@ objects instead:
   ``min_support``, and ``minsvlen``;
 * ``--modkit_options``: allowlisted modkit keys such as ``combine_strands``,
   ``cpg``, and ``preset``;
-* ``--spectre_options``: allowlisted Spectre keys such as ``min_cnv_len``.
+* ``--spectre_options``: allowlisted Spectre keys such as ``min_cnv_len``;
+* ``--clairs_options``: allowlisted paired ClairS keys such as ``threads``,
+  ``chunk_num``, ``chunk_size``, ``ctg_name``, ``include_all_ctgs``,
+  ``enable_phasing``, ``min_af``, ``indel_min_af``, ``min_bq``,
+  ``min_coverage``, ``platform``, ``qual``, ``show_ref``, and
+  ``show_germline``;
+* ``--clairs_to_options``: allowlisted ClairS-TO keys such as ``threads``,
+  ``chunk_size``, ``ctg_name``, ``include_all_ctgs``, ``min_af``,
+  ``min_coverage``, ``qual``, ``show_ref``, and ``debug``;
+* ``--severus_options``: allowlisted Severus keys such as ``threads``,
+  ``min_sv_length``, ``min_support``, ``vaf_threshold``, ``single_bp``,
+  ``resolve_overlaps``, and ``between_junction_ins``.
+
+For controller-launched somatic entries, the structured option object also has
+a controller-owned digest. ``clairs_to_options_digest``,
+``clairs_options_digest``, ``severus_options_digest``, and
+``somatic_methylation_options_digest`` are part of the bounded task key,
+manifest, and provenance so option changes cannot reuse stale completion
+markers.
 
 Every option that changes a tool command must be represented in the bounded
 task key and provenance. Adding a new tool option requires updating

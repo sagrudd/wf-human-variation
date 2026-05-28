@@ -1,0 +1,6 @@
+##fileformat=VCFv4.2
+##contig=<ID=chrSynthetic,length=32>
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read depth">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	smp_mother
+chrSynthetic	5	.	A	C	60	PASS	.	GT:DP	0/0:11
