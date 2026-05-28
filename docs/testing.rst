@@ -398,6 +398,15 @@ The workflow must preserve the output names, entry contracts, and manifest
 fields consumed by those tests; it must not replace them with report HTML,
 presentation paths, or directory scanning.
 
+Phase 4 task 38 adds Poikilognostikon-side paired synthetic integration tests
+using tiny BAM/VCF/BED fixtures. Those tests compute fixture checksums, project
+paired tumour/normal readiness, derive shared callable-region state from
+somatic QC outputs, dry-run bounded ``somatic_paired_snv``, verify
+completion-marker reuse, and replay successful paired SNV provenance into
+``paired_output_contracts``. The workflow contract must continue to expose the
+bounded entry parameters and output kinds consumed by those tests without
+requiring large external datasets.
+
 The Task 18 bounded structural-variant entry can be dry-run through the same
 entry point:
 
