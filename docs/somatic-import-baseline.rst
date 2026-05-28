@@ -445,3 +445,20 @@ Outputs are ``somatic_dml_tsv``, ``somatic_dmr_tsv``,
 ``workflow-glue report_mod``, ``diff_mod`` global branching,
 ``params.dss_threads``, and free-form DSS/R argument fragments remain outside
 the maintained contract.
+
+Paired Output Contract
+----------------------
+
+Phase 4 task 36 standardises paired outputs for Poikilognostikon dashboard/API
+projection. The maintained paired surface is the runtime manifest projection of
+``pair_state``, ``paired_snv_vcf``, ``paired_sv_vcf``, tumour and
+normal/control ``bedMethyl`` tracks, ``differential_methylation``, tumour and
+normal/control haplotagged alignments, ``shared_regions``, and bounded
+``task_manifests``.
+
+These contracts are populated from provenance-backed output kinds such as
+``somatic_snv_vcf``, ``somatic_sv_vcf``, ``somatic_bedmethyl``,
+``somatic_dml_tsv``, ``somatic_dmr_tsv``, ``somatic_haplotagged_xam``,
+``somatic_shared_regions_bed``, and the bounded task manifest JSON files. They
+do not include old report HTML, IGV/viewer metadata, EPI2ME presentation
+directories, or report-only paths.

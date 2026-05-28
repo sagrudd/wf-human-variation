@@ -125,6 +125,58 @@ Somatic outputs:
   ``somatic_provenance``, and ``qc_stats`` for paired DSS audit and R package
   version capture.
 
+Paired Output Contract
+----------------------
+
+Phase 4 task 36 defines the retained paired output surface for
+Poikilognostikon dashboard/API projection. The workflow emits machine-readable
+artefacts; the controller groups them into these stable paired contract ids:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Contract id
+     - Retained output kinds
+   * - ``pair_state``
+     - Pair registration, role assignment, and relationship snapshot state
+       from the runtime manifest.
+   * - ``paired_snv_vcf``
+     - ``somatic_snv_vcf`` and ``somatic_snv_vcf_index`` from bounded paired
+       ClairS merge.
+   * - ``paired_sv_vcf``
+     - ``somatic_sv_vcf`` and ``somatic_sv_vcf_index`` from bounded paired
+       Severus execution.
+   * - ``tumour_bedmethyl``
+     - Tumour role ``somatic_bedmethyl``, ``somatic_bedmethyl_index``, and
+       optional ``somatic_bigwig``.
+   * - ``normal_or_control_bedmethyl``
+     - Normal/control role ``somatic_bedmethyl``,
+       ``somatic_bedmethyl_index``, and optional ``somatic_bigwig``.
+   * - ``differential_methylation``
+     - ``somatic_dml_tsv`` and ``somatic_dmr_tsv`` from bounded DSS.
+   * - ``tumour_haplotagged_alignment``
+     - Tumour role ``somatic_haplotagged_xam``,
+       ``somatic_haplotagged_xam_index``, and
+       ``somatic_haplotagged_contig_manifest``.
+   * - ``normal_or_control_haplotagged_alignment``
+     - Normal/control role ``somatic_haplotagged_xam``,
+       ``somatic_haplotagged_xam_index``, and
+       ``somatic_haplotagged_contig_manifest`` when requested.
+   * - ``shared_regions``
+     - ``somatic_shared_regions_bed``, ``somatic_rejected_regions_summary``,
+       and ``somatic_qc_metrics``.
+   * - ``task_manifests``
+     - Bounded task manifests including ``somatic_qc_manifest``,
+       ``somatic_paired_snv_manifest``, ``somatic_paired_sv_manifest``,
+       ``somatic_methylation_aggregation_manifest``,
+       ``somatic_differential_methylation_manifest``,
+       ``somatic_phasing_manifest``, ``somatic_haplotagging_manifest``, and
+       ``somatic_haplotype_filter_manifest``.
+
+The paired contract is intentionally manifest-backed. It explicitly excludes
+old report HTML, IGV/viewer metadata, EPI2ME presentation directories, or
+paths that only existed to support generated reports.
+
 Modified-base outputs:
 
 * bedMethyl;
